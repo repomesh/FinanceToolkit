@@ -3288,6 +3288,7 @@ The FinanceToolkit has been mentioned in various blogposts, research papers, new
 - [A Deep Dive into EOY Financial Performance & Risk Measures of Big Five using the FinanceToolkit in Python](https://wire.insiderfinance.io/a-deep-dive-into-eoy-financial-performance-risk-measures-of-big-five-using-the-financetoolkit-in-ef93fddd11db)
 - [Discovering the Best Integrated Platforms for Big Tech Quantitative Finance — 1. Finance Toolkit](https://wire.insiderfinance.io/discovering-the-best-integrated-platforms-for-big-tech-quantitative-finance-1-finance-toolkit-2e29b67eb4ea)
 - [Investment Analysis — Finance Database](https://alpha2phi.medium.com/investment-analysis-finance-database-61f47ecfe7ca)
+- [Unlocking Financial Clarity: Introducing the Open-Source Finance Toolkit Powered by FMP](https://site.financialmodelingprep.com/education/ESG/unlocking-financial-clarity-introducing-the-open-source-finance-toolkit-powered-by-fmp)
 
 **Research**
 - [AI, Help Me Think—but for Myself: Assisting People in Complex Decision-Making by Providing Different Kinds of Cognitive Support](https://www.microsoft.com/en-us/research/wp-content/uploads/2025/03/AI-Help-Me-Think-CHI-2025.pdf)
