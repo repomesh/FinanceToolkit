@@ -330,7 +330,7 @@ class FixedIncome:
         for coupon in coupon_rate:
             bond_prices[coupon] = {}
             for maturity in years_to_maturity:
-                (bond_prices[coupon][maturity]) = bond_model.get_bond_price(
+                bond_prices[coupon][maturity] = bond_model.get_bond_price(
                     par_value=par_value,
                     coupon_rate=float(coupon),
                     years_to_maturity=maturity,
@@ -559,17 +559,15 @@ class FixedIncome:
         for price in bond_price:
             yield_to_maturities[price] = {}
             for maturity in years_to_maturity:
-                (yield_to_maturities[price][maturity]) = (
-                    bond_model.get_yield_to_maturity(
-                        par_value=par_value,
-                        coupon_rate=coupon_rate,
-                        years_to_maturity=maturity,
-                        bond_price=price,
-                        frequency=frequency,
-                        guess=guess,
-                        tolerance=tolerance,
-                        max_iterations=max_iterations,
-                    )
+                yield_to_maturities[price][maturity] = bond_model.get_yield_to_maturity(
+                    par_value=par_value,
+                    coupon_rate=coupon_rate,
+                    years_to_maturity=maturity,
+                    bond_price=price,
+                    frequency=frequency,
+                    guess=guess,
+                    tolerance=tolerance,
+                    max_iterations=max_iterations,
                 )
 
         yield_to_maturities_df = pd.DataFrame.from_dict(

@@ -2,7 +2,6 @@
 
 """Fixed Income Controller Tests"""
 
-
 import pandas as pd
 
 from financetoolkit.fixedincome import fixedincome_controller

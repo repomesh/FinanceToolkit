@@ -45,15 +45,13 @@ class Record:
             if len(a) != len(b):
                 return False
             return all(
-                Record._values_approx_equal(x, y, rel_tol=rel_tol)
-                for x, y in zip(a, b)
+                Record._values_approx_equal(x, y, rel_tol=rel_tol) for x, y in zip(a, b)
             )
         if isinstance(a, dict) and isinstance(b, dict):
             if a.keys() != b.keys():
                 return False
             return all(
-                Record._values_approx_equal(a[k], b[k], rel_tol=rel_tol)
-                for k in a
+                Record._values_approx_equal(a[k], b[k], rel_tol=rel_tol) for k in a
             )
         return a == b
 
