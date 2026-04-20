@@ -111,6 +111,7 @@ class Economics:
     @handle_errors
     def get_gross_domestic_product(
         self,
+        countries: list[str] | str | None = None,
         inflation_adjusted: bool = False,
         gmdb_source: bool | None = None,
         growth: bool = False,
@@ -134,6 +135,7 @@ class Economics:
         https://www.globalmacrodata.com/files/documentations/Variables/nGDP.pdf
 
         Args:
+            countries (list[str] | str | None, optional): A list of countries or a single country to include in the results. Defaults to None.
             inflation_adjusted (bool, optional): Whether to return the inflation adjusted data. Defaults to False.
             gmdb_source (bool | None, optional): If True, retrieves data from the GMDB source. Defaults to None.
             growth (bool, optional): Whether to return the growth data or the actual data. Defaults to False.
@@ -150,9 +152,7 @@ class Economics:
 
         economics = Economics(start_date='2015-01-01')
 
-        real_gdp = economics.get_gross_domestic_product(inflation_adjusted=True)
-
-        real_gdp.loc[:, ['Netherlands', 'Germany', 'China']]
+        economics.get_gross_domestic_product(inflation_adjusted=True, countries=['Netherlands', 'Germany', 'China'])
         ```
 
         Which returns:
@@ -205,11 +205,28 @@ class Economics:
             self._start_date : self._end_date
         ]
 
+        if countries:
+            if isinstance(countries, str):
+                countries = [countries]
+            missing_countries = [
+                country
+                for country in countries
+                if country not in gross_domestic_product.columns
+            ]
+            if missing_countries:
+                logger.warning(
+                    f"The following countries are not available for Gross Domestic Product: {missing_countries}"
+                )
+            gross_domestic_product = gross_domestic_product[
+                list(set(countries) - set(missing_countries))
+            ]
+
         return gross_domestic_product.round(rounding if rounding else self._rounding)
 
     @handle_errors
     def get_gross_domestic_product_deflator(
         self,
+        countries: list[str] | str | None = None,
         growth: bool = False,
         lag: int = 1,
         rounding: int | None = None,
@@ -224,6 +241,7 @@ class Economics:
         variable can be found within https://www.globalmacrodata.com/files/GMD_TA.pdf
 
         Args:
+            countries (list[str] | str | None, optional): A list of countries or a single country to include in the results. Defaults to None.
             growth (bool, optional): Whether to return the growth data or the actual data. Defaults to False.
             lag (int, optional): The number of periods to lag the growth data. Defaults to 1.
             rounding (int | None, optional): The number of decimals to round the results to. Defaults to None.
@@ -238,9 +256,7 @@ class Economics:
 
         economics = Economics(start_date='2015-01-01')
 
-        gdp_deflator = economics.get_gross_domestic_product_deflator()
-
-        gdp_deflator.loc[:, ['United States', 'Canada', 'Russian Federation']]
+        economics.get_gross_domestic_product_deflator(countries=['United States', 'Canada', 'Russian Federation'])
         ```
 
         Which returns:
@@ -281,6 +297,22 @@ class Economics:
             self._start_date : self._end_date
         ]
 
+        if countries:
+            if isinstance(countries, str):
+                countries = [countries]
+            missing_countries = [
+                country
+                for country in countries
+                if country not in gross_domestic_product_deflator.columns
+            ]
+            if missing_countries:
+                logger.warning(
+                    f"The following countries are not available for Gross Domestic Product Deflator: {missing_countries}"
+                )
+            gross_domestic_product_deflator = gross_domestic_product_deflator[
+                list(set(countries) - set(missing_countries))
+            ]
+
         return gross_domestic_product_deflator.round(
             rounding if rounding else self._rounding
         )
@@ -288,6 +320,7 @@ class Economics:
     @handle_errors
     def get_total_consumption(
         self,
+        countries: list[str] | str | None = None,
         inflation_adjusted: bool = False,
         growth: bool = False,
         lag: int = 1,
@@ -302,6 +335,7 @@ class Economics:
         variable can be found within https://www.globalmacrodata.com/files/GMD_TA.pdf
 
         Args:
+            countries (list[str] | str | None, optional): A list of countries or a single country to include in the results. Defaults to None.
             inflation_adjusted (bool, optional): Whether to return the inflation adjusted data. Defaults to False.
             growth (bool, optional): Whether to return the growth data or the actual data. Defaults to False.
             lag (int, optional): The number of periods to lag the growth data. Defaults to 1.
@@ -357,11 +391,28 @@ class Economics:
 
         total_consumption = total_consumption.loc[self._start_date : self._end_date]
 
+        if countries:
+            if isinstance(countries, str):
+                countries = [countries]
+            missing_countries = [
+                country
+                for country in countries
+                if country not in total_consumption.columns
+            ]
+            if missing_countries:
+                logger.warning(
+                    f"The following countries are not available for Total Consumption: {missing_countries}"
+                )
+            total_consumption = total_consumption[
+                list(set(countries) - set(missing_countries))
+            ]
+
         return total_consumption.round(rounding if rounding else self._rounding)
 
     @handle_errors
     def get_total_consumption_to_gdp_ratio(
         self,
+        countries: list[str] | str | None = None,
         growth: bool = False,
         lag: int = 1,
         rounding: int | None = None,
@@ -376,6 +427,7 @@ class Economics:
         variable can be found within https://www.globalmacrodata.com/files/GMD_TA.pdf
 
         Args:
+            countries (list[str] | str | None, optional): A list of countries or a single country to include in the results. Defaults to None.
             growth (bool, optional): Whether to return the growth data or the actual data. Defaults to False.
             lag (int, optional): The number of periods to lag the growth data. Defaults to 1.
             rounding (int | None, optional): The number of decimals to round the results to. Defaults to None.
@@ -427,6 +479,22 @@ class Economics:
             self._start_date : self._end_date
         ]
 
+        if countries:
+            if isinstance(countries, str):
+                countries = [countries]
+            missing_countries = [
+                country
+                for country in countries
+                if country not in total_consumption_to_gdp_ratio.columns
+            ]
+            if missing_countries:
+                logger.warning(
+                    f"The following countries are not available for Total Consumption to GDP Ratio: {missing_countries}"
+                )
+            total_consumption_to_gdp_ratio = total_consumption_to_gdp_ratio[
+                list(set(countries) - set(missing_countries))
+            ]
+
         return total_consumption_to_gdp_ratio.round(
             rounding if rounding else self._rounding
         )
@@ -434,6 +502,7 @@ class Economics:
     @handle_errors
     def get_investment(
         self,
+        countries: list[str] | str | None = None,
         growth: bool = False,
         lag: int = 1,
         rounding: int | None = None,
@@ -447,6 +516,7 @@ class Economics:
         variable can be found within https://www.globalmacrodata.com/files/GMD_TA.pdf
 
         Args:
+            countries (list[str] | str | None, optional): A list of countries or a single country to include in the results. Defaults to None.
             growth (bool, optional): Whether to return the growth data or the actual data. Defaults to False.
             lag (int, optional): The number of periods to lag the growth data. Defaults to 1.
             rounding (int | None, optional): The number of decimals to round the results to. Defaults to None.
@@ -498,11 +568,24 @@ class Economics:
 
         investment = investment.loc[self._start_date : self._end_date]
 
+        if countries:
+            if isinstance(countries, str):
+                countries = [countries]
+            missing_countries = [
+                country for country in countries if country not in investment.columns
+            ]
+            if missing_countries:
+                logger.warning(
+                    f"The following countries are not available for Investment: {missing_countries}"
+                )
+            investment = investment[list(set(countries) - set(missing_countries))]
+
         return investment.round(rounding if rounding else self._rounding)
 
     @handle_errors
     def get_investment_to_gdp_ratio(
         self,
+        countries: list[str] | str | None = None,
         growth: bool = False,
         lag: int = 1,
         rounding: int | None = None,
@@ -516,6 +599,7 @@ class Economics:
         variable can be found within https://www.globalmacrodata.com/files/GMD_TA.pdf
 
         Args:
+            countries (list[str] | str | None, optional): A list of countries or a single country to include in the results. Defaults to None.
             growth (bool, optional): Whether to return the growth data or the actual data. Defaults to False.
             lag (int, optional): The number of periods to lag the growth data. Defaults to 1.
             rounding (int | None, optional): The number of decimals to round the results to. Defaults to None.
@@ -567,11 +651,28 @@ class Economics:
             self._start_date : self._end_date
         ]
 
+        if countries:
+            if isinstance(countries, str):
+                countries = [countries]
+            missing_countries = [
+                country
+                for country in countries
+                if country not in investment_to_gdp_ratio.columns
+            ]
+            if missing_countries:
+                logger.warning(
+                    f"The following countries are not available for Investment to GDP Ratio: {missing_countries}"
+                )
+            investment_to_gdp_ratio = investment_to_gdp_ratio[
+                list(set(countries) - set(missing_countries))
+            ]
+
         return investment_to_gdp_ratio.round(rounding if rounding else self._rounding)
 
     @handle_errors
     def get_fixed_investment(
         self,
+        countries: list[str] | str | None = None,
         growth: bool = False,
         lag: int = 1,
         rounding: int | None = None,
@@ -585,6 +686,7 @@ class Economics:
         variable can be found within https://www.globalmacrodata.com/files/GMD_TA.pdf
 
         Args:
+            countries (list[str] | str | None, optional): A list of countries or a single country to include in the results. Defaults to None.
             growth (bool, optional): Whether to return the growth data or the actual data. Defaults to False.
             lag (int, optional): The number of periods to lag the growth data. Defaults to 1.
             rounding (int | None, optional): The number of decimals to round the results to. Defaults to None.
@@ -632,11 +734,28 @@ class Economics:
 
         fixed_investment = fixed_investment.loc[self._start_date : self._end_date]
 
+        if countries:
+            if isinstance(countries, str):
+                countries = [countries]
+            missing_countries = [
+                country
+                for country in countries
+                if country not in fixed_investment.columns
+            ]
+            if missing_countries:
+                logger.warning(
+                    f"The following countries are not available for Fixed Investment: {missing_countries}"
+                )
+            fixed_investment = fixed_investment[
+                list(set(countries) - set(missing_countries))
+            ]
+
         return fixed_investment.round(rounding if rounding else self._rounding)
 
     @handle_errors
     def get_fixed_investment_to_gdp_ratio(
         self,
+        countries: list[str] | str | None = None,
         growth: bool = False,
         lag: int = 1,
         rounding: int | None = None,
@@ -651,6 +770,7 @@ class Economics:
         variable can be found within https://www.globalmacrodata.com/files/GMD_TA.pdf
 
         Args:
+            countries (list[str] | str | None, optional): A list of countries or a single country to include in the results. Defaults to None.
             growth (bool, optional): Whether to return the growth data or the actual data. Defaults to False.
             lag (int, optional): The number of periods to lag the growth data. Defaults to 1.
             rounding (int | None, optional): The number of decimals to round the results to. Defaults to None.
@@ -720,6 +840,22 @@ class Economics:
             self._start_date : self._end_date
         ]
 
+        if countries:
+            if isinstance(countries, str):
+                countries = [countries]
+            missing_countries = [
+                country
+                for country in countries
+                if country not in fixed_investment_to_gdp_ratio.columns
+            ]
+            if missing_countries:
+                logger.warning(
+                    f"The following countries are not available for Fixed Investment to GDP Ratio: {missing_countries}"
+                )
+            fixed_investment_to_gdp_ratio = fixed_investment_to_gdp_ratio[
+                list(set(countries) - set(missing_countries))
+            ]
+
         return fixed_investment_to_gdp_ratio.round(
             rounding if rounding else self._rounding
         )
@@ -727,6 +863,7 @@ class Economics:
     @handle_errors
     def get_exports(
         self,
+        countries: list[str] | str | None = None,
         growth: bool = False,
         lag: int = 1,
         rounding: int | None = None,
@@ -740,6 +877,7 @@ class Economics:
         variable can be found within https://www.globalmacrodata.com/files/GMD_TA.pdf
 
         Args:
+            countries (list[str] | str | None, optional): A list of countries or a single country to include in the results. Defaults to None.
             growth (bool, optional): Whether to return the growth data or the actual data. Defaults to False.
             lag (int, optional): The number of periods to lag the growth data. Defaults to 1.
             rounding (int | None, optional): The number of decimals to round the results to. Defaults to None.
@@ -754,9 +892,7 @@ class Economics:
 
         economics = Economics(start_date='1980-01-01', end_date='1990-01-01')
 
-        exports = economics.get_exports()
-
-        exports.loc[:, ['Netherlands', 'Germany', 'China']]
+        economics.get_exports(countries=['Netherlands', 'Germany', 'China'])
         ```
 
         Which returns:
@@ -790,11 +926,24 @@ class Economics:
 
         exports = exports.loc[self._start_date : self._end_date]
 
+        if countries:
+            if isinstance(countries, str):
+                countries = [countries]
+            missing_countries = [
+                country for country in countries if country not in exports.columns
+            ]
+            if missing_countries:
+                logger.warning(
+                    f"The following countries are not available for Exports: {missing_countries}"
+                )
+            exports = exports[list(set(countries) - set(missing_countries))]
+
         return exports.round(rounding if rounding else self._rounding)
 
     @handle_errors
     def get_exports_to_gdp_ratio(
         self,
+        countries: list[str] | str | None = None,
         growth: bool = False,
         lag: int = 1,
         rounding: int | None = None,
@@ -808,6 +957,7 @@ class Economics:
         variable can be found within https://www.globalmacrodata.com/files/GMD_TA.pdf
 
         Args:
+            countries (list[str] | str | None, optional): A list of countries or a single country to include in the results. Defaults to None.
             growth (bool, optional): Whether to return the growth data or the actual data. Defaults to False.
             lag (int, optional): The number of periods to lag the growth data. Defaults to 1.
             rounding (int | None, optional): The number of decimals to round the results to. Defaults to None.
@@ -822,9 +972,7 @@ class Economics:
 
         economics = Economics(start_date='2015-01-01')
 
-        exports_to_gdp_ratio = economics.get_exports_to_gdp_ratio()
-
-        exports_to_gdp_ratio.loc[:, ['United States', 'Canada', 'Russian Federation']]
+        economics.get_exports_to_gdp_ratio(countries=['United States', 'Canada', 'Russian Federation'])
         ```
 
         Which returns:
@@ -862,11 +1010,28 @@ class Economics:
             self._start_date : self._end_date
         ]
 
+        if countries:
+            if isinstance(countries, str):
+                countries = [countries]
+            missing_countries = [
+                country
+                for country in countries
+                if country not in exports_to_gdp_ratio.columns
+            ]
+            if missing_countries:
+                logger.warning(
+                    f"The following countries are not available for Exports to GDP Ratio: {missing_countries}"
+                )
+            exports_to_gdp_ratio = exports_to_gdp_ratio[
+                list(set(countries) - set(missing_countries))
+            ]
+
         return exports_to_gdp_ratio.round(rounding if rounding else self._rounding)
 
     @handle_errors
     def get_imports(
         self,
+        countries: list[str] | str | None = None,
         growth: bool = False,
         lag: int = 1,
         rounding: int | None = None,
@@ -880,6 +1045,7 @@ class Economics:
         variable can be found within https://www.globalmacrodata.com/files/GMD_TA.pdf
 
         Args:
+            countries (list[str] | str | None, optional): A list of countries or a single country to include in the results. Defaults to None.
             growth (bool, optional): Whether to return the growth data or the actual data. Defaults to False.
             lag (int, optional): The number of periods to lag the growth data. Defaults to 1.
             rounding (int | None, optional): The number of decimals to round the results to. Defaults to None.
@@ -894,9 +1060,7 @@ class Economics:
 
         economics = Economics(start_date='2010-01-01')
 
-        imports = economics.get_imports()
-
-        imports.loc[:, ['United States', 'Canada', 'Mexico']]
+        economics.get_imports(countries=['United States', 'Canada', 'Mexico'])
         ```
 
         Which returns:
@@ -936,11 +1100,24 @@ class Economics:
 
         imports = imports.loc[self._start_date : self._end_date]
 
+        if countries:
+            if isinstance(countries, str):
+                countries = [countries]
+            missing_countries = [
+                country for country in countries if country not in imports.columns
+            ]
+            if missing_countries:
+                logger.warning(
+                    f"The following countries are not available for Imports: {missing_countries}"
+                )
+            imports = imports[list(set(countries) - set(missing_countries))]
+
         return imports.round(rounding if rounding else self._rounding)
 
     @handle_errors
     def get_imports_to_gdp_ratio(
         self,
+        countries: list[str] | str | None = None,
         growth: bool = False,
         lag: int = 1,
         rounding: int | None = None,
@@ -954,6 +1131,7 @@ class Economics:
         variable can be found within https://www.globalmacrodata.com/files/GMD_TA.pdf
 
         Args:
+            countries (list[str] | str | None, optional): A list of countries or a single country to include in the results. Defaults to None.
             growth (bool, optional): Whether to return the growth data or the actual data. Defaults to False.
             lag (int, optional): The number of periods to lag the growth data. Defaults to 1.
             rounding (int | None, optional): The number of decimals to round the results to. Defaults to None.
@@ -968,9 +1146,7 @@ class Economics:
 
         economics = Economics(start_date='2015-01-01')
 
-        imports_to_gdp_ratio = economics.get_imports_to_gdp_ratio()
-
-        imports_to_gdp_ratio.loc[:, ['United States', 'Canada', 'Mexico']]
+        economics.get_imports_to_gdp_ratio(countries=['United States', 'Canada', 'Mexico'])
         ```
 
         Which returns:
@@ -1008,11 +1184,28 @@ class Economics:
             self._start_date : self._end_date
         ]
 
+        if countries:
+            if isinstance(countries, str):
+                countries = [countries]
+            missing_countries = [
+                country
+                for country in countries
+                if country not in imports_to_gdp_ratio.columns
+            ]
+            if missing_countries:
+                logger.warning(
+                    f"The following countries are not available for Imports to GDP Ratio: {missing_countries}"
+                )
+            imports_to_gdp_ratio = imports_to_gdp_ratio[
+                list(set(countries) - set(missing_countries))
+            ]
+
         return imports_to_gdp_ratio.round(rounding if rounding else self._rounding)
 
     @handle_errors
     def get_current_account_balance(
         self,
+        countries: list[str] | str | None = None,
         growth: bool = False,
         lag: int = 1,
         rounding: int | None = None,
@@ -1026,6 +1219,7 @@ class Economics:
         variable can be found within https://www.globalmacrodata.com/files/GMD_TA.pdf
 
         Args:
+            countries (list[str] | str | None, optional): A list of countries or a single country to include in the results. Defaults to None.
             growth (bool, optional): Whether to return the growth data or the actual data. Defaults to False.
             lag (int, optional): The number of periods to lag the growth data. Defaults to 1.
             rounding (int | None, optional): The number of decimals to round the results to. Defaults to None.
@@ -1040,9 +1234,7 @@ class Economics:
 
         economics = Economics(start_date='2015-01-01')
 
-        current_account_balance = economics.get_current_account_balance()
-
-        current_account_balance.loc[:, ['France', 'Germany', 'Italy']]
+        economics.get_current_account_balance(countries=['France', 'Germany', 'Italy'])
         ```
 
         Which returns:
@@ -1080,11 +1272,28 @@ class Economics:
             self._start_date : self._end_date
         ]
 
+        if countries:
+            if isinstance(countries, str):
+                countries = [countries]
+            missing_countries = [
+                country
+                for country in countries
+                if country not in current_account_balance.columns
+            ]
+            if missing_countries:
+                logger.warning(
+                    f"The following countries are not available for Current Account Balance: {missing_countries}"
+                )
+            current_account_balance = current_account_balance[
+                list(set(countries) - set(missing_countries))
+            ]
+
         return current_account_balance.round(rounding if rounding else self._rounding)
 
     @handle_errors
     def get_current_account_balance_to_gdp_ratio(
         self,
+        countries: list[str] | str | None = None,
         growth: bool = False,
         lag: int = 1,
         rounding: int | None = None,
@@ -1099,6 +1308,7 @@ class Economics:
         variable can be found within https://www.globalmacrodata.com/files/GMD_TA.pdf
 
         Args:
+            countries (list[str] | str | None, optional): A list of countries or a single country to include in the results. Defaults to None.
             growth (bool, optional): Whether to return the growth data or the actual data. Defaults to False.
             lag (int, optional): The number of periods to lag the growth data. Defaults to 1.
             rounding (int | None, optional): The number of decimals to round the results to. Defaults to None.
@@ -1113,9 +1323,8 @@ class Economics:
 
         economics = Economics(start_date='2015-01-01')
 
-        current_account_balance_to_gdp_ratio = economics.get_current_account_balance_to_gdp_ratio()
-
-        current_account_balance_to_gdp_ratio.loc[:, ['Poland', 'Turkey', 'United Kingdom']]
+        economics.get_current_account_balance_to_gdp_ratio(countries=[
+            'Poland', 'Turkey', 'United Kingdom'])
         ```
 
         Which returns:
@@ -1155,6 +1364,22 @@ class Economics:
             self._start_date : self._end_date
         ]
 
+        if countries:
+            if isinstance(countries, str):
+                countries = [countries]
+            missing_countries = [
+                country
+                for country in countries
+                if country not in current_account_balance_to_gdp_ratio.columns
+            ]
+            if missing_countries:
+                logger.warning(
+                    f"The following countries are not available for Current Account Balance to GDP Ratio: {missing_countries}"
+                )
+            current_account_balance_to_gdp_ratio = current_account_balance_to_gdp_ratio[
+                list(set(countries) - set(missing_countries))
+            ]
+
         return current_account_balance_to_gdp_ratio.round(
             rounding if rounding else self._rounding
         )
@@ -1162,6 +1387,7 @@ class Economics:
     @handle_errors
     def get_government_debt(
         self,
+        countries: list[str] | str | None = None,
         growth: bool = False,
         lag: int = 1,
         rounding: int | None = None,
@@ -1174,6 +1400,7 @@ class Economics:
         variable can be found within https://www.globalmacrodata.com/files/GMD_TA.pdf
 
         Args:
+            countries (list[str] | str | None, optional): A list of countries or a single country to include in the results. Defaults to None.
             growth (bool, optional): Whether to return the growth data or the actual data. Defaults to False.
             lag (int, optional): The number of periods to lag the growth data. Defaults to 1.
             rounding (int | None, optional): The number of decimals to round the results to. Defaults to None.
@@ -1188,9 +1415,7 @@ class Economics:
 
         economics = Economics(start_date='2015-01-01')
 
-        government_debt = economics.get_government_debt()
-
-        government_debt.loc[:, ['United States', 'Canada', 'Mexico']]
+        economics.get_government_debt(countries=['United States', 'Canada', 'Mexico'])
         ```
 
         Which returns:
@@ -1224,11 +1449,28 @@ class Economics:
 
         government_debt = government_debt.loc[self._start_date : self._end_date]
 
+        if countries:
+            if isinstance(countries, str):
+                countries = [countries]
+            missing_countries = [
+                country
+                for country in countries
+                if country not in government_debt.columns
+            ]
+            if missing_countries:
+                logger.warning(
+                    f"The following countries are not available for Government Debt: {missing_countries}"
+                )
+            government_debt = government_debt[
+                list(set(countries) - set(missing_countries))
+            ]
+
         return government_debt.round(rounding if rounding else self._rounding)
 
     @handle_errors
     def get_government_debt_to_gdp_ratio(
         self,
+        countries: list[str] | str | None = None,
         growth: bool = False,
         lag: int = 1,
         rounding: int | None = None,
@@ -1242,6 +1484,7 @@ class Economics:
         variable can be found within https://www.globalmacrodata.com/files/GMD_TA.pdf
 
         Args:
+            countries (list[str] | str | None, optional): A list of countries or a single country to include in the results. Defaults to None.
             growth (bool, optional): Whether to return the growth data or the actual data. Defaults to False.
             lag (int, optional): The number of periods to lag the growth data. Defaults to 1.
             rounding (int | None, optional): The number of decimals to round the results to. Defaults to None.
@@ -1256,9 +1499,7 @@ class Economics:
 
         economics = Economics(start_date='2015-01-01')
 
-        government_debt_to_gdp_ratio = economics.get_government_debt_to_gdp_ratio()
-
-        government_debt_to_gdp_ratio.loc[:, ['Netherlands', 'Germany', 'China']]
+        economics.get_government_debt_to_gdp_ratio(countries=['Netherlands', 'Germany', 'China'])
         ```
 
         Which returns:
@@ -1296,6 +1537,22 @@ class Economics:
             self._start_date : self._end_date
         ]
 
+        if countries:
+            if isinstance(countries, str):
+                countries = [countries]
+            missing_countries = [
+                country
+                for country in countries
+                if country not in government_debt_to_gdp_ratio.columns
+            ]
+            if missing_countries:
+                logger.warning(
+                    f"The following countries are not available for Government Debt to GDP Ratio: {missing_countries}"
+                )
+            government_debt_to_gdp_ratio = government_debt_to_gdp_ratio[
+                list(set(countries) - set(missing_countries))
+            ]
+
         return government_debt_to_gdp_ratio.round(
             rounding if rounding else self._rounding
         )
@@ -1303,6 +1560,7 @@ class Economics:
     @handle_errors
     def get_government_revenue(
         self,
+        countries: list[str] | str | None = None,
         growth: bool = False,
         lag: int = 1,
         rounding: int | None = None,
@@ -1315,6 +1573,7 @@ class Economics:
         variable can be found within https://www.globalmacrodata.com/files/GMD_TA.pdf
 
         Args:
+            countries (list[str] | str | None, optional): A list of countries or a single country to include in the results. Defaults to None.
             growth (bool, optional): Whether to return the growth data or the actual data. Defaults to False.
             lag (int, optional): The number of periods to lag the growth data. Defaults to 1.
             rounding (int | None, optional): The number of decimals to round the results to. Defaults to None.
@@ -1329,9 +1588,8 @@ class Economics:
 
         economics = Economics(start_date='2019-01-01')
 
-        government_revenue = economics.get_government_revenue()
-
-        government_revenue.loc[:, ['United Kingdom', 'Canada', 'Japan']]
+        economics.get_government_revenue(countries=['United Kingdom', 'Canada', 'Japan'])
+        ```
 
         Which returns:
 
@@ -1362,11 +1620,28 @@ class Economics:
 
         government_revenue = government_revenue.loc[self._start_date : self._end_date]
 
+        if countries:
+            if isinstance(countries, str):
+                countries = [countries]
+            missing_countries = [
+                country
+                for country in countries
+                if country not in government_revenue.columns
+            ]
+            if missing_countries:
+                logger.warning(
+                    f"The following countries are not available for Government Revenue: {missing_countries}"
+                )
+            government_revenue = government_revenue[
+                list(set(countries) - set(missing_countries))
+            ]
+
         return government_revenue.round(rounding if rounding else self._rounding)
 
     @handle_errors
     def get_government_revenue_to_gdp_ratio(
         self,
+        countries: list[str] | str | None = None,
         growth: bool = False,
         lag: int = 1,
         rounding: int | None = None,
@@ -1380,6 +1655,7 @@ class Economics:
         variable can be found within https://www.globalmacrodata.com/files/GMD_TA.pdf
 
         Args:
+            countries (list[str] | str | None, optional): A list of countries or a single country to include in the results. Defaults to None.
             growth (bool, optional): Whether to return the growth data or the actual data. Defaults to False.
             lag (int, optional): The number of periods to lag the growth data. Defaults to 1.
             rounding (int | None, optional): The number of decimals to round the results to. Defaults to None.
@@ -1394,9 +1670,7 @@ class Economics:
 
         economics = Economics(start_date='2015-01-01')
 
-        government_revenue_to_gdp_ratio = economics.get_government_revenue_to_gdp_ratio()
-
-        government_revenue_to_gdp_ratio.loc[:, ['United States', 'Canada', 'Russian Federation']]
+        economics.get_government_revenue_to_gdp_ratio(countries=['United States', 'Canada', 'Russian Federation'])
         ```
 
         Which returns:
@@ -1436,6 +1710,22 @@ class Economics:
             self._start_date : self._end_date
         ]
 
+        if countries:
+            if isinstance(countries, str):
+                countries = [countries]
+            missing_countries = [
+                country
+                for country in countries
+                if country not in government_revenue_to_gdp_ratio.columns
+            ]
+            if missing_countries:
+                logger.warning(
+                    f"The following countries are not available for Government Revenue to GDP Ratio: {missing_countries}"
+                )
+            government_revenue_to_gdp_ratio = government_revenue_to_gdp_ratio[
+                list(set(countries) - set(missing_countries))
+            ]
+
         return government_revenue_to_gdp_ratio.round(
             rounding if rounding else self._rounding
         )
@@ -1443,6 +1733,7 @@ class Economics:
     @handle_errors
     def get_government_tax_revenue(
         self,
+        countries: list[str] | str | None = None,
         growth: bool = False,
         lag: int = 1,
         rounding: int | None = None,
@@ -1469,9 +1760,7 @@ class Economics:
 
         economics = Economics(start_date='2015-01-01')
 
-        government_tax_revenue = economics.get_government_tax_revenue()
-
-        government_tax_revenue.loc[:, ['Kenya', 'Nigeria', 'South Africa']]
+        economics.get_government_tax_revenue(countries=['Kenya', 'Nigeria', 'South Africa'] )
         ```
 
         Which returns:
@@ -1508,11 +1797,28 @@ class Economics:
             self._start_date : self._end_date
         ]
 
+        if countries:
+            if isinstance(countries, str):
+                countries = [countries]
+            missing_countries = [
+                country
+                for country in countries
+                if country not in government_tax_revenue.columns
+            ]
+            if missing_countries:
+                logger.warning(
+                    f"The following countries are not available for Government Tax Revenue: {missing_countries}"
+                )
+            government_tax_revenue = government_tax_revenue[
+                list(set(countries) - set(missing_countries))
+            ]
+
         return government_tax_revenue.round(rounding if rounding else self._rounding)
 
     @handle_errors
     def get_government_tax_revenue_to_gdp_ratio(
         self,
+        countries: list[str] | str | None = None,
         growth: bool = False,
         lag: int = 1,
         rounding: int | None = None,
@@ -1526,6 +1832,7 @@ class Economics:
         variable can be found within https://www.globalmacrodata.com/files/GMD_TA.pdf
 
         Args:
+            countries (list[str] | str | None, optional): The countries to include in the data. Defaults to None.
             growth (bool, optional): Whether to return the growth data or the actual data. Defaults to False.
             lag (int, optional): The number of periods to lag the growth data. Defaults to 1.
             rounding (int | None, optional): The number of decimals to round the results to. Defaults to None.
@@ -1540,9 +1847,8 @@ class Economics:
 
         economics = Economics(start_date='2015-01-01')
 
-        government_tax_revenue_to_gdp_ratio = economics.get_government_tax_revenue_to_gdp_ratio()
-
-        government_tax_revenue_to_gdp_ratio.loc[:, ['United States', 'Canada', 'Mexico']]
+        economics.get_government_tax_revenue_to_gdp_ratio(
+            countries=['United States', 'Canada', 'Mexico'])
         ```
 
         Which returns:
@@ -1580,6 +1886,22 @@ class Economics:
             self._start_date : self._end_date
         ]
 
+        if countries:
+            if isinstance(countries, str):
+                countries = [countries]
+            missing_countries = [
+                country
+                for country in countries
+                if country not in government_tax_revenue_to_gdp_ratio.columns
+            ]
+            if missing_countries:
+                logger.warning(
+                    f"The following countries are not available for Government Tax Revenue to GDP Ratio: {missing_countries}"
+                )
+            government_tax_revenue_to_gdp_ratio = government_tax_revenue_to_gdp_ratio[
+                list(set(countries) - set(missing_countries))
+            ]
+
         return government_tax_revenue_to_gdp_ratio.round(
             rounding if rounding else self._rounding
         )
@@ -1587,6 +1909,7 @@ class Economics:
     @handle_errors
     def get_government_expenditure(
         self,
+        countries: list[str] | str | None = None,
         growth: bool = False,
         lag: int = 1,
         rounding: int | None = None,
@@ -1599,6 +1922,7 @@ class Economics:
         variable can be found within https://www.globalmacrodata.com/files/GMD_TA.pdf
 
         Args:
+            countries (list[str] | str | None, optional): A list of countries or a single country to include in the results. Defaults to None.
             growth (bool, optional): Whether to return the growth data or the actual data. Defaults to False.
             lag (int, optional): The number of periods to lag the growth data. Defaults to 1.
             rounding (int | None, optional): The number of decimals to round the results to. Defaults to None.
@@ -1613,9 +1937,7 @@ class Economics:
 
         economics = Economics(start_date='2015-01-01')
 
-        government_expenditure = economics.get_government_expenditure()
-
-        government_expenditure.loc[:, ['Japan', 'China', 'India']]
+        economics.get_government_expenditure(countries=['Japan', 'China', 'India'])
         ```
 
         Which returns:
@@ -1653,11 +1975,28 @@ class Economics:
             self._start_date : self._end_date
         ]
 
+        if countries:
+            if isinstance(countries, str):
+                countries = [countries]
+            missing_countries = [
+                country
+                for country in countries
+                if country not in government_expenditure.columns
+            ]
+            if missing_countries:
+                logger.warning(
+                    f"The following countries are not available for Government Expenditure: {missing_countries}"
+                )
+            government_expenditure = government_expenditure[
+                list(set(countries) - set(missing_countries))
+            ]
+
         return government_expenditure.round(rounding if rounding else self._rounding)
 
     @handle_errors
     def get_government_expenditure_to_gdp_ratio(
         self,
+        countries: list[str] | str | None = None,
         growth: bool = False,
         lag: int = 1,
         rounding: int | None = None,
@@ -1671,6 +2010,7 @@ class Economics:
         variable can be found within https://www.globalmacrodata.com/files/GMD_TA.pdf
 
         Args:
+            countries (list[str] | str | None, optional): A list of countries or a single country to include in the results. Defaults to None.
             growth (bool, optional): Whether to return the growth data or the actual data. Defaults to False.
             lag (int, optional): The number of periods to lag the growth data. Defaults to 1.
             rounding (int | None, optional): The number of decimals to round the results to. Defaults to None.
@@ -1685,9 +2025,8 @@ class Economics:
 
         economics = Economics(start_date='2015-01-01')
 
-        government_expenditure_to_gdp_ratio = economics.get_government_expenditure_to_gdp_ratio()
-
-        government_expenditure_to_gdp_ratio.loc[:, ['United States', 'Japan', 'Netherlands']]
+        economics.get_government_expenditure_to_gdp_ratio(
+            countries=['United States', 'Japan', 'Netherlands'])
         ```
 
         Which returns:
@@ -1727,6 +2066,22 @@ class Economics:
             self._start_date : self._end_date
         ]
 
+        if countries:
+            if isinstance(countries, str):
+                countries = [countries]
+            missing_countries = [
+                country
+                for country in countries
+                if country not in government_expenditure_to_gdp_ratio.columns
+            ]
+            if missing_countries:
+                logger.warning(
+                    f"The following countries are not available for Government Expenditure to GDP Ratio: {missing_countries}"
+                )
+            government_expenditure_to_gdp_ratio = government_expenditure_to_gdp_ratio[
+                list(set(countries) - set(missing_countries))
+            ]
+
         return government_expenditure_to_gdp_ratio.round(
             rounding if rounding else self._rounding
         )
@@ -1734,6 +2089,7 @@ class Economics:
     @handle_errors
     def get_government_deficit(
         self,
+        countries: list[str] | str | None = None,
         growth: bool = False,
         lag: int = 1,
         rounding: int | None = None,
@@ -1747,6 +2103,7 @@ class Economics:
         variable can be found within https://www.globalmacrodata.com/files/GMD_TA.pdf
 
         Args:
+            countries (list[str] | str | None, optional): A list of countries or a single country to include in the results. Defaults to None.
             growth (bool, optional): Whether to return the growth data or the actual data. Defaults to False.
             lag (int, optional): The number of periods to lag the growth data. Defaults to 1.
             rounding (int | None, optional): The number of decimals to round the results to. Defaults to None.
@@ -1761,9 +2118,7 @@ class Economics:
 
         economics = Economics(start_date='2015-01-01')
 
-        government_deficit = economics.get_government_deficit()
-
-        government_deficit.loc[:, ['United States', 'Canada', 'Mexico']]
+        economics.get_government_deficit(countries=['United States', 'Canada', 'Mexico'])
         ```
 
         Which returns:
@@ -1798,6 +2153,22 @@ class Economics:
             )
 
         government_deficit = government_deficit.loc[self._start_date : self._end_date]
+
+        if countries:
+            if isinstance(countries, str):
+                countries = [countries]
+            missing_countries = [
+                country
+                for country in countries
+                if country not in government_deficit.columns
+            ]
+            if missing_countries:
+                logger.warning(
+                    f"The following countries are not available for Government Deficit: {missing_countries}"
+                )
+            government_deficit = government_deficit[
+                list(set(countries) - set(missing_countries))
+            ]
 
         return government_deficit.round(rounding if rounding else self._rounding)
 
@@ -1881,6 +2252,7 @@ class Economics:
     @handle_errors
     def get_trust_in_government(
         self,
+        countries: list[str] | str | None = None,
         growth: bool = False,
         lag: int = 1,
         rounding: int | None = None,
@@ -1901,6 +2273,7 @@ class Economics:
         See definition: https://data.oecd.org/gga/trust-in-government.htm
 
         Args:
+            countries (list[str] | str | None, optional): The countries to include in the data. Defaults to None.
             growth (bool, optional): Whether to return the growth data or the actual data.
             lag (int, optional): The number of periods to lag the data by.
             rounding (int | None, optional): The number of decimals to round the results to. Defaults to None.
@@ -1955,11 +2328,28 @@ class Economics:
 
         trust_in_government = trust_in_government.loc[self._start_date : self._end_date]
 
+        if countries:
+            if isinstance(countries, str):
+                countries = [countries]
+            missing_countries = [
+                country
+                for country in countries
+                if country not in trust_in_government.columns
+            ]
+            if missing_countries:
+                logger.warning(
+                    f"The following countries are not available for Trust in Government: {missing_countries}"
+                )
+            trust_in_government = trust_in_government[
+                list(set(countries) - set(missing_countries))
+            ]
+
         return trust_in_government.round(rounding if rounding else self._rounding)
 
     @handle_errors
     def get_consumer_price_index(
         self,
+        countries: list[str] | str | None = None,
         growth: bool = False,
         lag: int = 1,
         rounding: int | None = None,
@@ -1973,6 +2363,7 @@ class Economics:
         variable can be found within https://www.globalmacrodata.com/files/GMD_TA.pdf
 
         Args:
+            countries (list[str] | str | None, optional): The countries to include in the data. Defaults to None.
             growth (bool, optional): Whether to return the growth data or the actual data.
             lag (int, optional): The number of periods to lag the data by.
             rounding (int | None, optional): The number of decimals to round the results to. Defaults to None.
@@ -1987,9 +2378,7 @@ class Economics:
 
         economics = Economics(start_date='2008-09-01', end_date='2020-03-01')
 
-        consumer_price_index = economics.get_consumer_price_index()
-
-        consumer_price_index.loc[:, ['Germany', 'France', 'Portugal']]
+        economics.get_consumer_price_index(countries=['Germany', 'France', 'Portugal'])
         ```
 
         Which returns:
@@ -2029,11 +2418,28 @@ class Economics:
             self._start_date : self._end_date
         ]
 
+        if countries:
+            if isinstance(countries, str):
+                countries = [countries]
+            missing_countries = [
+                country
+                for country in countries
+                if country not in consumer_price_index.columns
+            ]
+            if missing_countries:
+                logger.warning(
+                    f"The following countries are not available for Consumer Price Index: {missing_countries}"
+                )
+            consumer_price_index = consumer_price_index[
+                list(set(countries) - set(missing_countries))
+            ]
+
         return consumer_price_index.round(rounding if rounding else self._rounding)
 
     @handle_errors
     def get_inflation_rate(
         self,
+        countries: list[str] | str | None = None,
         growth: bool = False,
         lag: int = 1,
         rounding: int | None = None,
@@ -2046,6 +2452,7 @@ class Economics:
         variable can be found within https://www.globalmacrodata.com/files/GMD_TA.pdf
 
         Args:
+            countries (list[str] | str | None, optional): The countries to include in the data. Defaults to None.
             growth (bool, optional): Whether to return the growth data or the actual data.
             lag (int, optional): The number of periods to lag the data by.
             rounding (int | None, optional): The number of decimals to round the results to. Defaults to None.
@@ -2060,9 +2467,7 @@ class Economics:
 
         economics = Economics(start_date='2003-01-01', end_date='2009-03-01')
 
-        inflation_rate = economics.get_inflation_rate()
-
-        inflation_rate.loc[:, ['Germany', 'France', 'Portugal']]
+        economics.get_inflation_rate(countries=['Germany', 'France', 'Portugal'])
         ```
 
         Which returns:
@@ -2092,11 +2497,31 @@ class Economics:
 
         inflation_rate = inflation_rate.loc[self._start_date : self._end_date]
 
+        if countries:
+            if isinstance(countries, str):
+                countries = [countries]
+            missing_countries = [
+                country
+                for country in countries
+                if country not in inflation_rate.columns
+            ]
+            if missing_countries:
+                logger.warning(
+                    f"The following countries are not available for Inflation Rate: {missing_countries}"
+                )
+            inflation_rate = inflation_rate[
+                list(set(countries) - set(missing_countries))
+            ]
+
         return inflation_rate.round(rounding if rounding else self._rounding)
 
     @handle_errors
     def get_consumer_confidence_index(
-        self, growth: bool = False, lag: int = 1, rounding: int | None = None
+        self,
+        countries: list[str] | str | None = None,
+        growth: bool = False,
+        lag: int = 1,
+        rounding: int | None = None,
     ):
         """
         This consumer confidence indicator provides an indication of future developments of
@@ -2114,6 +2539,7 @@ class Economics:
         See definition: https://data.oecd.org/leadind/consumer-confidence-index-cci.htm
 
         Args:
+            countries (list[str] | str | None, optional): The countries to include in the data. Defaults to None.
             growth (bool, optional): Whether to return the growth data or the actual data.
             lag (int, optional): The number of periods to lag the data by.
             rounding (int | None, optional): The number of decimals to round the results to. Defaults to None.
@@ -2128,9 +2554,7 @@ class Economics:
 
         economics = Economics(start_date='2008-09-01', end_date='2009-03-01')
 
-        consumer_confidence_index = economics.get_consumer_confidence_index()
-
-        consumer_confidence_index.loc[:, ['Germany', 'France', 'Portugal']]
+        economics.get_consumer_confidence_index(countries=['Germany', 'France', 'Portugal'])
         ```
 
         Which returns:
@@ -2159,11 +2583,31 @@ class Economics:
             self._start_date : self._end_date
         ]
 
+        if countries:
+            if isinstance(countries, str):
+                countries = [countries]
+            missing_countries = [
+                country
+                for country in countries
+                if country not in consumer_confidence_index.columns
+            ]
+            if missing_countries:
+                logger.warning(
+                    f"The following countries are not available for Consumer Confidence Index: {missing_countries}"
+                )
+            consumer_confidence_index = consumer_confidence_index[
+                list(set(countries) - set(missing_countries))
+            ]
+
         return consumer_confidence_index.round(rounding if rounding else self._rounding)
 
     @handle_errors
     def get_business_confidence_index(
-        self, growth: bool = False, lag: int = 1, rounding: int | None = None
+        self,
+        countries: list[str] | str | None = None,
+        growth: bool = False,
+        lag: int = 1,
+        rounding: int | None = None,
     ):
         """
         This business confidence indicator provides information on future developments,
@@ -2177,6 +2621,7 @@ class Economics:
         See definition: https://data.oecd.org/leadind/business-confidence-index-bci.htm
 
         Args:
+            countries (list[str] | str | None, optional): The countries to include in the data. Defaults to None.
             growth (bool, optional): Whether to return the growth data or the actual data.
             lag (int, optional): The number of periods to lag the data by.
             rounding (int | None, optional): The number of decimals to round the results to. Defaults to None.
@@ -2191,9 +2636,7 @@ class Economics:
 
         economics = Economics(start_date='2022-09-01', end_date='2023-03-01')
 
-        business_confidence_index = economics.get_business_confidence_index()
-
-        business_confidence_index.loc[:, ['Brazil', 'Canada', 'Costa Rica']]
+        economics.get_business_confidence_index(countries=['Brazil', 'Canada', 'Costa Rica'])
         ```
 
         Which returns:
@@ -2222,11 +2665,31 @@ class Economics:
             self._start_date : self._end_date
         ]
 
+        if countries:
+            if isinstance(countries, str):
+                countries = [countries]
+            missing_countries = [
+                country
+                for country in countries
+                if country not in business_confidence_index.columns
+            ]
+            if missing_countries:
+                logger.warning(
+                    f"The following countries are not available for Business Confidence Index: {missing_countries}"
+                )
+            business_confidence_index = business_confidence_index[
+                list(set(countries) - set(missing_countries))
+            ]
+
         return business_confidence_index.round(rounding if rounding else self._rounding)
 
     @handle_errors
     def get_composite_leading_indicator(
-        self, growth: bool = False, lag: int = 1, rounding: int | None = None
+        self,
+        countries: list[str] | str | None = None,
+        growth: bool = False,
+        lag: int = 1,
+        rounding: int | None = None,
     ):
         """
         The composite leading indicator (CLI) is designed to provide early signals
@@ -2237,6 +2700,7 @@ class Economics:
         See definition: https://data.oecd.org/leadind/composite-leading-indicator-cli.htm
 
         Args:
+            countries (list[str] | str | None, optional): The countries to include in the data. Defaults to None.
             growth (bool, optional): Whether to return the growth data or the actual data.
             lag (int, optional): The number of periods to lag the data by.
             rounding (int | None, optional): The number of decimals to round the results to. Defaults to None.
@@ -2251,10 +2715,7 @@ class Economics:
 
         economics = Economics(start_date='2023-06-01', end_date='2023-12-01')
 
-        composite_leading_indicator = economics.get_composite_leading_indicator()
-
-        composite_leading_indicator.loc[:, ['United States', 'United Kingdom', 'Japan']]
-        ```
+        economics.get_composite_leading_indicator(countries=['United States', 'United Kingdom', 'Japan'])    ```
 
         Which returns:
 
@@ -2281,6 +2742,22 @@ class Economics:
             self._start_date : self._end_date
         ]
 
+        if countries:
+            if isinstance(countries, str):
+                countries = [countries]
+            missing_countries = [
+                country
+                for country in countries
+                if country not in composite_leading_indicator.columns
+            ]
+            if missing_countries:
+                logger.warning(
+                    f"The following countries are not available for Composite Leading Indicator: {missing_countries}"
+                )
+            composite_leading_indicator = composite_leading_indicator[
+                list(set(countries) - set(missing_countries))
+            ]
+
         return composite_leading_indicator.round(
             rounding if rounding else self._rounding
         )
@@ -2288,6 +2765,7 @@ class Economics:
     @handle_errors
     def get_house_prices(
         self,
+        countries: list[str] | str | None = None,
         quarterly: bool | None = None,
         inflation_adjusted: bool = False,
         gmdb_source: bool | None = None,
@@ -2301,7 +2779,7 @@ class Economics:
         Property Prices Indices) manual.
 
         The real house price index is given by the ratio of the nominal house price index
-        to the consumers’ expenditure deflator in each country from the OECD national
+        to the consumers' expenditure deflator in each country from the OECD national
         accounts database. Both indices are seasonally adjusted.
 
         Both are based on an 2015 = 100 as an index.
@@ -2312,6 +2790,7 @@ class Economics:
         the gmdb_source to True.
 
         Args:
+            countries (list[str] | str | None, optional): The countries to include in the data. Defaults to None.
             quarterly (bool | None, optional): Whether to return the quarterly data or the annual data.
             inflation_adjusted (bool, optional): Whether to return the inflation adjusted data or the nominal data.
             gmdb_source (bool | None, optional): Whether to get the data from the Global Macro Database (GMDB).
@@ -2329,9 +2808,11 @@ class Economics:
 
         economics = Economics(start_date='2015-01-01', end_date='2023-12-31')
 
-        real_house_prices = economics.get_house_prices(quarterly=False, inflation_adjusted=True)
-
-        real_house_prices.loc[:, ['Japan', 'Netherlands', 'Ireland']]
+        economics.get_house_prices(
+            countries=['Japan', 'Netherlands', 'Ireland'],
+            quarterly=False,
+            inflation_adjusted=True
+        )
         ```
 
         Which returns:
@@ -2373,11 +2854,24 @@ class Economics:
 
         house_prices = house_prices.loc[self._start_date : self._end_date]
 
+        if countries:
+            if isinstance(countries, str):
+                countries = [countries]
+            missing_countries = [
+                country for country in countries if country not in house_prices.columns
+            ]
+            if missing_countries:
+                logger.warning(
+                    f"The following countries are not available for House Prices: {missing_countries}"
+                )
+            house_prices = house_prices[list(set(countries) - set(missing_countries))]
+
         return house_prices.round(rounding if rounding else self._rounding)
 
     @handle_errors
     def get_rent_prices(
         self,
+        countries: list[str] | str | None = None,
         quarterly: bool | None = None,
         growth: bool = False,
         lag: int = 1,
@@ -2393,6 +2887,7 @@ class Economics:
         See definition: https://data.oecd.org/price/housing-prices.htm
 
         Args:
+            countries (list[str] | str | None, optional): The countries to include in the data. Defaults to None.
             quarterly (bool | None, optional): Whether to return the quarterly data or the annual data.
             inflation_adjusted (bool, optional): Whether to return the inflation adjusted data or the nominal data.
             growth (bool, optional): Whether to return the growth data or the actual data.
@@ -2409,9 +2904,9 @@ class Economics:
 
         economics = Economics(start_date='2015-01-01', end_date='2023-12-31')
 
-        rent_prices = economics.get_rent_prices(quarterly=False)
-
-        rent_prices.loc[:, ['Turkey', 'United States', 'United Kingdom']]
+        economics.get_rent_prices(
+            countries=['Turkey', 'United States', 'United Kingdom'],
+            quarterly=False)
         ```
 
         Which returns:
@@ -2442,11 +2937,24 @@ class Economics:
 
         rent_prices = rent_prices.loc[self._start_date : self._end_date]
 
+        if countries:
+            if isinstance(countries, str):
+                countries = [countries]
+            missing_countries = [
+                country for country in countries if country not in rent_prices.columns
+            ]
+            if missing_countries:
+                logger.warning(
+                    f"The following countries are not available for Rent Prices: {missing_countries}"
+                )
+            rent_prices = rent_prices[list(set(countries) - set(missing_countries))]
+
         return rent_prices.round(rounding if rounding else self._rounding)
 
     @handle_errors
     def get_share_prices(
         self,
+        countries: list[str] | str | None = None,
         period: str | None = None,
         growth: bool = False,
         lag: int = 1,
@@ -2472,6 +2980,7 @@ class Economics:
         See definition: https://data.oecd.org/price/share-prices.htm
 
         Args:
+            countries (list[str] | str | None, optional): The countries to include in the data. Defaults to None.
             period (str | None, optional): Whether to return the monthly, quarterly or the annual data.
             growth (bool, optional): Whether to return the growth data or the actual data.
             lag (int, optional): The number of periods to lag the data by.
@@ -2487,9 +2996,7 @@ class Economics:
 
         economics = Economics(start_date="2013-01-01")
 
-        share_prices = economics.get_share_prices()
-
-        share_prices.loc[:, ['Turkey', 'Belgium', 'Australia']]
+        economics.get_share_prices(countries=['Turkey', 'Belgium', 'Australia'])
         ```
 
         Which returns:
@@ -2527,11 +3034,24 @@ class Economics:
 
         share_prices = share_prices.loc[self._start_date : self._end_date]
 
+        if countries:
+            if isinstance(countries, str):
+                countries = [countries]
+            missing_countries = [
+                country for country in countries if country not in share_prices.columns
+            ]
+            if missing_countries:
+                logger.warning(
+                    f"The following countries are not available for Share Prices: {missing_countries}"
+                )
+            share_prices = share_prices[list(set(countries) - set(missing_countries))]
+
         return share_prices.round(rounding if rounding else self._rounding)
 
     @handle_errors
     def get_exchange_rates(
         self,
+        countries: list[str] | str | None = None,
         period: str | None = None,
         gmdb_source: bool | None = None,
         growth: bool = False,
@@ -2549,6 +3069,7 @@ class Economics:
         the gmdb_source to True.
 
         Args:
+            countries (list[str] | str | None, optional): The countries to include in the data. Defaults to None.
             period (str | None, optional): Whether to return the monthly, quarterly or the annual data.
             gmdb_source (bool | None, optional): Whether to get the data from the Global Macro Database (GMDB).
             growth (bool, optional): Whether to return the growth data or the actual data.
@@ -2565,9 +3086,7 @@ class Economics:
 
         economics = Economics(start_date='2000-01-01', end_date='2010-12-31')
 
-        exchange_rates = economics.get_exchange_rates()
-
-        exchange_rates.loc[:, ['Japan', 'Indonesia', "China"]]
+        economics.get_exchange_rates(countries=['Japan', 'Indonesia', "China"])
         ```
 
         Which returns:
@@ -2613,11 +3132,29 @@ class Economics:
 
         exchange_rates = exchange_rates.loc[self._start_date : self._end_date]
 
+        if countries:
+            if isinstance(countries, str):
+                countries = [countries]
+            missing_countries = [
+                country
+                for country in countries
+                if country not in exchange_rates.columns
+            ]
+            if missing_countries:
+                logger.warning(
+                    f"The following countries are not available for Exchange Rates: {missing_countries}"
+                )
+            exchange_rates = exchange_rates[
+                list(set(countries) - set(missing_countries))
+            ]
+
         return exchange_rates.round(rounding if rounding else self._rounding)
 
     @handle_errors
     def get_money_supply(
         self,
+        countries: list[str] | str | None = None,
+        measure: str | None = None,
         growth: bool = False,
         lag: int = 1,
         rounding: int | None = None,
@@ -2639,6 +3176,8 @@ class Economics:
         variable can be found within https://www.globalmacrodata.com/files/GMD_TA.pdf
 
         Args:
+            countries (list[str] | str | None, optional): The countries to include in the data. Defaults to None.
+            measure (str | None, optional): The measure of money supply to include in the data. Defaults to None.
             growth (bool, optional): Whether to return the growth data or the actual data. Defaults to False.
             lag (int, optional): The number of periods to lag the growth data. Defaults to 1.
             rounding (int | None, optional): The number of decimals to round the results to. Defaults to None.
@@ -2653,9 +3192,10 @@ class Economics:
 
         economics = Economics(start_date='2010-01-01', end_date='2020-12-31')
 
-        money_supply = economics.get_money_supply()
-
-        money_supply["M2"][["Netherlands", "Germany", "United States"]]
+        money_supply = economics.get_money_supply(
+            countries=['Netherlands', 'Germany', 'United States'],
+            measure='M2'
+        )
         ```
 
         Which returns:
@@ -2689,11 +3229,49 @@ class Economics:
 
         money_supply = money_supply.loc[self._start_date : self._end_date]
 
+        if measure:
+            if measure not in money_supply.columns.get_level_values(0):
+                logger.warning(
+                    f"The following measure is not available for Money Supply: {measure}"
+                )
+            else:
+                money_supply = money_supply[measure]
+
+        if countries:
+            if isinstance(countries, str):
+                countries = [countries]
+
+            if isinstance(money_supply.columns, pd.MultiIndex):
+                available_countries = money_supply.columns.get_level_values(1).unique()
+                missing_countries = [
+                    country
+                    for country in countries
+                    if country not in available_countries
+                ]
+                money_supply = money_supply.loc[
+                    :, money_supply.columns.get_level_values(1).isin(countries)
+                ]
+            else:
+                missing_countries = [
+                    country
+                    for country in countries
+                    if country not in money_supply.columns
+                ]
+                money_supply = money_supply[
+                    list(set(countries) - set(missing_countries))
+                ]
+
+            if missing_countries:
+                logger.warning(
+                    f"The following countries are not available for Money Supply: {missing_countries}"
+                )
+
         return money_supply.round(rounding if rounding else self._rounding)
 
     @handle_errors
     def get_central_bank_policy_rate(
         self,
+        countries: list[str] | str | None = None,
         growth: bool = False,
         lag: int = 1,
         rounding: int | None = None,
@@ -2707,6 +3285,7 @@ class Economics:
         variable can be found within https://www.globalmacrodata.com/files/GMD_TA.pdf
 
         Args:
+            countries (list[str] | str | None, optional): The countries to include in the data. Defaults to None.
             growth (bool, optional): Whether to return the growth data or the actual data. Defaults to False.
             lag (int, optional): The number of periods to lag the growth data. Defaults to 1.
             rounding (int | None, optional): The number of decimals to round the results to. Defaults to None.
@@ -2721,9 +3300,7 @@ class Economics:
 
         economics = Economics(start_date='2021-01-01', end_date='2025-12-31')
 
-        central_bank_policy_rate = economics.get_central_bank_policy_rate()
-
-        central_bank_policy_rate[["Netherlands", "Germany", "United States"]]
+        economics.get_central_bank_policy_rate(countries=['Netherlands', 'Germany', 'United States'])
         ```
 
         Which returns:
@@ -2755,11 +3332,28 @@ class Economics:
             self._start_date : self._end_date
         ]
 
+        if countries:
+            if isinstance(countries, str):
+                countries = [countries]
+            missing_countries = [
+                country
+                for country in countries
+                if country not in central_bank_policy_rate.columns
+            ]
+            if missing_countries:
+                logger.warning(
+                    f"The following countries are not available for Central Bank Policy Rate: {missing_countries}"
+                )
+            central_bank_policy_rate = central_bank_policy_rate[
+                list(set(countries) - set(missing_countries))
+            ]
+
         return central_bank_policy_rate.round(rounding if rounding else self._rounding)
 
     @handle_errors
     def get_short_term_interest_rate(
         self,
+        countries: list[str] | str | None = None,
         period: str | None = None,
         gmdb_source: bool | None = None,
         growth: bool = False,
@@ -2781,6 +3375,7 @@ class Economics:
         the gmdb_source to True.
 
         Args:
+            countries (list[str] | str | None, optional): The countries to include in the data. Defaults to None.
             period (str | None, optional): Whether to return the monthly, quarterly or the annual data.
             gmdb_source (bool | None, optional): Whether to get the data from the Global Macro Database (GMDB).
             growth (bool, optional): Whether to return the growth data or the actual data.
@@ -2797,9 +3392,10 @@ class Economics:
 
         economics = Economics(start_date='2023-05-01')
 
-        short_term_interest_rate = economics.get_short_term_interest_rate(period='quarterly')
-
-        short_term_interest_rate.loc[:, ['Japan', 'United States', 'China']]
+        economics.get_short_term_interest_rate(
+            countries=['Japan', 'United States', 'China'],
+            period='quarterly'
+        )
         ```
 
         Which returns:
@@ -2844,11 +3440,28 @@ class Economics:
             self._start_date : self._end_date
         ]
 
+        if countries:
+            if isinstance(countries, str):
+                countries = [countries]
+            missing_countries = [
+                country
+                for country in countries
+                if country not in short_term_interest_rate.columns
+            ]
+            if missing_countries:
+                logger.warning(
+                    f"The following countries are not available for Short Term Interest Rate: {missing_countries}"
+                )
+            short_term_interest_rate = short_term_interest_rate[
+                list(set(countries) - set(missing_countries))
+            ]
+
         return short_term_interest_rate.round(rounding if rounding else self._rounding)
 
     @handle_errors
     def get_long_term_interest_rate(
         self,
+        countries: list[str] | str | None = None,
         period: str | None = None,
         gmdb_source: bool | None = None,
         growth: bool = False,
@@ -2874,6 +3487,7 @@ class Economics:
         the gmdb_source to True.
 
         Args:
+            countries (list[str] | str | None, optional): The countries to include in the data. Defaults to None.
             period (str | None, optional): Whether to return the monthly, quarterly or the annual data.
             gmdb_source (bool | None, optional): Whether to get the data from the Global Macro Database (GMDB).
             growth (bool, optional): Whether to return the growth data or the actual data.
@@ -2890,9 +3504,9 @@ class Economics:
 
         economics = Economics(start_date='2023-05-01', end_date='2023-12-31')
 
-        long_term_interest_rate = economics.get_long_term_interest_rate(period='monthly')
-
-        long_term_interest_rate.loc[:, ['Japan', 'United States', 'Brazil']]
+        economics.get_long_term_interest_rate(
+            countries=['Japan', 'United States', 'Brazil'],
+        )
         ```
 
         Which returns:
@@ -2939,11 +3553,28 @@ class Economics:
             self._start_date : self._end_date
         ]
 
+        if countries:
+            if isinstance(countries, str):
+                countries = [countries]
+            missing_countries = [
+                country
+                for country in countries
+                if country not in long_term_interest_rate.columns
+            ]
+            if missing_countries:
+                logger.warning(
+                    f"The following countries are not available for Long Term Interest Rate: {missing_countries}"
+                )
+            long_term_interest_rate = long_term_interest_rate[
+                list(set(countries) - set(missing_countries))
+            ]
+
         return long_term_interest_rate.round(rounding if rounding else self._rounding)
 
     @handle_errors
     def get_renewable_energy(
         self,
+        countries: list[str] | str | None = None,
         growth: bool = False,
         lag: int = 1,
         rounding: int | None = None,
@@ -2967,6 +3598,7 @@ class Economics:
         See definition: https://data.oecd.org/energy/renewable-energy.htm
 
         Args:
+            countries (list[str] | str | None, optional): The countries to include in the data. Defaults to None.
             growth (bool, optional): Whether to return the growth data or the actual data.
             lag (int, optional): The number of periods to lag the data by.
             rounding (int | None, optional): The number of decimals to round the results to. Defaults to None.
@@ -2981,9 +3613,7 @@ class Economics:
 
         economics = Economics(start_date='2010-01-01', end_date='2020-01-01')
 
-        renewable_energy = economics.get_renewable_energy()
-
-        renewable_energy.loc[:, ['Austria', 'Germany', 'United States']]
+        economics.get_renewable_energy(countries=['Austria', 'Germany', 'United States'])
         ```
 
         Which returns:
@@ -3014,11 +3644,28 @@ class Economics:
 
         renewable_energy = renewable_energy.loc[self._start_date : self._end_date]
 
+        if countries:
+            if isinstance(countries, str):
+                countries = [countries]
+            missing_countries = [
+                country
+                for country in countries
+                if country not in renewable_energy.columns
+            ]
+            if missing_countries:
+                logger.warning(
+                    f"The following countries are not available for Renewable Energy: {missing_countries}"
+                )
+            renewable_energy = renewable_energy[
+                list(set(countries) - set(missing_countries))
+            ]
+
         return renewable_energy.round(rounding if rounding else self._rounding)
 
     @handle_errors
     def get_carbon_footprint(
         self,
+        countries: list[str] | str | None = None,
         growth: bool = False,
         lag: int = 1,
         rounding: int | None = None,
@@ -3036,6 +3683,7 @@ class Economics:
         See definition: https://data.oecd.org/envpolicy/environmental-tax.htm
 
         Args:
+            countries (list[str] | str | None, optional): The countries to include in the data. Defaults to None.
             growth (bool, optional): Whether to return the growth data or the actual data.
             lag (int, optional): The number of periods to lag the data by.
             rounding (int | None, optional): The number of decimals to round the results to. Defaults to None.
@@ -3050,9 +3698,7 @@ class Economics:
 
         economics = Economics(start_date="2010-01-01", end_date="2020-01-01")
 
-        carbon_footprint = economics.get_carbon_footprint()
-
-        carbon_footprint.loc[:, ["Germany", "United States", "Poland"]]
+        economics.get_carbon_footprint(countries=['Germany', 'United States', 'Poland'])
         ```
 
         Which returns:
@@ -3081,11 +3727,28 @@ class Economics:
 
         carbon_footprint_df = carbon_footprint_df.loc[self._start_date : self._end_date]
 
+        if countries:
+            if isinstance(countries, str):
+                countries = [countries]
+            missing_countries = [
+                country
+                for country in countries
+                if country not in carbon_footprint_df.columns
+            ]
+            if missing_countries:
+                logger.warning(
+                    f"The following countries are not available for Carbon Footprint: {missing_countries}"
+                )
+            carbon_footprint_df = carbon_footprint_df[
+                list(set(countries) - set(missing_countries))
+            ]
+
         return carbon_footprint_df.round(rounding if rounding else self._rounding)
 
     @handle_errors
     def get_unemployment_rate(
         self,
+        countries: list[str] | str | None = None,
         period: str | None = None,
         gmdb_source: bool | None = None,
         growth: bool = False,
@@ -3113,6 +3776,7 @@ class Economics:
         the gmdb_source to True.
 
         Args:
+            countries (list[str] | str | None, optional): The countries to include in the data. Defaults to None.
             period (str | None, optional): Whether to return the monthly, quarterly or the annual data.
             gmdb_source (bool | None, optional): Whether to get the data from the Global Macro Database (GMDB).
             growth (bool, optional): Whether to return the growth data or the actual data.
@@ -3129,9 +3793,10 @@ class Economics:
 
         economics = Economics(start_date='2021-03-01', end_date='2023-01-01')
 
-        unemployment_rate = economics.get_unemployment_rate(period='quarterly')
-
-        unemployment_rate.loc[:, ['Germany', 'United States', 'Japan']]
+        economics.get_unemployment_rate(
+            countries=['Germany', 'United States', 'Japan'],
+            period='quarterly'
+        )
         ```
 
         Which returns:
@@ -3175,11 +3840,28 @@ class Economics:
 
         unemployment_rate = unemployment_rate.loc[self._start_date : self._end_date]
 
+        if countries:
+            if isinstance(countries, str):
+                countries = [countries]
+            missing_countries = [
+                country
+                for country in countries
+                if country not in unemployment_rate.columns
+            ]
+            if missing_countries:
+                logger.warning(
+                    f"The following countries are not available for Unemployment Rate: {missing_countries}"
+                )
+            unemployment_rate = unemployment_rate[
+                list(set(countries) - set(missing_countries))
+            ]
+
         return unemployment_rate.round(rounding if rounding else self._rounding)
 
     @handle_errors
     def get_labour_productivity(
         self,
+        countries: list[str] | str | None = None,
         growth: bool = False,
         lag: int = 1,
         rounding: int | None = None,
@@ -3201,6 +3883,7 @@ class Economics:
         See definition: https://data.oecd.org/lprdty/gdp-per-hour-worked.htm
 
         Args:
+            countries (list[str] | str | None, optional): The countries to include in the data. Defaults to None.
             growth (bool, optional): Whether to return the growth data or the actual data.
             lag (int, optional): The number of periods to lag the data by.
             rounding (int | None, optional): The number of decimals to round the results to. Defaults to None.
@@ -3215,9 +3898,7 @@ class Economics:
 
         economics = Economics()
 
-        labour_productivity = economics.get_exchange_rates()
-
-        labour_productivity.loc[:, ['Bulgaria', 'Croatia', 'Spain']]
+        economics.get_exchange_rates(countries=['Bulgaria', 'Croatia', 'Spain'])
         ```
 
         Which returns:
@@ -3247,11 +3928,28 @@ class Economics:
 
         labour_productivity = labour_productivity.loc[self._start_date : self._end_date]
 
+        if countries:
+            if isinstance(countries, str):
+                countries = [countries]
+            missing_countries = [
+                country
+                for country in countries
+                if country not in labour_productivity.columns
+            ]
+            if missing_countries:
+                logger.warning(
+                    f"The following countries are not available for Labour Productivity: {missing_countries}"
+                )
+            labour_productivity = labour_productivity[
+                list(set(countries) - set(missing_countries))
+            ]
+
         return labour_productivity.round(rounding if rounding else self._rounding)
 
     @handle_errors
     def get_income_inequality(
         self,
+        countries: list[str] | str | None = None,
         growth: bool = False,
         lag: int = 1,
         rounding: int | None = None,
@@ -3270,6 +3968,7 @@ class Economics:
         See definition: https://data.oecd.org/inequality/income-inequality.htm
 
         Args:
+            countries (list[str] | str | None, optional): The countries to include in the data. Defaults to None.
             growth (bool, optional): Whether to return the growth data or the actual data.
             lag (int, optional): The number of periods to lag the data by.
             rounding (int | None, optional): The number of decimals to round the results to. Defaults to None.
@@ -3284,9 +3983,7 @@ class Economics:
 
         economics = Economics(start_date='2013-01-01')
 
-        income_inequality = economics.get_income_inequality()
-
-        income_inequality.loc[:, 'United States']
+        economics.get_income_inequality(countries="United States")
         ```
 
         Which returns:
@@ -3320,6 +4017,7 @@ class Economics:
     @handle_errors
     def get_population_statistics(
         self,
+        countries: list[str] | str | None = None,
         gmdb_source: bool | None = None,
         growth: bool = False,
         lag: int = 1,
@@ -3363,6 +4061,7 @@ class Economics:
         the gmdb_source to True.
 
         Args:
+            countries (list[str] | str | None, optional): The countries to include in the data. Defaults to None.
             gmdb_source (bool | None, optional): Whether to get the data from the Global Macro Database (GMDB).
             growth (bool, optional): Whether to return the growth data or the actual data.
             lag (int, optional): The number of periods to lag the data by.
@@ -3378,9 +4077,7 @@ class Economics:
 
         economics = Economics(start_date='2010-01-01', end_date='2019-01-01')
 
-        population_statistics = economics.get_population_statistics()
-
-        population_statistics.loc[:, 'Japan']
+        economics.get_population_statistics(countries='Japan')
         ```
 
         Which returns:
@@ -3430,11 +4127,28 @@ class Economics:
             self._start_date : self._end_date
         ]
 
+        if countries:
+            if isinstance(countries, str):
+                countries = [countries]
+            missing_countries = [
+                country
+                for country in countries
+                if country not in population_statistics_df.columns
+            ]
+            if missing_countries:
+                logger.warning(
+                    f"The following countries are not available for Population Statistics: {missing_countries}"
+                )
+            population_statistics_df = population_statistics_df[
+                list(set(countries) - set(missing_countries))
+            ]
+
         return population_statistics_df.round(rounding if rounding else self._rounding)
 
     @handle_errors
     def get_poverty_rate(
         self,
+        countries: list[str] | str | None = None,
         growth: bool = False,
         lag: int = 1,
         rounding: int | None = None,
@@ -3448,6 +4162,7 @@ class Economics:
         See definition: https://data.oecd.org/inequality/poverty-rate.htm
 
         Args:
+            countries (list[str] | str | None, optional): The countries to include in the data. Defaults to None.
             growth (bool, optional): Whether to return the growth data or the actual data.
             lag (int, optional): The number of periods to lag the data by.
             rounding (int | None, optional): The number of decimals to round the results to. Defaults to None.
@@ -3462,9 +4177,7 @@ class Economics:
 
         economics = Economics(start_date='2012-01-01', end_date='2020-01-01')
 
-        poverty_rate = economics.get_poverty_rate()
-
-        poverty_rate.loc[:, 'Portugal']
+        economics.get_poverty_rate(countries='Portugal')
         ```
 
         Which returns:
@@ -3492,5 +4205,17 @@ class Economics:
             )
 
         poverty_rate = poverty_rate.loc[self._start_date : self._end_date]
+
+        if countries:
+            if isinstance(countries, str):
+                countries = [countries]
+            missing_countries = [
+                country for country in countries if country not in poverty_rate.columns
+            ]
+            if missing_countries:
+                logger.warning(
+                    f"The following countries are not available for Poverty Rate: {missing_countries}"
+                )
+            poverty_rate = poverty_rate[list(set(countries) - set(missing_countries))]
 
         return poverty_rate.round(rounding if rounding else self._rounding)
