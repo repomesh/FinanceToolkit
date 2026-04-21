@@ -107,6 +107,8 @@ class Discovery:
         The search instruments function allows you to search for a company or financial instrument
         by name. It returns a dataframe with all the symbols that match the query.
 
+        Also known as: find companies, lookup stocks, ticker search, instrument search.
+
         Args:
             query (str): A query to search for, e.g. 'META'.
 
@@ -185,6 +187,8 @@ class Discovery:
         Note that the limit is 1000 companies. Thus if you hit the 1000, it is recommended
         to narrow down your search to prevent companies from being excluded simply because
         of this limit.
+
+        Also known as: filter stocks, financial criteria screener.
 
         Args:
             market_cap_higher (int): The minimum market capitalization of the stock.

@@ -1266,6 +1266,8 @@ class Toolkit:
         such as the beta, market capitalization, currency, isin, industry, and ipo date
         that give an overall understanding about the company.
 
+        Also known as: company description, sector, industry, CEO, employee count.
+
         Args:
             progress_bar (bool, optional): Whether to show a progress bar. Defaults to None.
 
@@ -1359,6 +1361,8 @@ class Toolkit:
         outstanding and timestamp that give an overall understanding about the
         company.
 
+        Also known as: real-time price, current stock price, live quote.
+
         Args:
             progress_bar (bool, optional): Whether to show a progress bar. Defaults to None.
 
@@ -1444,6 +1448,8 @@ class Toolkit:
         - Price Earnings (PE)
         - Price to Book (PB)
 
+        Also known as: analyst consensus, buy sell hold recommendation.
+
         Args:
             progress_bar (bool, optional): Whether to show a progress bar. Defaults to None.
 
@@ -1525,6 +1531,8 @@ class Toolkit:
         SGA Expenses and EPS. The number of analysts are also reported.
 
         Note that this information requires a Premium FMP subscription.
+
+        Also known as: earnings estimates, revenue estimates, analyst consensus.
 
         Args:
             limit (int): Defines the maximum years or quarters to obtain.
@@ -1644,6 +1652,8 @@ class Toolkit:
 
         Note that this information requires a Premium FMP subscription.
 
+        Also known as: earnings dates, earnings schedule, reporting date.
+
         Args:
             actual_dates (bool): Defines whether to return the actual dates or the corresponding quarters.
             overwrite (bool): Defines whether to overwrite the existing data.
@@ -1739,6 +1749,8 @@ class Toolkit:
 
         Note that this information requires a Premium FMP subscription.
 
+        Also known as: revenue by region, geographic revenue breakdown.
+
         Args:
             overwrite (bool): Defines whether to overwrite the existing data.
             progress_bar (bool, optional): Whether to show a progress bar. Defaults to None.
@@ -1824,6 +1836,8 @@ class Toolkit:
         Obtain revenue by product segmentation (e.g. iPad, Advertisement, Windows).
 
         Note that this information requires a Premium FMP subscription.
+
+        Also known as: revenue by product, product segment revenue.
 
         Args:
             overwrite (bool): Defines whether to overwrite the existing data.
@@ -1944,6 +1958,8 @@ class Toolkit:
         collection defaults to FinancialModelingPrep which is a more stable source and utilises your subscription.
         However, if this is undesired, it can be disabled by setting enforce_source to "YahooFinance". If
         data collection fails from FinancialModelingPrep it automatically reverts back to YahooFinance.
+
+        Also known as: OHLCV, price history, open high low close volume.
 
         Args:
             enforce_source (str, optional): A string containing the historical source you wish to enforce.
@@ -2207,6 +2223,8 @@ class Toolkit:
         Please note that this functionality is only available through Financial Modeling Prep. Therefore, an
         api_key is required to use this functionality.
 
+        Also known as: tick data, minute data, intraday price history.
+
         Args:
             start (str): The start date for the historical data. Defaults to None.
             end (str): The end date for the historical data. Defaults to None.
@@ -2349,6 +2367,8 @@ class Toolkit:
         If a company does not pay any dividend, the function will mention that it was not able
         to find any dividend data for that company.
 
+        Also known as: dividend dates, ex-dividend date, dividend history.
+
         Args:
             overwrite (bool): Defines whether to overwrite the existing data.
             rounding (int): Defines the number of decimal places to round the data to.
@@ -2481,6 +2501,8 @@ class Toolkit:
         their ESG scores, not only for ethical reasons but also to attract investors who value
         sustainable and responsible business practices.
 
+        Also known as: environmental social governance, sustainability, ESG rating.
+
         Args:
             overwrite (bool): Defines whether to overwrite the existing data.
             rounding (int): Defines the number of decimal places to round the data to.
@@ -2567,6 +2589,8 @@ class Toolkit:
             - Timezone: The timezone the instrument is traded in.
             - Exchange Timezone Name: The name of the timezone the instrument is traded in.
 
+        Also known as: key statistics over time, historical key metrics.
+
         Args:
             progress_bar (bool): Defines whether to show a progress bar. Defaults to None.
 
@@ -2626,6 +2650,8 @@ class Toolkit:
         Retrieve daily, weekly, monthly, quarterly or yearly treasury data. This can be from FinancialModelingPrep
         or from YahooFinance. FinancialModelingPrep is by far a more extensive dataset containing daily data from
         1 month to 30 years. YahooFinance only contains daily data for 5, 10 and 30 years but is a free alternative.
+
+        Also known as: US Treasury yields, yield curve, treasury rates.
 
         Args:
             period (str): The interval at which the treasury data should be returned - daily, weekly, monthly, quarterly, or yearly.
@@ -2844,6 +2870,8 @@ class Toolkit:
         collection defaults to FinancialModelingPrep which is a more stable source and utilises your subscription.
         However, if this is undesired, it can be disabled by setting enforce_source to "YahooFinance". If
         data collection fails from FinancialModelingPrep it automatically reverts back to YahooFinance.
+
+        Also known as: currency exchange, FX rates, foreign exchange rates.
 
         Args:
             start (str): The start date for the exchange data. Defaults to None.
@@ -3103,6 +3131,8 @@ class Toolkit:
         company's financial position at a specific point in time. Therefore, trailing results are not
         available for this statement.
 
+        Also known as: assets, liabilities, shareholders equity, financial position.
+
         Args:
             enforce_source (bool): Defines whether to enforce the source of the data. This can be
                 either "FinancialModelingPrep" or "YahooFinance". Defaults to None.
@@ -3311,6 +3341,8 @@ class Toolkit:
 
         The income statement is a financial statement that shows a company's revenues and expenses over a specific
         period. Therefore, trailing results are available for this statement.
+
+        Also known as: profit and loss, revenue, net income, earnings, P&L statement.
 
         Args:
             enforce_source (bool): Defines whether to enforce the source of the data. This can be
@@ -3530,6 +3562,8 @@ class Toolkit:
         The cash flow statement is a financial statement that shows how changes in balance sheet accounts and income
         affect cash and cash equivalents. Therefore, trailing results are available for this statement.
 
+        Also known as: operating cash flow, investing activities, financing activities.
+
         Args:
             enforce_source (bool): Defines whether to enforce the source of the data. This can be
             overwrite (bool): Defines whether to overwrite the existing data.
@@ -3719,6 +3753,8 @@ class Toolkit:
 
         Note that this also obtains the balance sheet statement at the same time given that it's the same
         API call. This is done to reduce the number of API calls to FinancialModelingPrep.
+
+        Also known as: key stats, shares outstanding, float data.
 
         Args:
             enforce_source (bool): Defines whether to enforce the source of the data. This can be

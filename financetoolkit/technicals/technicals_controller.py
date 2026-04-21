@@ -313,6 +313,8 @@ class Technicals:
 
         - McClellan Oscillator = EMA(Advancers) — EMA(Decliners)
 
+        Also known as: McClellan oscillator, market breadth.
+
         Args:
             period (str, optional): The time period to consider for historical data.
                 Can be "daily", "weekly", "quarterly", or "yearly". Defaults to "daily".
@@ -407,6 +409,8 @@ class Technicals:
 
         - Advancers/Decliners = Advancers / Decliners
 
+        Also known as: advance decline ratio, market breadth.
+
         Args:
             period (str, optional): The time period to consider for historical data.
                 Can be "daily", "weekly", "quarterly", or "yearly". Defaults to "daily".
@@ -493,6 +497,8 @@ class Technicals:
 
         - OBV = Previous OBV + Current Volume if Close > Previous Close
 
+        Also known as: OBV, volume momentum.
+
         Args:
             period (str, optional): The time period to consider for historical data.
                 Can be "daily", "weekly", "quarterly", or "yearly". Defaults to "daily".
@@ -578,6 +584,8 @@ class Technicals:
         The formula is a follows:
 
         - ADL = Previous ADL + Current ADL
+
+        Also known as: ADL, Chaikin ADL, volume-price trend.
 
         Args:
             period (str, optional): The time period to consider for historical data.
@@ -677,6 +685,8 @@ class Technicals:
         The formula is a follows:
 
         - Chaikin Oscillator = EMA(short-window ADL) — EMA(long-window ADL)
+
+        Also known as: Chaikin oscillator, volume accumulation.
 
         Args:
             period (str, optional): The time period to consider for historical data.
@@ -949,6 +959,8 @@ class Technicals:
 
         - MFI = 100 - (100 / (1 + (positive_money_flow / negative_money_flow)))
 
+        Also known as: MFI, volume-weighted RSI.
+
         Args:
             period (str, optional): The time period to consider for historical data.
                 Can be "daily", "weekly", "quarterly", or "yearly". Defaults to "daily".
@@ -1041,6 +1053,8 @@ class Technicals:
 
         - Williams %R = (Highest High — Close) / (Highest High — Lowest Low) * —100
 
+        Also known as: Williams percent R, overbought oversold oscillator.
+
         Args:
             period (str, optional): The time period to consider for historical data.
                 Can be "daily", "weekly", "quarterly", or "yearly". Defaults to "daily".
@@ -1131,6 +1145,8 @@ class Technicals:
         The formula is a follows:
 
         - Aroon Up = ((Number of periods) — (Number of periods since highest high)) / (Number of periods) * 100
+
+        Also known as: Aroon Up, Aroon Down, trend strength.
 
         Args:
             period (str, optional): The time period to consider for historical data.
@@ -1230,6 +1246,8 @@ class Technicals:
         The formula is a follows:
 
         - CCI = (Typical Price — SMA(Typical Price)) / (constant * Mean Deviation)
+
+        Also known as: CCI, cyclical trend indicator.
 
         Args:
             period (str, optional): The time period to consider for historical data.
@@ -1332,6 +1350,8 @@ class Technicals:
 
         - RVI = SMA(Upward Change) / (SMA(Upward Change) + SMA(Downward Change))
 
+        Also known as: RVI, vigor index.
+
         Args:
             period (str, optional): The time period to consider for historical data.
                 Can be "daily", "weekly", "quarterly", or "yearly". Defaults to "daily".
@@ -1421,6 +1441,8 @@ class Technicals:
         The formula is a follows:
 
         - Force Index = SMA(Periods) * (Close — Close(1))
+
+        Also known as: price volume trend indicator.
 
         Args:
             period (str, optional): The time period to consider for historical data.
@@ -1513,6 +1535,8 @@ class Technicals:
         The formula is a follows:
 
         - Ultimate Oscillator = 100 * ((4 * SMA(Periods)) / (SMA(Periods) + SMA(Periods) + SMA(Periods)))
+
+        Also known as: UO, ultimate momentum oscillator.
 
         Args:
             period (str, optional): The time period to consider for historical data.
@@ -1617,6 +1641,8 @@ class Technicals:
 
         - PPO = ((Long-term EMA — Short-term EMA) / Short—term EMA) * 100
 
+        Also known as: PPO, price oscillator.
+
         Args:
             period (str, optional): The time period to consider for historical data.
                 Can be "daily", "weekly", "quarterly", or "yearly". Defaults to "daily".
@@ -1712,6 +1738,8 @@ class Technicals:
 
         - DPO = Close - SMA(Close, (Number of Periods / 2) + 1)
 
+        Also known as: DPO, detrended price oscillator.
+
         Args:
             period (str, optional): The time period to consider for historical data.
                 Can be "daily", "weekly", "quarterly", or "yearly". Defaults to "daily".
@@ -1802,6 +1830,8 @@ class Technicals:
         The formula is a follows:
 
         - ADX = SMA(DMI) / (SMA(DMI) + SMA(DMI))
+
+        Also known as: ADX, trend strength indicator.
 
         Args:
             period (str, optional): The time period to consider for historical data.
@@ -1902,6 +1932,8 @@ class Technicals:
         - CMO = ((Sum of Upward Change) — (Sum of Downward Change)) / ((Sum of Upward Change)
             + (Sum of Downward Change))
 
+        Also known as: CMO, Chande momentum.
+
         Args:
             period (str, optional): The time period to consider for historical data.
                 Can be "daily", "weekly", "quarterly", or "yearly". Defaults to "daily".
@@ -1995,6 +2027,8 @@ class Technicals:
         The formula is a follows:
 
         - Conversion Line = (Highest High + Lowest Low) / 2
+
+        Also known as: Ichimoku Kinko Hyo, cloud indicator.
 
         Args:
             period (str, optional): The time period to consider for historical data.
@@ -2105,6 +2139,8 @@ class Technicals:
 
         - %K = 100 * ((Close — Lowest Low) / (Highest High — Lowest Low))
         - %D = SMA(%K)
+
+        Also known as: stochastic oscillator, percent K, percent D.
 
         Args:
             period (str, optional): The time period to consider for historical data.
@@ -2218,6 +2254,8 @@ class Technicals:
         - MACD Line = Short-term EMA — Long-term EMA
         - Signal Line = SMA(MACD Line)
 
+        Also known as: MACD, momentum indicator.
+
         Args:
             period (str, optional): The time period to consider for historical data.
                 Can be "daily", "weekly", "quarterly", or "yearly". Defaults to "daily".
@@ -2324,6 +2362,8 @@ class Technicals:
 
         - RSI = 100 — (100 / (1 + RS))
 
+        Also known as: RSI, momentum oscillator, overbought, oversold.
+
         Args:
             period (str, optional): The time period to consider for historical data.
                 Can be "daily", "weekly", "quarterly", or "yearly". Defaults to "daily".
@@ -2410,6 +2450,8 @@ class Technicals:
         The formula is a follows:
 
         - BOP = (Close — Open) / (High — Low)
+
+        Also known as: BOP, bull bear power.
 
         Args:
             period (str, optional): The time period to consider for historical data.
@@ -2614,6 +2656,8 @@ class Technicals:
 
         - MA = (Sum of Prices) / (Number of Prices)
 
+        Also known as: SMA, simple moving average, MA.
+
         Args:
             period (str, optional): The time period to consider for historical data.
                 Can be "daily", "weekly", "quarterly", or "yearly". Defaults to "daily".
@@ -2702,6 +2746,8 @@ class Technicals:
         The formula is a follows:
 
         - EMA = (Close — Previous EMA) * (2 / (1 + Window)) + Previous EMA
+
+        Also known as: EMA.
 
         Args:
             period (str, optional): The time period to consider for historical data.
@@ -2793,6 +2839,8 @@ class Technicals:
         The formula is a follows:
 
         - EMA = (Close — Previous EMA) * (2 / (1 + Window)) + Previous EMA
+
+        Also known as: DEMA, double EMA.
 
         Args:
             period (str, optional): The time period to consider for historical data.
@@ -2891,6 +2939,8 @@ class Technicals:
         - EMA3 = EMA(EMA2, Window)
         - TRIX = 100 * ((EMA3 — EMA3[—1]) / EMA3[—1])
 
+        Also known as: triple smoothed EMA, rate of change oscillator.
+
         Args:
             period (str, optional): The time period to consider for historical data.
                 Can be "daily", "weekly", "quarterly", or "yearly". Defaults to "daily".
@@ -2984,6 +3034,8 @@ class Technicals:
         - Middle Band = SMA(Close, Window)
         - Upper Band = Middle Band + (Num Std Dev * Std Dev)
         - Lower Band = Middle Band — (Num Std Dev * Std Dev)
+
+        Also known as: Bollinger Bands, BB, volatility bands, price channels.
 
         Args:
             period (str, optional): The time period to consider for historical data.
@@ -3087,6 +3139,8 @@ class Technicals:
 
         - TMA = SMA(SMA(Close, Window), Window)
 
+        Also known as: TMA, triangular MA.
+
         Args:
             period (str, optional): The time period to consider for historical data.
                 Can be "daily", "weekly", "quarterly", or "yearly". Defaults to "daily".
@@ -3181,6 +3235,8 @@ class Technicals:
         - Grouping Similar Peaks and Valleys: Sometimes, prices will stop at similar points multiple times.
         The function groups these similar peaks and valleys together to identify key resistance and
         support levels.
+
+        Also known as: support levels, resistance levels, pivot points.
 
         Args:
             sensitivity (float, optional): The sensitivity parameter to determine the significance of the peaks
@@ -3396,6 +3452,8 @@ class Technicals:
 
         - TR = max(high — low, abs(high — previous_close), abs(low — previous_close))
 
+        Also known as: TR, true range.
+
         Args:
             period (str, optional): The time period to consider for historical data.
                 Can be "daily", "weekly", "quarterly", or "yearly". Defaults to "daily".
@@ -3490,6 +3548,8 @@ class Technicals:
 
         - TR = max(high — low, abs(high — previous_close), abs(low — previous_close))
         - ATR = EMA(TR, Window)
+
+        Also known as: ATR, volatility indicator.
 
         Args:
             period (str): Period for which to calculate the ATR.
@@ -3597,6 +3657,8 @@ class Technicals:
         - Upper Channel Line = EMA(High, Window) + ATR * ATR Multiplier
         - Middle Channel Line = EMA(Close, Window)
         - Lower Channel Line = EMA(Low, Window) — ATR * ATR Multiplier
+
+        Also known as: ATR-based bands, volatility channels.
 
         Args:
             period (str, optional): The time period to consider for historical data.

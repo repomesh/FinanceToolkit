@@ -598,6 +598,8 @@ class Ratios:
 
         - Asset Turnover Ratio = Net Sales / Average Total Assets
 
+        Also known as: asset efficiency, revenue per asset.
+
         Args:
             rounding (int, optional): The number of decimals to round the results to. Defaults to 4.
             growth (bool, optional): Whether to calculate the growth of the ratios. Defaults to False.
@@ -672,6 +674,8 @@ class Ratios:
         The formula is as follows:
 
         - Inventory Turnover Ratio = Cost of Goods Sold / Average Inventory
+
+        Also known as: stock turnover ratio.
 
         Args:
             rounding (int, optional): The number of decimals to round the results to. Defaults to 4.
@@ -751,6 +755,8 @@ class Ratios:
         The formula is as follows:
 
         - Days Sales in Inventory Ratio = (Average Inventory / Cost of Goods Sold) * Days
+
+        Also known as: DIO, days inventory outstanding.
 
         Args:
             days (int, optional): The number of days to use for the calculation. Defaults to 365.
@@ -843,6 +849,8 @@ class Ratios:
 
         - Days of Sales Outstanding Ratio = (Accounts Receivable / Total Credit Sales) * Days
 
+        Also known as: DSO, days sales outstanding, receivable days.
+
         Args:
             days (int, optional): The number of days to use for the calculation. Defaults to 365.
             rounding (int, optional): The number of decimals to round the results to. Defaults to 4.
@@ -922,6 +930,8 @@ class Ratios:
         The formula is as follows:
 
         - Operating Cycle Ratio = Days of Sales in Inventory + Days of Sales Outstanding
+
+        Also known as: business cycle, cash-to-cash cycle.
 
         Args:
             days (int, optional): The number of days to use for the calculation. Defaults to 365.
@@ -1028,6 +1038,8 @@ class Ratios:
 
         - Accounts Payable Turnover Ratio = Cost of Goods Sold / Average Accounts Payable
 
+        Also known as: payables efficiency, AP turnover.
+
         Args:
             rounding (int, optional): The number of decimals to round the results to. Defaults to 4.
             growth (bool, optional): Whether to calculate the growth of the ratios. Defaults to False.
@@ -1112,6 +1124,8 @@ class Ratios:
         The formula is as follows:
 
         - Days Payables Outstanding = (Average Accounts Payable / Cost of Goods Sold) * Days
+
+        Also known as: DPO, days payable outstanding.
 
         Args:
             days (int, optional): The number of days to use for the calculation. Defaults to 365.
@@ -1203,6 +1217,8 @@ class Ratios:
 
         - Cash Conversion Cycle = Days of Sales in Inventory + Days of Sales Outstanding - Days of Accounts Payable
             Outstanding
+
+        Also known as: CCC.
 
         Args:
             days (int, optional): The number of days to use for the calculation. Defaults to 365.
@@ -1332,6 +1348,8 @@ class Ratios:
 
         - Cash Conversion Efficiency Ratio = Operating Cash Flow / Revenue
 
+        Also known as: CCE, cash efficiency ratio.
+
         Args:
             rounding (int, optional): The number of decimals to round the results to. Defaults to 4.
             growth (bool, optional): Whether to calculate the growth of the ratios. Defaults to False.
@@ -1413,6 +1431,8 @@ class Ratios:
 
         - Receivables Turnover Ratio = Net Credit Sales / Average Accounts Receivable
 
+        Also known as: receivables efficiency, accounts receivable turnover.
+
         Args:
             rounding (int, optional): The number of decimals to round the results to. Defaults to 4.
             growth (bool, optional): Whether to calculate the growth of the ratios. Defaults to False.
@@ -1484,6 +1504,8 @@ class Ratios:
         The formula is as follows:
 
         - SG&A to Revenue Ratio = SG&A Expenses / Revenue
+
+        Also known as: SG&A ratio, selling general administrative ratio.
 
         Args:
             rounding (int, optional): The number of decimals to round the results to. Defaults to 4.
@@ -1560,6 +1582,8 @@ class Ratios:
 
         - Fixed Asset Turnover Ratio = Net Sales / Average Fixed Assets
 
+        Also known as: fixed asset efficiency, PP&E turnover.
+
         Args:
             rounding (int, optional): The number of decimals to round the results to. Defaults to 4.
             growth (bool, optional): Whether to calculate the growth of the ratios. Defaults to False.
@@ -1632,6 +1656,8 @@ class Ratios:
         The formula is as follows:
 
         - Operating Ratio = (Operating Expenses + Cost of Goods Sold) / Revenue
+
+        Also known as: operating efficiency ratio, operating expense ratio.
 
         Args:
             rounding (int, optional): The number of decimals to round the results to. Defaults to 4.
@@ -1802,6 +1828,8 @@ class Ratios:
 
         - Current Ratio = Current Assets / Current Liabilities
 
+        Also known as: short-term liquidity, working capital ratio.
+
         Args:
             rounding (int, optional): The number of decimals to round the results to. Defaults to 4.
             growth (bool, optional): Whether to calculate the growth of the ratios. Defaults to False.
@@ -1877,6 +1905,8 @@ class Ratios:
         The formula is as follows:
 
         - Quick Ratio = (Cash and Cash Equivalents + Short Term Investments + Accounts Receivable) / Current Liabilities
+
+        Also known as: acid-test ratio, liquid ratio.
 
         Args:
             rounding (int, optional): The number of decimals to round the results to. Defaults to 4.
@@ -1958,6 +1988,8 @@ class Ratios:
 
         - Cash Ratio = (Cash and Cash Equivalents + Short Term Investments) / Current Liabilities
 
+        Also known as: most conservative liquidity ratio.
+
         Args:
             rounding (int, optional): The number of decimals to round the results to. Defaults to 4.
             growth (bool, optional): Whether to calculate the growth of the ratios. Defaults to False.
@@ -2034,6 +2066,8 @@ class Ratios:
 
         - Working Capital = Current Assets — Current Liabilities
 
+        Also known as: net current assets, operating liquidity.
+
         Args:
             rounding (int, optional): The number of decimals to round the results to. Defaults to 4.
             growth (bool, optional): Whether to calculate the growth of the ratios. Defaults to False.
@@ -2107,6 +2141,8 @@ class Ratios:
 
         - Operating Cash Flow Ratio = Cash Flow from Operations / Current Liabilities
 
+        Also known as: OCF ratio, cash liquidity.
+
         Args:
             rounding (int, optional): The number of decimals to round the results to. Defaults to 4.
             growth (bool, optional): Whether to calculate the growth of the ratios. Defaults to False.
@@ -2179,6 +2215,8 @@ class Ratios:
         The formula is as follows:
 
         - Operating Cash Flow to Sales Ratio = Cash Flow from Operations / Revenue
+
+        Also known as: cash flow to sales ratio.
 
         Args:
             rounding (int, optional): The number of decimals to round the results to. Defaults to 4.
@@ -2257,6 +2295,8 @@ class Ratios:
         The formula is as follows:
 
         - Short Term Coverage Ratio = Cash Flow from Operations / (Accounts Receivable + Inventory — Accounts Payable)
+
+        Also known as: short-term debt coverage.
 
         Args:
             rounding (int, optional): The number of decimals to round the results to. Defaults to 4.
@@ -2459,6 +2499,8 @@ class Ratios:
 
         - Gross Margin Ratio = (Revenue — Cost of Goods Sold) / Revenue
 
+        Also known as: gross profit margin, gross profit percentage.
+
         Args:
             rounding (int, optional): The number of decimals to round the results to. Defaults to 4.
             growth (bool, optional): Whether to calculate the growth of the ratios. Defaults to False.
@@ -2526,6 +2568,8 @@ class Ratios:
         The formula is as follows:
 
         - Operating Margin Ratio = Operating Income / Revenue
+
+        Also known as: EBIT margin, operating income margin.
 
         Args:
             rounding (int, optional): The number of decimals to round the results to. Defaults to 4.
@@ -2596,6 +2640,8 @@ class Ratios:
         The formula is as follows:
 
         - Net Profit Margin Ratio = Net Income / Revenue
+
+        Also known as: net margin, bottom line margin, net income margin.
 
         Args:
             rounding (int, optional): The number of decimals to round the results to. Defaults to 4.
@@ -2671,6 +2717,8 @@ class Ratios:
 
         - Interest Coverage Ratio = EBIT (or Operating Income) / Interest Expenses
 
+        Also known as: interest burden, EBIT to EBT ratio.
+
         Args:
             rounding (int, optional): The number of decimals to round the results to. Defaults to 4.
             growth (bool, optional): Whether to calculate the growth of the ratios. Defaults to False.
@@ -2742,6 +2790,8 @@ class Ratios:
         The formula is as follows:
 
         - Pretax Profit Margin = Income Before Tax / Revenue
+
+        Also known as: pretax margin, EBT margin.
 
         Args:
             rounding (int, optional): The number of decimals to round the results to. Defaults to 4.
@@ -2821,6 +2871,8 @@ class Ratios:
 
         - Effective Tax Rate = Income Tax Expense / Income Before Tax
 
+        Also known as: tax burden, actual tax rate.
+
         Args:
             rounding (int, optional): The number of decimals to round the results to. Defaults to 4.
             growth (bool, optional): Whether to calculate the growth of the ratios. Defaults to False.
@@ -2893,6 +2945,8 @@ class Ratios:
         The formula is as follows:
 
         - Return on Assets = Net Income / Average Total Assets
+
+        Also known as: ROA, asset profitability.
 
         Args:
             rounding (int, optional): The number of decimals to round the results to. Defaults to 4.
@@ -2975,6 +3029,8 @@ class Ratios:
 
         - Return on Equity = Net Income / Average Shareholders' Equity (or Total Equity)
 
+        Also known as: ROE, shareholders equity return, equity profitability.
+
         Args:
             rounding (int, optional): The number of decimals to round the results to. Defaults to 4.
             growth (bool, optional): Whether to calculate the growth of the ratios. Defaults to False.
@@ -3050,6 +3106,8 @@ class Ratios:
         The formula is as follows:
 
         - Return on Invested Capital = (Net Income — Paid Dividends) / Average Invested Capital
+
+        Also known as: ROIC.
 
         Args:
             dividend_adjusted (bool, optional): Whether to adjust the net operating profit after taxes
@@ -3155,6 +3213,8 @@ class Ratios:
 
         - Income Quality Ratio = Cash Flow from Operations / Net Income
 
+        Also known as: earnings quality, accrual ratio.
+
         Args:
             rounding (int, optional): The number of decimals to round the results to. Defaults to 4.
             growth (bool, optional): Whether to calculate the growth of the ratios. Defaults to False.
@@ -3227,6 +3287,8 @@ class Ratios:
         The formula is as follows:
 
         - Return on Tangible Assets = Net Income / Average Tangible Assets
+
+        Also known as: ROTA, tangible asset return.
 
         Args:
             rounding (int, optional): The number of decimals to round the results to. Defaults to 4.
@@ -3322,6 +3384,8 @@ class Ratios:
 
         - Return on Capital Employed = EBIT / (Total Assets — Current Liabilities)
 
+        Also known as: ROCE.
+
         Args:
             rounding (int, optional): The number of decimals to round the results to. Defaults to 4.
             growth (bool, optional): Whether to calculate the growth of the ratios. Defaults to False.
@@ -3416,6 +3480,8 @@ class Ratios:
 
         - Net Income per EBT = Net Income / Income Before Tax
 
+        Also known as: net income to pre-tax income.
+
         Args:
             rounding (int, optional): The number of decimals to round the results to. Defaults to 4.
             growth (bool, optional): Whether to calculate the growth of the ratios. Defaults to False.
@@ -3489,6 +3555,8 @@ class Ratios:
         The formula is as follows:
 
         - Free Cash Flow to Operating Cash Flow Ratio = Free Cash Flow / Cash Flow from Operations
+
+        Also known as: FCF to OCF ratio.
 
         Args:
             rounding (int, optional): The number of decimals to round the results to. Defaults to 4.
@@ -3570,6 +3638,8 @@ class Ratios:
 
         - Tax Burden Ratio = Net Income / Income Before Tax
 
+        Also known as: tax efficiency ratio.
+
         Args:
             rounding (int, optional): The number of decimals to round the results to. Defaults to 4.
             growth (bool, optional): Whether to calculate the growth of the ratios. Defaults to False.
@@ -3643,6 +3713,8 @@ class Ratios:
         The formula is as follows:
 
         - EBT to EBIT = (Net Income + Income Tax Expense) / (Net Income + Income Tax Expense + Interest Expense)
+
+        Also known as: EBT to EBIT, interest burden.
 
         Args:
             rounding (int, optional): The number of decimals to round the results to. Defaults to 4.
@@ -3732,6 +3804,8 @@ class Ratios:
         The formula is as follows:
 
         - EBIT to Revenue = EBIT / Revenue
+
+        Also known as: EBIT margin, operating income to revenue.
 
         Args:
             rounding (int, optional): The number of decimals to round the results to. Defaults to 4.
@@ -3918,6 +3992,8 @@ class Ratios:
 
         - Debt to Assets Ratio = Total Debt / Total Assets
 
+        Also known as: asset leverage, debt ratio.
+
         Args:
             rounding (int, optional): The number of decimals to round the results to. Defaults to 4.
             growth (bool, optional): Whether to calculate the growth of the ratios. Defaults to False.
@@ -3992,6 +4068,8 @@ class Ratios:
 
         - Debt to Equity Ratio = Total Debt / Total Equity
 
+        Also known as: D/E ratio, leverage ratio, gearing ratio.
+
         Args:
             rounding (int, optional): The number of decimals to round the results to. Defaults to 4.
             growth (bool, optional): Whether to calculate the growth of the ratios. Defaults to False.
@@ -4064,6 +4142,8 @@ class Ratios:
         The formula is as follows:
 
         - Interest Coverage Ratio = Operating Income / (Interest Expense + Depreciation and Amortization)
+
+        Also known as: TIE, times interest earned.
 
         Args:
             rounding (int, optional): The number of decimals to round the results to. Defaults to 4.
@@ -4143,6 +4223,8 @@ class Ratios:
 
         - Equity Multiplier = Average Total Assets / Average Total Equity
 
+        Also known as: financial leverage multiplier.
+
         Args:
             rounding (int, optional): The number of decimals to round the results to. Defaults to 4.
             growth (bool, optional): Whether to calculate the growth of the ratios. Defaults to False.
@@ -4220,6 +4302,8 @@ class Ratios:
         The formula is as follows:
 
         - Debt Service Coverage Ratio = Operating Income / Total Current Liabilities
+
+        Also known as: DSCR, debt service ratio.
 
         Args:
             rounding (int, optional): The number of decimals to round the results to. Defaults to 4.
@@ -4301,6 +4385,8 @@ class Ratios:
         The formula is as follows:
 
         - Free Cash Flow Yield Ratio = Free Cash Flow / Market Capitalization
+
+        Also known as: FCF yield.
 
         Args:
             show_daily (bool, optional): Whether to use daily data for the calculation. Defaults to False.
@@ -4557,6 +4643,8 @@ class Ratios:
 
         - Capital Expenditure Coverage Ratio = Cash Flow from Operations / Capital Expenditure
 
+        Also known as: capital expenditure coverage.
+
         Args:
             rounding (int, optional): The number of decimals to round the results to. Defaults to 4.
             growth (bool, optional): Whether to calculate the growth of the ratios. Defaults to False.
@@ -4631,6 +4719,8 @@ class Ratios:
 
         - Dividend Paid and Capital Expenditure Coverage Ratio = Cash Flow from Operations /
             (Capital Expenditure + Dividends Paid)
+
+        Also known as: capex dividend coverage.
 
         Args:
             rounding (int, optional): The number of decimals to round the results to. Defaults to 4.
@@ -4877,6 +4967,8 @@ class Ratios:
 
         - Earnings per Share (EPS) = (Net Income - Preferred Dividends Paid) / Weighted Average Shares
 
+        Also known as: EPS, net income per share.
+
         Args:
             include_dividends (bool, optional): Whether to include dividends in the EPS calculation. Defaults to False.
             diluted (bool, optional): Whether to use diluted earnings per share. Defaults to True.
@@ -4971,6 +5063,8 @@ class Ratios:
 
         - Revenue per Share = Revenue / Weighted Average (Diluted) Shares
 
+        Also known as: sales per share.
+
         Args:
             diluted (bool, optional): Whether to use diluted shares in the calculation. Defaults to True.
             rounding (int, optional): The number of decimals to round the results to. Defaults to 4.
@@ -5046,6 +5140,8 @@ class Ratios:
         The formula is as follows:
 
         - Price to Earnings Ratio (P/E) = Share Price / Earnings per Share (EPS)
+
+        Also known as: PE ratio, P/E ratio, price-earnings ratio, earnings multiple.
 
         Args:
             include_dividends (bool, optional): Whether to include dividends in the calculation. Defaults to False.
@@ -5129,6 +5225,8 @@ class Ratios:
         The formula is as follows:
 
         - Price Earnings to Growth Ratio (PEG) = Price Earnings Ratio (P/E) / Growth Rate
+
+        Also known as: PEG ratio, price earnings growth.
 
         Args:
             use_ebitda_growth_rate (bool, optional): Whether to use EBITDA growth rate for the calculation.
@@ -5219,6 +5317,8 @@ class Ratios:
 
         - Book Value per Share = (Total Shareholder Equity — Preferred Stock) / Weighted Average (Diluted) Shares
 
+        Also known as: BVPS, net asset value per share.
+
         Args:
             diluted (bool, optional): Whether to use diluted shares in the calculation. Defaults to True.
             rounding (int, optional): The number of decimals to round the results to. Defaults to 4.
@@ -5302,6 +5402,8 @@ class Ratios:
         The formula is as follows:
 
         - Price to Book Ratio = Share Price / Book Value per Share
+
+        Also known as: P/B ratio.
 
         Args:
             diluted (bool, optional): Whether to use diluted shares in the calculation. Defaults to True.
@@ -5470,6 +5572,8 @@ class Ratios:
 
         - CAPEX per Share = Capital Expenditure / Weighted Average (Diluted) Shares
 
+        Also known as: capital expenditure per share.
+
         Args:
             diluted (bool, optional): Whether to use diluted shares in the calculation. Defaults to True.
             rounding (int, optional): The number of decimals to round the results to. Defaults to 4.
@@ -5547,6 +5651,8 @@ class Ratios:
         The formula is as follows:
 
         - Dividend Yield = Dividends per Share / Share Price
+
+        Also known as: annual dividend yield, income yield.
 
         Args:
             show_daily (bool, optional): Whether to show daily data. Defaults to False.
@@ -5626,6 +5732,8 @@ class Ratios:
         The formula is as follows:
 
         - Weighted Dividend Yield = Dividends Paid / Weighted Average (Diluted) Shares * Share Price
+
+        Also known as: blended dividend yield.
 
         Args:
             show_daily (bool, optional): Whether to show daily data. Defaults to False.
@@ -5732,6 +5840,8 @@ class Ratios:
 
         - Price to Cash Flow Ratio = Share Price / Cash Flow from Operations per Share
 
+        Also known as: P/CF ratio.
+
         Args:
             show_daily (bool, optional): Whether to show daily data. Defaults to False.
             diluted (bool, optional): Whether to use diluted shares in the calculation. Defaults to True.
@@ -5836,6 +5946,8 @@ class Ratios:
 
         - Price to Free Cash Flow Ratio = Market Cap / Free Cash Flow
 
+        Also known as: P/FCF ratio.
+
         Args:
             show_daily (bool, optional): Whether to show daily data. Defaults to False.
             diluted (bool, optional): Whether to use diluted shares in the calculation. Defaults to True.
@@ -5926,6 +6038,8 @@ class Ratios:
 
         - Market Capitalization = Share Price * Weighted Average (Diluted) Shares
 
+        Also known as: market capitalization.
+
         Args:
             show_daily (bool, optional): Whether to show daily data. Defaults to False.
             diluted (bool, optional): Whether to use diluted shares in the calculation. Defaults to True.
@@ -6009,6 +6123,8 @@ class Ratios:
 
         - Enterprise Value = Market Capitalization + Total Debt + Minority Interest + Preferred Equity
             — Cash and Cash Equivalents
+
+        Also known as: EV, total enterprise value.
 
         Args:
             show_daily (bool, optional): Whether to show daily data. Defaults to False.
@@ -6119,6 +6235,8 @@ class Ratios:
 
         - Enterprise Value to Sales Ratio = Enterprise Value / Total Revenue
 
+        Also known as: EV/Sales.
+
         Args:
             show_daily (bool, optional): Whether to show daily data. Defaults to False.
             diluted (bool, optional): Whether to use diluted shares in the calculation. Defaults to True.
@@ -6196,6 +6314,8 @@ class Ratios:
         The formula is as follows:
 
         - Enterprise Value to EBITDA Ratio = Enterprise Value / EBITDA
+
+        Also known as: EV/EBITDA.
 
         Args:
             diluted (bool, optional): Whether to use diluted shares in the calculation. Defaults to True.
@@ -6375,6 +6495,8 @@ class Ratios:
 
         - Earnings Yield Ratio = Earnings per Share / Share Price
 
+        Also known as: E/P ratio, inverse PE ratio.
+
         Args:
             show_daily (bool, optional): Whether to show daily data. Defaults to False.
             include_dividends (bool, optional): Whether to include dividends in the calculation. Defaults to False.
@@ -6454,6 +6576,8 @@ class Ratios:
 
         - Dividend Payout Ratio = Dividends Paid / Net Income
 
+        Also known as: payout ratio.
+
         Args:
             rounding (int, optional): The number of decimals to round the results to. Defaults to 4.
             growth (bool, optional): Whether to calculate the growth of the ratios. Defaults to False.
@@ -6521,6 +6645,8 @@ class Ratios:
 
         - Reinvestment Rate = 1 — Dividend Payout Ratio
 
+        Also known as: plowback ratio, retention rate.
+
         Args:
             rounding (int, optional): The number of decimals to round the results to. Defaults to 4.
             growth (bool, optional): Whether to calculate the growth of the ratios. Defaults to False.
@@ -6578,6 +6704,8 @@ class Ratios:
         The formula is as follows:
 
         - Tangible Asset Value = Total Assets — Total Liabilities — Goodwill
+
+        Also known as: tangible assets, net tangible assets.
 
         Args:
             rounding (int, optional): The number of decimals to round the results to. Defaults to 4.
@@ -6647,6 +6775,8 @@ class Ratios:
         The formula is as follows:
 
         - Net Current Asset Value = Total Current Assets — Total Current Liabilities
+
+        Also known as: NCAV, net current asset value, Graham number.
 
         Args:
             rounding (int, optional): The number of decimals to round the results to. Defaults to 4.

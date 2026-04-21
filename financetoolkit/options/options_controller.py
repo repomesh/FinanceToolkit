@@ -140,6 +140,8 @@ class Options:
         Black Scholes Model as well as the Greeks to get a better understanding of the
         option prices over time.
 
+        Also known as: calls, puts, strike prices, expiry dates, option data.
+
         Args:
             expiration_date (str | None, optional): The expiration date to use. Defaults to None which means it will
             use the first available expiration date.
@@ -256,6 +258,8 @@ class Options:
         Where S is the stock price, K is the strike price, r is the risk free rate, q is the dividend yield, σ is the
         volatility, t is the time to expiration, N(d1) is the cumulative normal distribution of d1 and N(d2) is the
         the cumulative normal distribution of d2.
+
+        Also known as: BSM, Black-Scholes-Merton, option pricing model.
 
         Args:
             start_date (str | None, optional): The start date which determines the stock price. Defaults to None
@@ -421,6 +425,8 @@ class Options:
         To determine the Implied Volatility, the Black Scholes Model is used to calculate the theoretical option price in
         which sigma (σ) is the only unknown variable. The actual option price is then used to determine the implied
         volatility by minimizing the difference between the theoretical and actual option price.
+
+        Also known as: IV, option-implied volatility.
 
         Args:
             expiration_date (str | None, optional): The expiration date to use for the calculation. Defaults to None
@@ -615,6 +621,8 @@ class Options:
         down movements. The output is the binomial tree displayed in a table. E.g. when using 10 time steps, the
         table for each strike price from each company will contain the actual binomial tree as also depicted
         in the image found here: https://en.wikipedia.org/wiki/Binomial_options_pricing_model#Method
+
+        Also known as: binomial tree, lattice model, option pricing.
 
         Args:
             start_date (str | None, optional): The start date which determines the stock price. Defaults to None
@@ -812,6 +820,8 @@ class Options:
 
         **Hint:** consider plotting the resulting DataFrame for each company to visualize the binomial tree.
         For example for below's example use `stock_price_simulation.loc['AMZN'].T.plot(legend=False)`
+
+        Also known as: Monte Carlo simulation, GBM, stock price path.
 
         Args:
             start_date (str | None, optional): The start date which determines the stock price. Defaults to None
@@ -1297,6 +1307,8 @@ class Options:
         Note that the delta of a call option is always between 0 and 1, while the delta of a put option
         is always between —1 and 0.
 
+        Also known as: option price sensitivity to underlying, hedge ratio.
+
         Args:
             start_date (str | None, optional): The start date which determines the stock price. Defaults to None
             which means it will use the most recent date.
@@ -1432,6 +1444,8 @@ class Options:
 
         The Dual Delta can be interpreted as the probability of an option finishing in the money. For example, if the
         Dual Delta is 0.5, then the probability of the option finishing in the money is 50%.
+
+        Also known as: cash delta, binary option delta.
 
         Args:
             start_date (str | None, optional): The start date which determines the stock price. Defaults to None
@@ -1574,6 +1588,8 @@ class Options:
 
         Note that the vega of a call option and put option are equal to each other.
 
+        Also known as: option sensitivity to volatility changes.
+
         Args:
             start_date (str | None, optional): The start date which determines the stock price. Defaults to None
             which means it will use the most recent date.
@@ -1714,6 +1730,8 @@ class Options:
         and vice versa.
         - If Theta is negative, it implies that the option value will decrease as the time to expiration increases,
         and vice versa.
+
+        Also known as: time decay, option time value erosion.
 
         Args:
             start_date (str | None, optional): The start date which determines the stock price. Defaults to None
@@ -1860,6 +1878,8 @@ class Options:
         Rho is typically expressed as the amount of money, per share of the underlying, that the value of the option
         will gain or lose as the risk—free interest rate rises or falls by 1.0% per annum (100 basis points).
 
+        Also known as: option sensitivity to interest rate.
+
         Args:
             start_date (str | None, optional): The start date which determines the stock price. Defaults to None
             which means it will use the most recent date.
@@ -2000,6 +2020,8 @@ class Options:
         and vice versa.
         - If Epislon is negative, it implies that the option value will decrease as the dividend yield increases,
         and vice versa.
+
+        Also known as: option sensitivity to dividend yield.
 
         Args:
             start_date (str | None, optional): The start date which determines the stock price. Defaults to None
@@ -2143,6 +2165,8 @@ class Options:
         and vice versa.
         - If Lambda is negative, it implies that the option value will decrease as the underlying price increases,
         and vice versa.
+
+        Also known as: option elasticity, leverage factor.
 
         Args:
             start_date (str | None, optional): The start date which determines the stock price. Defaults to None
@@ -2452,6 +2476,8 @@ class Options:
 
         Note that the gamma of a call option and put option are equal to each other.
 
+        Also known as: rate of change of delta, option convexity.
+
         Args:
             start_date (str | None, optional): The start date which determines the stock price. Defaults to None
             which means it will use the most recent date.
@@ -2581,6 +2607,8 @@ class Options:
         the cumulative normal distribution of d2.
 
         Note that the dual gamma of a call option and put option are equal to each other.
+
+        Also known as: cash gamma, binary option gamma.
 
         Args:
             start_date (str | None, optional): The start date which determines the stock price. Defaults to None
@@ -2721,6 +2749,8 @@ class Options:
 
         Note that the vanna of a call option and put option are equal to each other.
 
+        Also known as: delta-vega cross-derivative.
+
         Args:
             start_date (str | None, optional): The start date which determines the stock price. Defaults to None
             which means it will use the most recent date.
@@ -2859,6 +2889,8 @@ class Options:
         other words, the option is gaining sensitivity to changes in the underlying asset's price as time passes.
         - If Charm is negative, it indicates that the option's Delta is becoming more negative over time. The
         option is losing sensitivity to changes in the underlying asset's price as time passes.
+
+        Also known as: delta time decay, delta bleed.
 
         Args:
             start_date (str | None, optional): The start date which determines the stock price. Defaults to None
@@ -3001,6 +3033,8 @@ class Options:
         - If Vomma is low, it suggests that the option's Vega is relatively less sensitive to changes in
         implied volatility.
 
+        Also known as: volga, vega convexity.
+
         Args:
             start_date (str | None, optional): The start date which determines the stock price. Defaults to None
             which means it will use the most recent date.
@@ -3139,6 +3173,8 @@ class Options:
         option is losing sensitivity to changes in the risk free rate as time passes.
 
         Note that the vera of a call option and put option are equal to each other.
+
+        Also known as: rho-vega cross-derivative.
 
         Args:
             start_date (str | None, optional): The start date which determines the stock price. Defaults to None
@@ -3280,6 +3316,8 @@ class Options:
         - If Veta is negative, it suggests that the option's Vega is becoming more negative over time. The
         option is losing sensitivity to changes in implied volatility as time passes.
 
+        Also known as: vega time decay.
+
         Args:
             start_date (str | None, optional): The start date which determines the stock price. Defaults to None
             which means it will use the most recent date.
@@ -3410,6 +3448,8 @@ class Options:
         Where S is the stock price, K is the strike price, r is the risk free rate, q is the dividend yield, σ is the
         volatility, t is the time to expiration, N(d1) is the cumulative normal distribution of d1 and N(d2) is the
         the cumulative normal distribution of d2.
+
+        Also known as: numerical derivative, option sensitivity.
 
         Args:
             start_date (str | None, optional): The start date which determines the stock price. Defaults to None
@@ -3662,6 +3702,8 @@ class Options:
 
         Note that the speed of a call option and put option are equal to each other.
 
+        Also known as: gamma rate of change.
+
         Args:
             start_date (str | None, optional): The start date which determines the stock price. Defaults to None
             which means it will use the most recent date.
@@ -3800,6 +3842,8 @@ class Options:
         option is losing sensitivity to changes in volatility as time passes.
 
         Note that the zomma of a call option and put option are equal to each other.
+
+        Also known as: gamma sensitivity to volatility.
 
         Args:
             start_date (str | None, optional): The start date which determines the stock price. Defaults to None
@@ -3940,6 +3984,8 @@ class Options:
 
         Note that the color of a call option and put option are equal to each other.
 
+        Also known as: gamma time decay.
+
         Args:
             start_date (str | None, optional): The start date which determines the stock price. Defaults to None
             which means it will use the most recent date.
@@ -4078,6 +4124,8 @@ class Options:
         option is losing sensitivity to changes in volatility as time passes.
 
         Note that the ultima of a call option and put option are equal to each other.
+
+        Also known as: third-order vega.
 
         Args:
             start_date (str | None, optional): The start date which determines the stock price. Defaults to None

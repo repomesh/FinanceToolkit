@@ -246,6 +246,8 @@ class Performance:
 
         See definition: https://en.wikipedia.org/wiki/Beta_(finance)
 
+        Also known as: market sensitivity, systematic risk.
+
         Args:
             period (str, optional): The period to use for the calculation. Defaults to None which
             results in basing it off the quarterly parameter as defined in the class instance.
@@ -347,6 +349,8 @@ class Performance:
 
         See definition: https://en.wikipedia.org/wiki/Capital_asset_pricing_model
 
+        Also known as: CAPM, expected return model.
+
         Args:
             period (str, optional): The period to use for the calculation. Defaults to None which
             results in basing it off the quarterly parameter as defined in the class instance.
@@ -428,6 +432,8 @@ class Performance:
 
         However, since the results are closely related and tend to point into the same direction it could
         be fine to use correlations as well depending on the level of accuracy required.
+
+        Also known as: factor exposure, asset correlations.
 
         Args:
             period (str, optional): The period to use for the calculation. Defaults to None which
@@ -556,6 +562,8 @@ class Performance:
 
         Optionally, it is also possible to see the correlation between the risk-free rate and each factor.
 
+        Also known as: factor model correlations.
+
         Args:
             period (str, optional): The period to use for the calculation. Defaults to None which
             results in basing it off the quarterly parameter as defined in the class instance.
@@ -666,6 +674,8 @@ class Performance:
         the stock return. E.g. you will generally see a pretty high influence (Beta or Slope) for the Market Risk Premium
         (Mkt-RF) factor as this is the main factor that explains the stock return (as also prevalent in the CAPM).
         The other factors can fluctuate greatly between stocks depending on which stocks you look at.
+
+        Also known as: Fama-French model, three-factor model, five-factor model, FF3, FF5.
 
         Args:
             period (str, optional): The period for the calculation (e.g., "weekly", "monthly", "quarterly", "yearly").
@@ -943,6 +953,8 @@ class Performance:
 
         See definition: https://en.wikipedia.org/wiki/Alpha_(finance)
 
+        Also known as: excess return, outperformance.
+
         Args:
             period (str, optional): The period to use for the calculation. Defaults to None which
             results in basing it off the quarterly parameter as defined in the class instance.
@@ -1027,6 +1039,8 @@ class Performance:
             - Jensen's Alpha = Asset's Actual Return — [Risk-Free Rate + Beta * (Benchmark Return — Risk-Free Rate)]
 
         See definition: https://en.wikipedia.org/wiki/Jensen%27s_alpha
+
+        Also known as: Jensen alpha, risk-adjusted excess return.
 
         Args:
             period (str, optional): The period to use for the calculation. Defaults to None which
@@ -1117,6 +1131,8 @@ class Performance:
         - - Treynor Ratio = (Portfolio's Return — Risk-Free Rate) / Portfolio Beta
 
         See definition: https://en.wikipedia.org/wiki/Treynor_ratio
+
+        Also known as: reward-to-volatility ratio.
 
         Args:
             period (str, optional): The period to use for the calculation. Defaults to None which
@@ -1218,6 +1234,8 @@ class Performance:
         Note that this is explicitly already subtracts the Risk Free Rate.
 
         See definition: https://en.wikipedia.org/wiki/Sharpe_ratio
+
+        Also known as: risk-adjusted return, reward-to-variability ratio.
 
         Args:
             period (str, optional): The period to use for the calculation. Defaults to None which
@@ -1385,6 +1403,8 @@ class Performance:
         Similar to the Sharpe Ratio, a higher UPI is better than a lower one (since investors prefer more return
         for less risk).
 
+        Also known as: UPI, Martin ratio.
+
         Args:
             period (str, optional): The period to use for the calculation. Defaults to None which
             results in basing it off the quarterly parameter as defined in the class instance.
@@ -1466,6 +1486,8 @@ class Performance:
 
         See definition: https://en.wikipedia.org/wiki/Modigliani_risk-adjusted_performance
 
+        Also known as: Modigliani-Modigliani measure, M2, risk-adjusted performance.
+
         Args:
             period (str, optional): The period to use for the calculation. Defaults to None which
             results in basing it off the quarterly parameter as defined in the class instance.
@@ -1546,6 +1568,8 @@ class Performance:
             - Tracking Error (TE) = Standard Deviation of (Portfolio Returns — Benchmark Returns)
 
         See definition: https://en.wikipedia.org/wiki/Tracking_error
+
+        Also known as: active risk, benchmark deviation.
 
         Args:
             period (str, optional): The period to use for the calculation. Defaults to None which
@@ -1632,6 +1656,8 @@ class Performance:
 
         See definition: https://en.wikipedia.org/wiki/Information_ratio
 
+        Also known as: active return per risk.
+
         Args:
             period (str, optional): The period to use for the calculation. Defaults to None which
             results in basing it off the quarterly parameter as defined in the class instance.
@@ -1701,6 +1727,8 @@ class Performance:
         The formula is as follows:
 
             - CGR = (Final Value / Initial Value) ^ (1 / Number of Periods) — 1
+
+        Also known as: CAGR, compound annual growth rate, annualized return.
 
         Args:
             rounding (int, optional): The number of decimals to round the results to. If not provided,

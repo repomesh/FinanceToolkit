@@ -131,6 +131,8 @@ class FixedIncome:
         These statistics can be used to evaluate the bond's performance as opposed to other bonds or to estimate the bond's
         sensitivity to changes in interest rates to be able to apply a hedging strategy.
 
+        Also known as: bond data, fixed income statistics.
+
         Args:
             par_value (float): The face value of the bond. Defaults to 100.
             coupon_rate (float): The annual coupon rate (in decimal). Defaults to 0.05.
@@ -291,6 +293,8 @@ class FixedIncome:
         The bond price is used to determine the fair value of the bond and to compare the bond's price to its market price to determine
         if the bond is overvalued or undervalued.
 
+        Also known as: PV, bond pricing, discounted cash flows.
+
         Args:
             par_value (float): The par value (face value) of the bond.
             coupon_rate (float, optional): The coupon rate of the bond. If not provided, a range of coupon rates will be used.
@@ -376,6 +380,8 @@ class FixedIncome:
         to compare the risk of different bonds. The modified duration is particularly useful for estimating the percentage change
         in the bond price for a 1% change in the yield to maturity. This is also known as the bond's price value of a basis point (PVBP),
         or the bond's dollar duration (DD) or dollar value of a .01% change (DV01).
+
+        Also known as: Macaulay duration, modified duration, bond price sensitivity.
 
         Args:
             duration_type (str, optional): The type of duration to calculate. Defaults to 'modified' but can also
@@ -507,6 +513,8 @@ class FixedIncome:
         The goal is to find the yield to maturity that satisfies the equation above. This is done using the Newton-Raphson method
         which is an iterative method that converges to the root of a function.
 
+        Also known as: YTM, bond return to maturity.
+
         Args:
             par_value (float): The par value (face value) of the bond. This is the original price when it was issued by the issuer.
             coupon_rate (float, optional): The coupon rate of the bond. Defaults to None.
@@ -617,6 +625,8 @@ class FixedIncome:
         risk-free rate, notional amount, and whether the holder is the receiver or payer of the derivative. Next to that, you can
         provide lists of values for the fixed rate, strike rate, volatility, and years to maturity to calculate the derivative price
         for multiple scenarios outside of the standard sample.
+
+        Also known as: bond derivative pricing, fixed income derivative.
 
         Args:
             model (str, optional): The type of model to use for calculating the derivative price. Defaults to "black".
@@ -818,6 +828,8 @@ class FixedIncome:
 
         See definition: https://data.oecd.org/interest/short-term-interest-rates.htm
 
+        Also known as: treasury yield, bond yield by maturity.
+
         Args:
             short_term (bool, optional): Whether to return the short-term interest rate. Defaults to False.
                 This means that the long-term interest rate will be returned.
@@ -977,6 +989,8 @@ class FixedIncome:
 
         - Ratings: https://fred.stlouisfed.org/series/BAMLC0A4CBBBEY
         - Maturity: https://fred.stlouisfed.org/series/BAMLC1A0C13YEY
+
+        Also known as: ICE BofA corporate bond yield, credit yield.
 
         Args:
             maturity (bool, optional): Whether to return the maturity effective yield or the rating effective yield.
@@ -1181,6 +1195,8 @@ class FixedIncome:
 
         For more information, see for example: https://data.ecb.europa.eu/data/datasets/FM/FM.M.U2.EUR.RT.MM.EURIBOR6MD_.HSTA
 
+        Also known as: euro interbank offered rate, eurozone money market.
+
         Args:
             maturities (str | list | None, optional): Maturities for which to retrieve rates. Defaults to None.
                 When set to None, it will retrieve rates for 1 month, 3 months, 6 months, and 12 months.
@@ -1272,6 +1288,8 @@ class FixedIncome:
         receive for depositing money with the central bank overnight.
 
         See source: https://data.ecb.europa.eu/main-figures/
+
+        Also known as: ECB rates, deposit facility rate.
 
         Args:
             rate (str, optional): The rate to return. Defaults to None, which returns all rates.
@@ -1376,6 +1394,8 @@ class FixedIncome:
         York Fed’s website between 8:00 and 9:00 a.m.
 
         See source: https://www.newyorkfed.org/markets/reference-rates/
+
+        Also known as: Fed rates, federal funds rate, FOMC rate.
 
         Args:
             rate (str): The rate to return. Defaults to 'EFFR' (Effective Federal Funds Rate).

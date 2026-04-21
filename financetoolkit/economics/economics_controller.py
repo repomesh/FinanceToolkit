@@ -134,6 +134,8 @@ class Economics:
         also provides inflation adjusted data. For more information see:
         https://www.globalmacrodata.com/files/documentations/Variables/nGDP.pdf
 
+        Also known as: GDP, national income, economic growth.
+
         Args:
             countries (list[str] | str | None, optional): A list of countries or a single country to include in the results. Defaults to None.
             inflation_adjusted (bool, optional): Whether to return the inflation adjusted data. Defaults to False.
@@ -238,7 +240,9 @@ class Economics:
         relative to the price level in a base year which can vary per country.
 
         Data comes from the Global Macro Database (GMDB), further information about the
-        variable can be found within https://www.globalmacrodata.com/files/GMD_TA.pdf
+        variable can be found within https://www.globalmacrodata.com/documentation.html
+
+        Also known as: GDP deflator, implicit price deflator.
 
         Args:
             countries (list[str] | str | None, optional): A list of countries or a single country to include in the results. Defaults to None.
@@ -332,7 +336,9 @@ class Economics:
         spent by households on consumer goods and services.
 
         Data comes from the Global Macro Database (GMDB), further information about the
-        variable can be found within https://www.globalmacrodata.com/files/GMD_TA.pdf
+        variable can be found within https://www.globalmacrodata.com/documentation.html
+
+        Also known as: household consumption, private consumption.
 
         Args:
             countries (list[str] | str | None, optional): A list of countries or a single country to include in the results. Defaults to None.
@@ -424,7 +430,9 @@ class Economics:
         Domestic Product (GDP).
 
         Data comes from the Global Macro Database (GMDB), further information about the
-        variable can be found within https://www.globalmacrodata.com/files/GMD_TA.pdf
+        variable can be found within https://www.globalmacrodata.com/documentation.html
+
+        Also known as: consumption share of GDP.
 
         Args:
             countries (list[str] | str | None, optional): A list of countries or a single country to include in the results. Defaults to None.
@@ -513,7 +521,9 @@ class Economics:
         equipment, and buildings.
 
         Data comes from the Global Macro Database (GMDB), further information about the
-        variable can be found within https://www.globalmacrodata.com/files/GMD_TA.pdf
+        variable can be found within https://www.globalmacrodata.com/documentation.html
+
+        Also known as: total investment, capital formation.
 
         Args:
             countries (list[str] | str | None, optional): A list of countries or a single country to include in the results. Defaults to None.
@@ -596,7 +606,9 @@ class Economics:
         such as machinery, equipment, and buildings to the Gross Domestic Product (GDP).
 
         Data comes from the Global Macro Database (GMDB), further information about the
-        variable can be found within https://www.globalmacrodata.com/files/GMD_TA.pdf
+        variable can be found within https://www.globalmacrodata.com/documentation.html
+
+        Also known as: investment rate.
 
         Args:
             countries (list[str] | str | None, optional): A list of countries or a single country to include in the results. Defaults to None.
@@ -683,7 +695,9 @@ class Economics:
         equipment, and buildings that are expected to last for more than one year.
 
         Data comes from the Global Macro Database (GMDB), further information about the
-        variable can be found within https://www.globalmacrodata.com/files/GMD_TA.pdf
+        variable can be found within https://www.globalmacrodata.com/documentation.html
+
+        Also known as: gross fixed capital formation, capital investment.
 
         Args:
             countries (list[str] | str | None, optional): A list of countries or a single country to include in the results. Defaults to None.
@@ -767,7 +781,9 @@ class Economics:
         Product (GDP).
 
         Data comes from the Global Macro Database (GMDB), further information about the
-        variable can be found within https://www.globalmacrodata.com/files/GMD_TA.pdf
+        variable can be found within https://www.globalmacrodata.com/documentation.html
+
+        Also known as: investment to GDP ratio.
 
         Args:
             countries (list[str] | str | None, optional): A list of countries or a single country to include in the results. Defaults to None.
@@ -874,7 +890,9 @@ class Economics:
         other countries.
 
         Data comes from the Global Macro Database (GMDB), further information about the
-        variable can be found within https://www.globalmacrodata.com/files/GMD_TA.pdf
+        variable can be found within https://www.globalmacrodata.com/documentation.html
+
+        Also known as: exports, trade exports.
 
         Args:
             countries (list[str] | str | None, optional): A list of countries or a single country to include in the results. Defaults to None.
@@ -954,7 +972,9 @@ class Economics:
         that are sold to other countries to the Gross Domestic Product (GDP).
 
         Data comes from the Global Macro Database (GMDB), further information about the
-        variable can be found within https://www.globalmacrodata.com/files/GMD_TA.pdf
+        variable can be found within https://www.globalmacrodata.com/documentation.html
+
+        Also known as: exports to GDP ratio, trade openness.
 
         Args:
             countries (list[str] | str | None, optional): A list of countries or a single country to include in the results. Defaults to None.
@@ -1042,7 +1062,9 @@ class Economics:
         bought by a country.
 
         Data comes from the Global Macro Database (GMDB), further information about the
-        variable can be found within https://www.globalmacrodata.com/files/GMD_TA.pdf
+        variable can be found within https://www.globalmacrodata.com/documentation.html
+
+        Also known as: imports, trade imports.
 
         Args:
             countries (list[str] | str | None, optional): A list of countries or a single country to include in the results. Defaults to None.
@@ -1128,7 +1150,9 @@ class Economics:
         that are bought by a country to the Gross Domestic Product (GDP).
 
         Data comes from the Global Macro Database (GMDB), further information about the
-        variable can be found within https://www.globalmacrodata.com/files/GMD_TA.pdf
+        variable can be found within https://www.globalmacrodata.com/documentation.html
+
+        Also known as: imports to GDP ratio.
 
         Args:
             countries (list[str] | str | None, optional): A list of countries or a single country to include in the results. Defaults to None.
@@ -1216,7 +1240,9 @@ class Economics:
         net factor income (such as interest and dividends) and net transfer payments (such as foreign aid).
 
         Data comes from the Global Macro Database (GMDB), further information about the
-        variable can be found within https://www.globalmacrodata.com/files/GMD_TA.pdf
+        variable can be found within https://www.globalmacrodata.com/documentation.html
+
+        Also known as: current account, trade balance, balance of payments.
 
         Args:
             countries (list[str] | str | None, optional): A list of countries or a single country to include in the results. Defaults to None.
@@ -1305,7 +1331,9 @@ class Economics:
         Gross Domestic Product (GDP).
 
         Data comes from the Global Macro Database (GMDB), further information about the
-        variable can be found within https://www.globalmacrodata.com/files/GMD_TA.pdf
+        variable can be found within https://www.globalmacrodata.com/documentation.html
+
+        Also known as: current account to GDP.
 
         Args:
             countries (list[str] | str | None, optional): A list of countries or a single country to include in the results. Defaults to None.
@@ -1397,7 +1425,9 @@ class Economics:
         Government Debt is the total amount of money that a government owes to creditors.
 
         Data comes from the Global Macro Database (GMDB), further information about the
-        variable can be found within https://www.globalmacrodata.com/files/GMD_TA.pdf
+        variable can be found within https://www.globalmacrodata.com/documentation.html
+
+        Also known as: national debt, sovereign debt.
 
         Args:
             countries (list[str] | str | None, optional): A list of countries or a single country to include in the results. Defaults to None.
@@ -1481,7 +1511,9 @@ class Economics:
         to the Gross Domestic Product (GDP).
 
         Data comes from the Global Macro Database (GMDB), further information about the
-        variable can be found within https://www.globalmacrodata.com/files/GMD_TA.pdf
+        variable can be found within https://www.globalmacrodata.com/documentation.html
+
+        Also known as: debt-to-GDP ratio, fiscal sustainability.
 
         Args:
             countries (list[str] | str | None, optional): A list of countries or a single country to include in the results. Defaults to None.
@@ -1570,7 +1602,9 @@ class Economics:
         Government Revenue is the total amount of money that a government collects from taxes and other sources.
 
         Data comes from the Global Macro Database (GMDB), further information about the
-        variable can be found within https://www.globalmacrodata.com/files/GMD_TA.pdf
+        variable can be found within https://www.globalmacrodata.com/documentation.html
+
+        Also known as: government income, public revenue.
 
         Args:
             countries (list[str] | str | None, optional): A list of countries or a single country to include in the results. Defaults to None.
@@ -1652,7 +1686,9 @@ class Economics:
         and other sources to the Gross Domestic Product (GDP).
 
         Data comes from the Global Macro Database (GMDB), further information about the
-        variable can be found within https://www.globalmacrodata.com/files/GMD_TA.pdf
+        variable can be found within https://www.globalmacrodata.com/documentation.html
+
+        Also known as: revenue to GDP ratio.
 
         Args:
             countries (list[str] | str | None, optional): A list of countries or a single country to include in the results. Defaults to None.
@@ -1743,7 +1779,9 @@ class Economics:
         Government Tax Revenue is the total amount of money that a government collects from taxes.
 
         Data comes from the Global Macro Database (GMDB), further information about the
-        variable can be found within https://www.globalmacrodata.com/files/GMD_TA.pdf
+        variable can be found within https://www.globalmacrodata.com/documentation.html
+
+        Also known as: tax revenue, fiscal revenue.
 
         Args:
             growth (bool, optional): Whether to return the growth data or the actual data. Defaults to False.
@@ -1829,7 +1867,9 @@ class Economics:
         to the Gross Domestic Product (GDP).
 
         Data comes from the Global Macro Database (GMDB), further information about the
-        variable can be found within https://www.globalmacrodata.com/files/GMD_TA.pdf
+        variable can be found within https://www.globalmacrodata.com/documentation.html
+
+        Also known as: tax burden, tax to GDP ratio.
 
         Args:
             countries (list[str] | str | None, optional): The countries to include in the data. Defaults to None.
@@ -1919,7 +1959,9 @@ class Economics:
         Government Expenditure is the total amount of money that a government spends on goods and services.
 
         Data comes from the Global Macro Database (GMDB), further information about the
-        variable can be found within https://www.globalmacrodata.com/files/GMD_TA.pdf
+        variable can be found within https://www.globalmacrodata.com/documentation.html
+
+        Also known as: government spending, public expenditure.
 
         Args:
             countries (list[str] | str | None, optional): A list of countries or a single country to include in the results. Defaults to None.
@@ -2007,7 +2049,9 @@ class Economics:
         and services to the Gross Domestic Product (GDP).
 
         Data comes from the Global Macro Database (GMDB), further information about the
-        variable can be found within https://www.globalmacrodata.com/files/GMD_TA.pdf
+        variable can be found within https://www.globalmacrodata.com/documentation.html
+
+        Also known as: government spending to GDP.
 
         Args:
             countries (list[str] | str | None, optional): A list of countries or a single country to include in the results. Defaults to None.
@@ -2100,7 +2144,9 @@ class Economics:
         and other sources. A government deficit is usually financed by borrowing money.
 
         Data comes from the Global Macro Database (GMDB), further information about the
-        variable can be found within https://www.globalmacrodata.com/files/GMD_TA.pdf
+        variable can be found within https://www.globalmacrodata.com/documentation.html
+
+        Also known as: budget deficit, fiscal deficit.
 
         Args:
             countries (list[str] | str | None, optional): A list of countries or a single country to include in the results. Defaults to None.
@@ -2186,7 +2232,9 @@ class Economics:
         by borrowing money.
 
         Data comes from the Global Macro Database (GMDB), further information about the
-        variable can be found within https://www.globalmacrodata.com/files/GMD_TA.pdf
+        variable can be found within https://www.globalmacrodata.com/documentation.html
+
+        Also known as: deficit-to-GDP, fiscal balance.
 
         Args:
             growth (bool, optional): Whether to return the growth data or the actual data. Defaults to False.
@@ -2271,6 +2319,8 @@ class Economics:
         aged 15 and over. This indicator is measured as a percentage of all survey respondents.
 
         See definition: https://data.oecd.org/gga/trust-in-government.htm
+
+        Also known as: political trust, institutional trust.
 
         Args:
             countries (list[str] | str | None, optional): The countries to include in the data. Defaults to None.
@@ -2360,7 +2410,9 @@ class Economics:
         The base year (2010) is the year against which the index is set to 100.
 
         Data comes from the Global Macro Database (GMDB), further information about the
-        variable can be found within https://www.globalmacrodata.com/files/GMD_TA.pdf
+        variable can be found within https://www.globalmacrodata.com/documentation.html
+
+        Also known as: CPI, cost of living index.
 
         Args:
             countries (list[str] | str | None, optional): The countries to include in the data. Defaults to None.
@@ -2449,7 +2501,9 @@ class Economics:
         period to another. It is a measure of the rate of price increases in the economy.
 
         Data comes from the Global Macro Database (GMDB), further information about the
-        variable can be found within https://www.globalmacrodata.com/files/GMD_TA.pdf
+        variable can be found within https://www.globalmacrodata.com/documentation.html
+
+        Also known as: CPI-based inflation, price increases, consumer prices.
 
         Args:
             countries (list[str] | str | None, optional): The countries to include in the data. Defaults to None.
@@ -2538,6 +2592,8 @@ class Economics:
 
         See definition: https://data.oecd.org/leadind/consumer-confidence-index-cci.htm
 
+        Also known as: consumer sentiment, spending outlook.
+
         Args:
             countries (list[str] | str | None, optional): The countries to include in the data. Defaults to None.
             growth (bool, optional): Whether to return the growth data or the actual data.
@@ -2620,6 +2676,8 @@ class Economics:
 
         See definition: https://data.oecd.org/leadind/business-confidence-index-bci.htm
 
+        Also known as: BCI, business sentiment.
+
         Args:
             countries (list[str] | str | None, optional): The countries to include in the data. Defaults to None.
             growth (bool, optional): Whether to return the growth data or the actual data.
@@ -2698,6 +2756,8 @@ class Economics:
         movements in qualitative rather than quantitative terms.
 
         See definition: https://data.oecd.org/leadind/composite-leading-indicator-cli.htm
+
+        Also known as: CLI, leading economic indicator.
 
         Args:
             countries (list[str] | str | None, optional): The countries to include in the data. Defaults to None.
@@ -2788,6 +2848,8 @@ class Economics:
 
         It is also possible to get the data from the Global Macro Database (GMDB) by setting
         the gmdb_source to True.
+
+        Also known as: real estate prices, property prices, housing index.
 
         Args:
             countries (list[str] | str | None, optional): The countries to include in the data. Defaults to None.
@@ -2886,6 +2948,8 @@ class Economics:
 
         See definition: https://data.oecd.org/price/housing-prices.htm
 
+        Also known as: rental prices, housing costs, rent index.
+
         Args:
             countries (list[str] | str | None, optional): The countries to include in the data. Defaults to None.
             quarterly (bool | None, optional): Whether to return the quarterly data or the annual data.
@@ -2979,6 +3043,8 @@ class Economics:
 
         See definition: https://data.oecd.org/price/share-prices.htm
 
+        Also known as: stock market index, equity index, market performance.
+
         Args:
             countries (list[str] | str | None, optional): The countries to include in the data. Defaults to None.
             period (str | None, optional): Whether to return the monthly, quarterly or the annual data.
@@ -3067,6 +3133,8 @@ class Economics:
 
         It is also possible to get the data from the Global Macro Database (GMDB) by setting
         the gmdb_source to True.
+
+        Also known as: currency exchange, FX rates, foreign exchange rates.
 
         Args:
             countries (list[str] | str | None, optional): The countries to include in the data. Defaults to None.
@@ -3173,7 +3241,9 @@ class Economics:
             - M4: M3 + all other financial assets.
 
         Data comes from the Global Macro Database (GMDB), further information about the
-        variable can be found within https://www.globalmacrodata.com/files/GMD_TA.pdf
+        variable can be found within https://www.globalmacrodata.com/documentation.html
+
+        Also known as: M1, M2, M3, monetary aggregate.
 
         Args:
             countries (list[str] | str | None, optional): The countries to include in the data. Defaults to None.
@@ -3282,7 +3352,9 @@ class Economics:
         authorities to control inflation and stabilize the country's currency.
 
         Data comes from the Global Macro Database (GMDB), further information about the
-        variable can be found within https://www.globalmacrodata.com/files/GMD_TA.pdf
+        variable can be found within https://www.globalmacrodata.com/documentation.html
+
+        Also known as: policy rate, benchmark rate, base rate.
 
         Args:
             countries (list[str] | str | None, optional): The countries to include in the data. Defaults to None.
@@ -3373,6 +3445,8 @@ class Economics:
 
         It is also possible to get the data from the Global Macro Database (GMDB) by setting
         the gmdb_source to True.
+
+        Also known as: 3-month rate, money market rate, short-term yield.
 
         Args:
             countries (list[str] | str | None, optional): The countries to include in the data. Defaults to None.
@@ -3486,6 +3560,8 @@ class Economics:
         It is also possible to get the data from the Global Macro Database (GMDB) by setting
         the gmdb_source to True.
 
+        Also known as: 10-year yield, government bond rate, long-term yield.
+
         Args:
             countries (list[str] | str | None, optional): The countries to include in the data. Defaults to None.
             period (str | None, optional): Whether to return the monthly, quarterly or the annual data.
@@ -3597,6 +3673,8 @@ class Economics:
 
         See definition: https://data.oecd.org/energy/renewable-energy.htm
 
+        Also known as: clean energy, green energy, renewable energy share.
+
         Args:
             countries (list[str] | str | None, optional): The countries to include in the data. Defaults to None.
             growth (bool, optional): Whether to return the growth data or the actual data.
@@ -3681,6 +3759,8 @@ class Economics:
         denoted as carbon accounting.
 
         See definition: https://data.oecd.org/envpolicy/environmental-tax.htm
+
+        Also known as: CO2 emissions, carbon emissions, greenhouse gas.
 
         Args:
             countries (list[str] | str | None, optional): The countries to include in the data. Defaults to None.
@@ -3774,6 +3854,8 @@ class Economics:
 
         It is also possible to get the data from the Global Macro Database (GMDB) by setting
         the gmdb_source to True.
+
+        Also known as: jobless rate, labor market, unemployment level.
 
         Args:
             countries (list[str] | str | None, optional): The countries to include in the data. Defaults to None.
@@ -3882,6 +3964,8 @@ class Economics:
 
         See definition: https://data.oecd.org/lprdty/gdp-per-hour-worked.htm
 
+        Also known as: labor productivity, output per worker.
+
         Args:
             countries (list[str] | str | None, optional): The countries to include in the data. Defaults to None.
             growth (bool, optional): Whether to return the growth data or the actual data.
@@ -3966,6 +4050,8 @@ class Economics:
         and 1 in the case of perfect inequality.
 
         See definition: https://data.oecd.org/inequality/income-inequality.htm
+
+        Also known as: Gini coefficient, income distribution.
 
         Args:
             countries (list[str] | str | None, optional): The countries to include in the data. Defaults to None.
@@ -4059,6 +4145,8 @@ class Economics:
 
         It is also possible to get the data from the Global Macro Database (GMDB) by setting
         the gmdb_source to True.
+
+        Also known as: demographic data, census data.
 
         Args:
             countries (list[str] | str | None, optional): The countries to include in the data. Defaults to None.
@@ -4160,6 +4248,8 @@ class Economics:
         However, two countries with the same poverty rates may differ in terms of the relative income-level of the poor.
 
         See definition: https://data.oecd.org/inequality/poverty-rate.htm
+
+        Also known as: poverty rate, income poverty.
 
         Args:
             countries (list[str] | str | None, optional): The countries to include in the data. Defaults to None.
