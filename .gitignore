@@ -7,6 +7,7 @@ cached/
 debugging.py
 .vscode/
 *.sh
+finance_cache.db
 
 # Finance Toolkit Example Datasets
 !examples/*.ipynb

@@ -14,7 +14,6 @@ schema for its module category:
 from __future__ import annotations
 
 import inspect
-import logging
 import re
 import textwrap
 from typing import Any, Union, get_args, get_origin
@@ -24,8 +23,8 @@ from mcp.server.fastmcp import FastMCP
 from financetoolkit.discovery.discovery_controller import Discovery
 from financetoolkit.economics.economics_controller import Economics
 from financetoolkit.fixedincome.fixedincome_controller import FixedIncome
-from financetoolkit.mcp_server.formatting import format_result
-from financetoolkit.mcp_server.provider import ToolkitProvider
+from financetoolkit.mcp_server.formatting_model import format_result
+from financetoolkit.mcp_server.provider_model import ToolkitProvider
 from financetoolkit.models.models_controller import Models
 from financetoolkit.options.options_controller import Options
 from financetoolkit.performance.performance_controller import Performance
@@ -35,17 +34,15 @@ from financetoolkit.ratios.ratios_controller import Ratios
 from financetoolkit.risk.risk_controller import Risk
 from financetoolkit.technicals.technicals_controller import Technicals
 from financetoolkit.toolkit_controller import Toolkit
+from financetoolkit.utilities.logger_model import get_logger
 
 try:
-    from types import UnionType  # Python 3.10+
+    from types import UnionType
 except ImportError:
-    UnionType = None  # type: ignore[misc,assignment]
+    UnionType = None
 
-logger = logging.getLogger(__name__)
+logger = get_logger()
 
-# ══════════════════════════════════════════════════════════════════════
-#  Module category definitions
-# ══════════════════════════════════════════════════════════════════════
 CATEGORY_TICKER = "ticker"
 CATEGORY_TOOLKIT = "toolkit"
 CATEGORY_STANDALONE = "standalone"
@@ -65,7 +62,7 @@ MODULE_REGISTRY: dict[str, tuple[type, str]] = {
 }
 
 # Explicit allowlist of Toolkit direct methods exposed as MCP tools.
-_TOOLKIT_DIRECT_METHODS = frozenset(
+TOOLKIT_DIRECT_METHODS = frozenset(
     {
         "get_profile",
         "get_quote",
@@ -94,52 +91,57 @@ MODULE_CLASS_MAP: dict[str, type] = {
 }
 MODULE_CLASS_MAP["toolkit"] = Toolkit
 
-# ══════════════════════════════════════════════════════════════════════
-#  Filtering constants
-# ══════════════════════════════════════════════════════════════════════
-
 # Methods to skip during inspection.
-_SKIP_METHODS = frozenset(
+SKIP_METHODS = frozenset(
     {
         "to_dict",
         "to_json",
         "to_csv",
         "to_html",
-        "copy",
+        "to_numpy" "copy",
         "keys",
         "values",
         "items",
         "get_normalization_files",
+        "collect_all_ratios",
+        "collect_custom_ratios",
+        "collect_efficiency_ratios",
+        "collect_liquidity_ratios",
+        "collect_profitability_ratios",
+        "collect_solvency_ratios",
+        "collect_valuation_ratios",
+        "collect_all_greeks",
+        "collect_first_order_greeks",
+        "collect_second_order_greeks",
+        "collect_third_order_greeks",
+        "collect_all_indicators",
+        "collect_breadth_indicators",
+        "collect_momentum_indicators",
+        "collect_overlap_indicators",
+        "collect_volatility_indicators",
+        "collect_all_metrics",
+        "",
     }
 )
 
 # Parameters always removed from method inspection.
-_SKIP_PARAMS = frozenset({"self", "progress_bar"})
+SKIP_PARAMS = frozenset({"self", "progress_bar", "overwrite"})
 
 # Parameters handled at the wrapper / Toolkit-init level.
-_INIT_HANDLED_PARAMS = frozenset(
+INIT_HANDLED_PARAMS = frozenset(
     {
         "tickers",
         "countries",
         "start_date",
         "end_date",
         "quarterly",
-        "benchmark_ticker",
     }
 )
 
-# ══════════════════════════════════════════════════════════════════════
-#  Tool index — populated during registration
-# ══════════════════════════════════════════════════════════════════════
-_TOOL_INDEX: dict[str, list[dict[str, str]]] = {}
+TOOL_INDEX: dict[str, list[dict[str, str]]] = {}
 
 
-# ══════════════════════════════════════════════════════════════════════
-#  Helpers
-# ══════════════════════════════════════════════════════════════════════
-
-
-def _clean_docstring(
+def create_clean_docstring(
     doc: str | None,
     max_chars: int = 500,
 ) -> str:
@@ -163,14 +165,14 @@ def _clean_docstring(
     return (desc[: max_chars - 3] + "...") if len(desc) > max_chars else desc
 
 
-def _to_bool(v: Any) -> bool:
+def to_boolean(v: Any) -> bool:
     """Coerce a value to bool (handles string inputs from LLMs)."""
     if isinstance(v, bool):
         return v
     return str(v).lower() in ("true", "1", "yes")
 
 
-def _unwrap_type(annotation: Any) -> Any:
+def unwrap_type(annotation: Any) -> Any:
     """Unwrap Optional / Union annotations to the primary concrete type."""
     origin = get_origin(annotation)
     is_union = origin is Union or (
@@ -182,13 +184,13 @@ def _unwrap_type(annotation: Any) -> Any:
     return annotation
 
 
-def _coerce_value(val: Any, annotation: Any) -> Any:
+def coerce_value(val: Any, annotation: Any) -> Any:
     """Best-effort type coercion for LLM-provided parameter values."""
     if val is None or val == "":
         return None
-    target = _unwrap_type(annotation)
+    target = unwrap_type(annotation)
     if target is bool:
-        return _to_bool(val)
+        return to_boolean(val)
     if target is int:
         try:
             return int(float(val))
@@ -202,7 +204,7 @@ def _coerce_value(val: Any, annotation: Any) -> Any:
     return val
 
 
-def _validate_date(date_str: str) -> str:
+def validate_date(date_str: str) -> str:
     """Normalise a date string to YYYY-MM-DD or return a safe default."""
     if not date_str:
         return ""
@@ -212,14 +214,14 @@ def _validate_date(date_str: str) -> str:
     return "2020-01-01"
 
 
-def _extract_extra_params(method: Any) -> list[inspect.Parameter]:
+def extract_extra_params(method: Any) -> list[inspect.Parameter]:
     """Return method parameters that are NOT handled by the wrapper."""
     sig = inspect.signature(method)
     return [
         p
         for name, p in sig.parameters.items()
-        if name not in _SKIP_PARAMS
-        and name not in _INIT_HANDLED_PARAMS
+        if name not in SKIP_PARAMS
+        and name not in INIT_HANDLED_PARAMS
         and p.kind
         in (
             inspect.Parameter.POSITIONAL_OR_KEYWORD,
@@ -228,12 +230,7 @@ def _extract_extra_params(method: Any) -> list[inspect.Parameter]:
     ]
 
 
-# ══════════════════════════════════════════════════════════════════════
-#  Wrapper construction
-# ══════════════════════════════════════════════════════════════════════
-
-
-def _build_common_signature_params(category: str) -> list[inspect.Parameter]:
+def build_common_signature_params(category: str) -> list[inspect.Parameter]:
     """Build the common MCP-level parameters for a given category."""
     P = inspect.Parameter
     POS = P.POSITIONAL_OR_KEYWORD
@@ -292,14 +289,14 @@ def _build_wrapper(
 
     def wrapper(**kwargs: Any) -> str:
         # ── Formatting params ─────────────────────────────────────
-        small_context = _to_bool(kwargs.pop("small_context", False))
-        hist = _to_bool(kwargs.pop("historical", False))
+        small_context = to_boolean(kwargs.pop("small_context", False))
+        hist = to_boolean(kwargs.pop("historical", False))
 
         # ── Method-specific params ────────────────────────────────
         method_kwargs: dict[str, Any] = {}
         for pname, pann, _pdefault in param_meta:
             if pname in kwargs:
-                method_kwargs[pname] = _coerce_value(kwargs.pop(pname), pann)
+                method_kwargs[pname] = coerce_value(kwargs.pop(pname), pann)
             # If not provided, let the underlying method use its own default.
 
         # ── Init-level params (remaining in kwargs) ───────────────
@@ -315,11 +312,11 @@ def _build_wrapper(
         if raw_countries:
             countries = [c.strip() for c in str(raw_countries).split(",") if c.strip()]
 
-        start_date = _validate_date(
+        start_date = validate_date(
             kwargs.pop("start_date", "2015-01-01") or "2015-01-01"
         )
         end_date = kwargs.pop("end_date", "") or None
-        quarterly = _to_bool(kwargs.pop("quarterly", False))
+        quarterly = to_boolean(kwargs.pop("quarterly", False))
         benchmark_ticker = kwargs.pop("benchmark_ticker", "SPY")
 
         # ── Dispatch via provider ─────────────────────────────────
@@ -362,7 +359,7 @@ def _build_wrapper(
             )
 
     # ── Attach explicit signature for FastMCP schema generation ───
-    common = _build_common_signature_params(category)
+    common = build_common_signature_params(category)
     POS = inspect.Parameter.POSITIONAL_OR_KEYWORD
     sig_params = list(common)
 
@@ -394,7 +391,7 @@ def _register_module_tools(
 ) -> int:
     """Register all public methods of *cls* as MCP tools."""
     count = 0
-    _TOOL_INDEX[module_name] = []
+    TOOL_INDEX[module_name] = []
 
     try:
         members = inspect.getmembers(cls, predicate=inspect.isfunction)
@@ -403,12 +400,12 @@ def _register_module_tools(
         return 0
 
     for meth_name, meth_func in sorted(members):
-        if meth_name.startswith("_") or meth_name in _SKIP_METHODS:
+        if meth_name.startswith("_") or meth_name in SKIP_METHODS:
             continue
 
-        doc = _clean_docstring(meth_func.__doc__)
+        doc = create_clean_docstring(meth_func.__doc__)
         full_desc = f"[{module_name}] {doc}"
-        extra = _extract_extra_params(meth_func)
+        extra = extract_extra_params(meth_func)
 
         try:
             fn = _build_wrapper(provider, module_name, meth_name, extra, category)
@@ -416,7 +413,7 @@ def _register_module_tools(
             fn.__name__ = tool_name
             fn.__doc__ = full_desc
             mcp.add_tool(fn, name=tool_name, description=full_desc)
-            _TOOL_INDEX[module_name].append({"tool": tool_name, "description": doc})
+            TOOL_INDEX[module_name].append({"tool": tool_name, "description": doc})
             count += 1
         except Exception as exc:
             logger.debug("Skipping %s.%s: %s", module_name, meth_name, exc)
@@ -431,17 +428,17 @@ def _register_toolkit_direct_tools(
     """Register Toolkit direct methods (historical data, financials, …)."""
     count = 0
     module_name = "toolkit"
-    _TOOL_INDEX[module_name] = []
+    TOOL_INDEX[module_name] = []
 
-    for meth_name in sorted(_TOOLKIT_DIRECT_METHODS):
+    for meth_name in sorted(TOOLKIT_DIRECT_METHODS):
         meth_func = getattr(Toolkit, meth_name, None)
         if meth_func is None:
             logger.debug("Toolkit.%s not found — skipping", meth_name)
             continue
 
-        doc = _clean_docstring(meth_func.__doc__)
+        doc = create_clean_docstring(meth_func.__doc__)
         full_desc = f"[toolkit] {doc}"
-        extra = _extract_extra_params(meth_func)
+        extra = extract_extra_params(meth_func)
 
         try:
             fn = _build_wrapper(
@@ -455,7 +452,7 @@ def _register_toolkit_direct_tools(
             fn.__name__ = tool_name
             fn.__doc__ = full_desc
             mcp.add_tool(fn, name=tool_name, description=full_desc)
-            _TOOL_INDEX[module_name].append({"tool": tool_name, "description": doc})
+            TOOL_INDEX[module_name].append({"tool": tool_name, "description": doc})
             count += 1
         except Exception as exc:
             logger.debug("Skipping toolkit.%s: %s", meth_name, exc)
@@ -488,4 +485,4 @@ def register_all_tools(mcp: FastMCP, provider: ToolkitProvider) -> int:
 
 def get_tool_index() -> dict[str, list[dict[str, str]]]:
     """Return the category → tools index built during registration."""
-    return _TOOL_INDEX
+    return TOOL_INDEX

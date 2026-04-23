@@ -14,6 +14,44 @@ from financetoolkit.utilities.logger_model import get_logger
 logger = get_logger()
 
 
+def _non_null_count(df: pd.DataFrame) -> int:
+    """Return the total count of non-null cells in a DataFrame."""
+    return int(df.notna().to_numpy().sum())
+
+
+def _format_single_value(
+    df: pd.DataFrame,
+    title: str | None = None,
+    precision: int = 4,
+) -> str:
+    """
+    Format a DataFrame that contains exactly one non-null value as a readable
+    scalar string instead of a one-cell table.
+
+    Label is built from the optional *title*, the row index label, and the
+    column name so the caller always knows what the number refers to.
+    """
+    flat = df.stack().dropna()
+    if flat.empty:
+        return "No data available."
+
+    val = flat.iloc[0]
+    raw_idx = flat.index[0]
+
+    parts: list[str] = []
+    if title:
+        parts.append(title)
+    if isinstance(raw_idx, tuple):
+        parts.extend(str(x) for x in raw_idx)
+    else:
+        parts.append(str(raw_idx))
+
+    label = " \u00b7 ".join(p for p in parts if p)
+
+    formatted = f"{val:.{precision}g}" if isinstance(val, float) else str(val)
+    return f"**{label}:** {formatted}" if label else formatted
+
+
 def dataframe_to_markdown(
     df: pd.DataFrame,
     *,
@@ -30,7 +68,7 @@ def dataframe_to_markdown(
     - Very wide frames get transposed automatically.
     """
     if df.empty:
-        return "_No data available._"
+        return "No data available."
 
     work = df.copy()
 
@@ -112,16 +150,30 @@ def format_result(
     """
     Universal formatter: takes any FinanceToolkit return value and produces
     a compact Markdown string ready for an LLM.
+
+    A result with exactly one non-null value is returned as a labelled scalar
+    (e.g. ``**economics.get_inflation_rate \u00b7 2025 \u00b7 United States:** 0.02089``)
+    rather than a one-cell Markdown table.  Any result with more than one
+    non-null value is always rendered as a Markdown table so that comparisons
+    across years, quarters, companies, or countries are easy to read.
     """
+    # ── Normalise Series → DataFrame so all tabular paths share one branch ──
+    if isinstance(result, pd.Series):
+        result = result.to_frame()
+
     if isinstance(result, pd.DataFrame):
         if small_context:
             result = trim_for_small_context(result, historical=historical)
-        return dataframe_to_markdown(result, precision=precision, title=title)
 
-    if isinstance(result, pd.Series):
-        return dataframe_to_markdown(
-            result.to_frame(), precision=precision, title=title
-        )
+        non_null = _non_null_count(result)
+
+        if non_null == 0:
+            return "No data available."
+        if non_null == 1:
+            # Single data point — a table adds no value; show as a labelled scalar.
+            return _format_single_value(result, title=title, precision=precision)
+        # Multiple data points — always use a table for easy comparison.
+        return dataframe_to_markdown(result, precision=precision, title=title)
 
     if isinstance(result, dict):
         lines = []

@@ -19,18 +19,17 @@ from dotenv import load_dotenv
 from mcp.server.fastmcp import FastMCP
 
 from financetoolkit.helpers import calculate_growth as _calc_growth
-from financetoolkit.mcp_server.formatting import format_result
-from financetoolkit.mcp_server.provider import ToolkitProvider
-from financetoolkit.mcp_server.registry import (
+from financetoolkit.mcp_server.formatting_model import format_result
+from financetoolkit.mcp_server.provider_model import ToolkitProvider
+from financetoolkit.mcp_server.registry_model import (
     get_tool_index,
     register_all_tools,
 )
 from financetoolkit.utilities.logger_model import get_logger
 
 load_dotenv()
-logger = get_logger("finance_mcp")
+logger = get_logger()
 
-# ── Provider (shared state — NO Toolkit instantiated here) ───────────
 _provider = ToolkitProvider(
     api_key=os.environ.get("FMP_API_KEY"),
     cache_ttl=int(os.environ.get("FINANCE_MCP_CACHE_TTL", "600")),
@@ -87,7 +86,29 @@ mcp = FastMCP(
         "- Risk/Return: Sharpe -> `performance_get_sharpe_ratio` | "
         "Beta -> `performance_get_beta` | WACC -> `models_get_weighted_average_cost_of_capital`\n"
         "- Momentum: RSI -> `technicals_get_relative_strength_index` | MACD -> "
-        "`technicals_get_moving_average_convergence_divergence`"
+        "`technicals_get_moving_average_convergence_divergence`\n\n"
+        "### OUTPUT PRESENTATION RULES\n"
+        "1. **ALWAYS USE TABLES:** When a tool returns data with multiple values (time series, "
+        "multiple countries, multiple tickers), ALWAYS present it as a Markdown table. "
+        "NEVER collapse multi-value data into bullet points, inline lists, or comma-separated values.\n"
+        "2. **PRESERVE TOOL OUTPUT:** Tool results are already formatted as Markdown tables — "
+        "render them as-is. Do not reformat, summarise, or rewrite them as prose or lists.\n"
+        "3. **TRENDS IN INTERPRETATION ONLY:** Do not annotate trends, peaks, or ranges inline "
+        "with the data table. Reserve all trend commentary, observations, and analysis for a "
+        "separate 'Interpretation' section that follows the table(s).\n"
+        "4. **RANGE SUMMARIES ARE FORBIDDEN:** Never write 'Netherlands (2015→2026): 792,438 → 974,434' "
+        "as a summary of a time series. Show the full table instead.\n\n"
+        "### EXECUTION DISCIPLINE\n"
+        "1. **NO DUPLICATE TOOL CALLS:** Before calling any tool, check whether you have already "
+        "called that tool with the same (or equivalent) parameters in this session. "
+        "If you have, use the result you already received — do NOT call it again.\n"
+        "2. **PLAN BEFORE CALLING:** When a user asks a broad question, decide upfront which tools "
+        "you need, call each exactly once, then synthesise all results together.\n"
+        "3. **BATCH, DON'T REPEAT:** If you need the same metric for multiple countries or tickers, "
+        "pass them all in one call (comma-separated). Never split a multi-entity request into "
+        "separate single-entity calls.\n"
+        "4. **STOP WHEN DONE:** Once you have all the data needed to answer the question, stop "
+        "calling tools and present the analysis. Do not call additional tools speculatively."
     ),
 )
 
@@ -386,7 +407,7 @@ def calculate_growth(
             quarterly=quarterly,
         )
 
-        if isinstance(result, (pd.DataFrame, pd.Series)):
+        if isinstance(result, pd.DataFrame | pd.Series):
             growth = _calc_growth(result, lag=lag)
             return format_result(
                 growth,

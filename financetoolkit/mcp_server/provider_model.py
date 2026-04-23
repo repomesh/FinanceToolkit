@@ -40,11 +40,6 @@ _DB_PATH = os.environ.get("FINANCE_MCP_CACHE_DB", "finance_cache.db")
 _CACHE_TTL = int(os.environ.get("FINANCE_MCP_CACHE_TTL", "600"))  # 10 minutes
 
 
-# ══════════════════════════════════════════════════════════════════════
-#  SQLite result cache
-# ══════════════════════════════════════════════════════════════════════
-
-
 class _CacheDB:
     """Thread-safe SQLite cache for DataFrame API results."""
 
@@ -55,13 +50,15 @@ class _CacheDB:
 
     def _init_db(self) -> None:
         with self._lock, sqlite3.connect(self._db_path) as conn:
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE TABLE IF NOT EXISTS cache (
                     key    TEXT PRIMARY KEY,
                     value  TEXT NOT NULL,
                     ts     REAL NOT NULL
                 )
-                """)
+                """
+            )
             conn.execute("CREATE INDEX IF NOT EXISTS idx_cache_ts ON cache(ts)")
 
     @staticmethod
@@ -122,7 +119,7 @@ class _CacheDB:
 
 def _is_cacheable(v: Any) -> bool:
     """Check if a value is safe to serialise into a cache key."""
-    return isinstance(v, (str, int, float, bool, type(None)))
+    return isinstance(v, str | int | float | bool | type(None))
 
 
 class ToolkitProvider:
@@ -152,10 +149,6 @@ class ToolkitProvider:
         self._toolkit_cache: dict[str, Any] = {}
         self._standalone_cache: dict[str, Any] = {}
         self._lock = Lock()
-
-    # ──────────────────────────────────────────────────────────────────
-    #  Public API
-    # ──────────────────────────────────────────────────────────────────
 
     def call_method(
         self,
@@ -216,7 +209,6 @@ class ToolkitProvider:
 
         logger.debug("Cache MISS: %s.%s — calling API", module_name, method_name)
 
-        # ── Dispatch by category ──────────────────────────────────
         if category == "ticker":
             result = self._call_ticker_module(
                 module_name,
@@ -255,7 +247,6 @@ class ToolkitProvider:
                 f"Unknown category '{category}' for module '{module_name}'"
             )
 
-        # ── Cache the result ──────────────────────────────────────
         if isinstance(result, pd.Series):
             result = result.to_frame()
         if isinstance(result, pd.DataFrame):
@@ -336,10 +327,6 @@ class ToolkitProvider:
         with self._lock:
             self._standalone_cache[cache_key] = instance
         return instance
-
-    # ──────────────────────────────────────────────────────────────────
-    #  Category-specific dispatchers
-    # ──────────────────────────────────────────────────────────────────
 
     def _call_ticker_module(
         self,

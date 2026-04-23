@@ -63,6 +63,10 @@ dev = [
     "types-requests>=2.32",
     "ruff>=0.13.2",
 ]
+mcp = [
+    "mcp-server>=0.1.4",
+    "tabulate>=0.10.0",
+]
 
 [tool.uv]
 default-groups = ["dev"]
