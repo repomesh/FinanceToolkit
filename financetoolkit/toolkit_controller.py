@@ -3,6 +3,7 @@
 __docformat__ = "google"
 
 
+import os
 import re
 import warnings
 from collections import Counter
@@ -66,6 +67,10 @@ try:
 except ImportError:
     ENABLE_TQDM = False
 
+# In case the user has set an API key as an environment variable,
+# this will be used as the default API key for the Toolkit.
+API_KEY: str = os.environ.get("FINANCIAL_MODELING_PREP_API_KEY", "")
+
 
 class Toolkit:
     """
@@ -81,7 +86,7 @@ class Toolkit:
     def __init__(
         self,
         tickers: list | str | None = None,
-        api_key: str = "",
+        api_key: str = API_KEY,
         start_date: str | None = None,
         end_date: str | None = None,
         quarterly: bool = False,
@@ -121,7 +126,8 @@ class Toolkit:
         Args:
             tickers (list | str | None): A string or a list of strings containing the company ticker(s). E.g. 'TSLA' or 'MSFT'.
             Find tickers on various websites or via the FinanceDatabase: https://github.com/JerBouma/financedatabase. Defaults to None.
-            api_key (str): An API key from FinancialModelingPrep. Obtain one here: https://www.jeroenbouma.com/fmp. Defaults to "".
+            api_key (str): An API key from FinancialModelingPrep. Obtain one here: https://www.jeroenbouma.com/fmp. Defaults to
+            the value of the FINANCIAL_MODELING_PREP_API_KEY environment variable if set, otherwise an empty string.
             start_date (str | None): A string containing the start date of the data. Needs to be formatted as YYYY-MM-DD.
             Defaults to 5 years/quarters back from today depending on the 'quarterly' flag.
             end_date (str | None): A string containing the end date of the data. Needs to be formatted as YYYY-MM-DD.

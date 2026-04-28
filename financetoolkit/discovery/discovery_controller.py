@@ -2,6 +2,8 @@
 
 __docformat__ = "google"
 
+import os
+
 import pandas as pd
 
 from financetoolkit import fmp_model
@@ -19,6 +21,10 @@ from financetoolkit.utilities.error_model import handle_errors
 logger_model.setup_logger()
 logger = logger_model.get_logger()
 
+# In case the user has set an API key as an environment variable,
+# this will be used as the default API key for the Toolkit.
+API_KEY: str = os.environ.get("FINANCIAL_MODELING_PREP_API_KEY", None)
+
 
 class Discovery:
     """
@@ -30,7 +36,7 @@ class Discovery:
 
     def __init__(
         self,
-        api_key: str | None = None,
+        api_key: str | None = API_KEY,
     ):
         """
         Initializes the Discovery Controller Class.
