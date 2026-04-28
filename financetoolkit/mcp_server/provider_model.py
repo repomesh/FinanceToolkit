@@ -1,29 +1,14 @@
 """
 Centralized FinanceToolkit provider with SQLite-backed caching.
-
-Routes MCP tool calls to the correct FinanceToolkit module based on
-category:
-
-    ticker     → Instantiate Toolkit, access sub-module via property
-    toolkit    → Instantiate Toolkit, call method directly
-    standalone → Instantiate Economics or FixedIncome directly (no tickers)
-    discovery  → Instantiate Discovery with api_key only
-
-No Toolkit (or any controller) is instantiated at import time or during
-provider construction — only when a tool is actually called.
 """
 
 from __future__ import annotations
 
 import hashlib
 import inspect
-import json
 import logging
 import os
-import sqlite3
 import time
-from datetime import datetime
-from io import StringIO
 from threading import Lock
 from typing import Any
 
@@ -33,122 +18,41 @@ from financetoolkit import Toolkit
 from financetoolkit.discovery.discovery_controller import Discovery
 from financetoolkit.economics.economics_controller import Economics
 from financetoolkit.fixedincome.fixedincome_controller import FixedIncome
+from financetoolkit.mcp_server.cache_model import SQLiteCache
 
 logger = logging.getLogger(__name__)
 
-_DB_PATH = os.environ.get("FINANCE_MCP_CACHE_DB", "finance_cache.db")
-_CACHE_TTL = int(os.environ.get("FINANCE_MCP_CACHE_TTL", "600"))  # 10 minutes
-
-
-class _CacheDB:
-    """Thread-safe SQLite cache for DataFrame API results."""
-
-    def __init__(self, db_path: str = _DB_PATH) -> None:
-        self._db_path = db_path
-        self._lock = Lock()
-        self._init_db()
-
-    def _init_db(self) -> None:
-        with self._lock, sqlite3.connect(self._db_path) as conn:
-            conn.execute(
-                """
-                CREATE TABLE IF NOT EXISTS cache (
-                    key    TEXT PRIMARY KEY,
-                    value  TEXT NOT NULL,
-                    ts     REAL NOT NULL
-                )
-                """
-            )
-            conn.execute("CREATE INDEX IF NOT EXISTS idx_cache_ts ON cache(ts)")
-
-    @staticmethod
-    def _make_key(namespace: str, params: dict[str, Any]) -> str:
-        raw = json.dumps({"ns": namespace, **params}, sort_keys=True, default=str)
-        return hashlib.sha256(raw.encode()).hexdigest()
-
-    def get(
-        self,
-        namespace: str,
-        params: dict[str, Any],
-        ttl: int = _CACHE_TTL,
-    ) -> pd.DataFrame | None:
-        key = self._make_key(namespace, params)
-        with self._lock, sqlite3.connect(self._db_path) as conn:
-            row = conn.execute(
-                "SELECT value, ts FROM cache WHERE key = ?",
-                (key,),
-            ).fetchone()
-        if row is None:
-            return None
-        value_json, ts = row
-        if time.time() - ts > ttl:
-            return None
-        try:
-            return pd.read_json(StringIO(value_json), dtype=False)
-        except Exception:
-            return None
-
-    def put(self, namespace: str, params: dict[str, Any], df: pd.DataFrame) -> None:
-        key = self._make_key(namespace, params)
-        try:
-            value_json = df.to_json()
-        except Exception:
-            return
-        with self._lock, sqlite3.connect(self._db_path) as conn:
-            conn.execute(
-                "INSERT OR REPLACE INTO cache (key, value, ts) VALUES (?, ?, ?)",
-                (key, value_json, time.time()),
-            )
-
-    def clear(self) -> int:
-        with self._lock, sqlite3.connect(self._db_path) as conn:
-            cur = conn.execute("DELETE FROM cache")
-            return cur.rowcount
-
-    def evict_expired(self, ttl: int = _CACHE_TTL) -> int:
-        cutoff = time.time() - ttl
-        with self._lock, sqlite3.connect(self._db_path) as conn:
-            cur = conn.execute("DELETE FROM cache WHERE ts < ?", (cutoff,))
-            return cur.rowcount
-
-
-# ══════════════════════════════════════════════════════════════════════
-#  Provider
-# ══════════════════════════════════════════════════════════════════════
-
-
-def _is_cacheable(v: Any) -> bool:
-    """Check if a value is safe to serialise into a cache key."""
-    return isinstance(v, str | int | float | bool | type(None))
+# In case the user has set an API key as an environment variable,
+# this will be used as the default API key for the Toolkit.
+API_KEY: str = os.environ.get("FINANCIAL_MODELING_PREP_API_KEY", "")
 
 
 class ToolkitProvider:
     """
     Stateless provider that routes MCP tool calls to the appropriate
     FinanceToolkit module.
-
-    Key design principles:
-    - **No instantiation at startup** — Toolkit / Economics / FixedIncome
-      are created lazily, only when a tool is actually called.
-    - **Category-aware routing** — four dispatch paths for ticker modules,
-      Toolkit direct methods, standalone modules, and Discovery.
-    - **SQLite result caching** with configurable TTL.
-    - **Instance caching** for Toolkit and standalone controllers,
-      keyed by (tickers, date range, quarterly).
     """
 
     def __init__(
         self,
-        api_key: str | None = None,
-        cache_ttl: int = _CACHE_TTL,
-        db_path: str = _DB_PATH,
+        cache_ttl: int,
+        database_location: str,
+        api_key: str = API_KEY,
     ) -> None:
-        self._api_key = api_key or os.environ.get("FMP_API_KEY", "DEMO")
-        self._cache_ttl = cache_ttl
-        self._cache = _CacheDB(db_path)
+        self._api_key = api_key
+        self._cache_ttl: int = cache_ttl
+        self._sqlitecache: SQLiteCache = SQLiteCache(
+            database_location=database_location
+        )
         self._toolkit_cache: dict[str, Any] = {}
         self._standalone_cache: dict[str, Any] = {}
         self._lock = Lock()
+        self._last_eviction = 0.0
+
+        # create API key hash in case the user changes this key and a cached instance
+        # was created with a different key. This can result in conflicts related to permissions
+        # to the FinancialModelingPrep endpoints.
+        self._api_hash = hashlib.sha256((self._api_key or "").encode()).hexdigest()
 
     def call_method(
         self,
@@ -157,8 +61,8 @@ class ToolkitProvider:
         category: str,
         tickers: list[str] | None = None,
         countries: list[str] | None = None,
-        start_date: str = "2015-01-01",
-        end_date: str | None = None,
+        start_date: str = "",
+        end_date: str = "",
         quarterly: bool = False,
         benchmark_ticker: str = "SPY",
         **method_kwargs: Any,
@@ -166,31 +70,49 @@ class ToolkitProvider:
         """
         Route a tool call to the correct FinanceToolkit module.
 
-        Parameters
-        ----------
-        module_name : str
-            Logical module name (e.g. "ratios", "economics", "toolkit").
-        method_name : str
-            Public method to invoke on the module.
-        category : str
-            One of "ticker", "toolkit", "standalone", "discovery".
-        tickers : list[str] | None
-            Comma-split ticker list (ignored for standalone / discovery).
-        countries : list[str] | None
-            Country filter list (standalone/economics modules only).
-        start_date, end_date : str
-            Date range for data retrieval.
-        quarterly : bool
-            Whether to use quarterly data granularity.
-        benchmark_ticker : str
-            Benchmark symbol (ticker modules only).
-        **method_kwargs
-            Additional keyword arguments forwarded to the underlying method.
-        """
-        if end_date is None:
-            end_date = datetime.now().strftime("%Y-%m-%d")
+        The ``tickers``, ``countries``, ``start_date``, ``end_date``,
+        ``quarterly``, and ``benchmark_ticker`` parameters are all optional so
+        that callers that do not require them (e.g. ``discovery`` category calls)
+        can omit them without constructing dummy values.
 
-        # ── Result cache lookup ───────────────────────────────────
+        Args:
+            module_name (str): Logical module name (e.g. ``"ratios"``,
+                ``"economics"``, ``"toolkit"``).
+            method_name (str): Public method to invoke on the module.
+            category (str): Dispatch category — one of ``"ticker"``,
+                ``"toolkit"``, ``"standalone"``, or ``"discovery"``.
+            tickers (list[str] | None): Ticker symbols. Required for ``"ticker"``
+                and ``"toolkit"`` categories; ignored otherwise.
+            countries (list[str] | None): Country identifiers. Used by
+                ``"standalone"`` (economics/fixedincome) modules.
+            start_date (str): ISO-format start date (``YYYY-MM-DD``). Defaults to
+                an empty string which is handled gracefully by the modules.
+            end_date (str): ISO-format end date (``YYYY-MM-DD``). Defaults to an
+                empty string.
+            quarterly (bool): Whether to request quarterly granularity. Defaults
+                to ``False`` (annual).
+            benchmark_ticker (str): Benchmark symbol used by ticker-category
+                modules. Defaults to ``"SPY"``.
+            **method_kwargs: Additional keyword arguments forwarded verbatim to
+                the underlying controller method.
+
+        Returns:
+            Any: The raw result from the underlying FinanceToolkit method —
+                typically a ``pd.DataFrame``, ``pd.Series``, scalar, or dict.
+        """
+        current_time = time.time()
+
+        if self._cache_ttl and (current_time - self._last_eviction) > self._cache_ttl:
+            evicted_count = self._sqlitecache.remove_expired_entries(
+                ttl=self._cache_ttl
+            )
+            self._last_eviction = current_time
+            if evicted_count > 0:
+                logger.info(
+                    f"Evicted {evicted_count} expired cache entries. "
+                    f"Disable this by setting cache_ttl to 0 or None in the YAML configuration."
+                )
+
         cache_params = {
             "module": module_name,
             "method": method_name,
@@ -199,49 +121,78 @@ class ToolkitProvider:
             "start": start_date,
             "end": end_date,
             "quarterly": quarterly,
-            **{k: v for k, v in method_kwargs.items() if _is_cacheable(v)},
+            **{
+                k: v
+                for k, v in method_kwargs.items()
+                if isinstance(v, (str, int, float, bool, type(None)))
+            },
         }
 
-        cached = self._cache.get(module_name, cache_params, ttl=self._cache_ttl)
+        cached = self._sqlitecache.get_dataframe(
+            module_name, cache_params, ttl=self._cache_ttl
+        )
         if cached is not None:
-            logger.debug("Cache HIT: %s.%s", module_name, method_name)
+            logger.info(f"Acquired cache information ({module_name}, {method_name})")
             return cached
 
-        logger.debug("Cache MISS: %s.%s — calling API", module_name, method_name)
+        logger.info(
+            f"Calling Finance Toolkit functionality ({module_name}, {method_name})"
+        )
 
         if category == "ticker":
-            result = self._call_ticker_module(
-                module_name,
-                method_name,
-                tickers or ["AAPL"],
-                start_date,
-                end_date,
-                quarterly,
-                benchmark_ticker,
+            # All functionalities that come from a sub-module accessed via
+            # a property on the Toolkit instance (e.g. ratios, models,
+            # options, performance)
+            if not tickers:
+                raise ValueError(
+                    f"'{method_name}' requires one or more ticker symbols. "
+                    "Provide them via the `tickers` parameter."
+                )
+            result = self.call_sub_module_functionality(
+                module_name=module_name,
+                method_name=method_name,
+                tickers=tickers,
+                start_date=start_date,
+                end_date=end_date,
+                quarterly=quarterly,
+                benchmark_ticker=benchmark_ticker,
                 **method_kwargs,
             )
         elif category == "toolkit":
-            result = self._call_toolkit_direct(
-                method_name,
-                tickers or ["AAPL"],
-                start_date,
-                end_date,
-                quarterly,
-                benchmark_ticker,
+            # All functionalities that come directly from the Toolkit class
+            # itself (e.g. get_historical_data) rather than from a sub-module
+            # accessed via a property (e.g. ratios, technicals)
+            if not tickers:
+                raise ValueError(
+                    f"'{method_name}' requires one or more ticker symbols. "
+                    "Provide them via the `tickers` parameter."
+                )
+            result = self.call_toolkit_functionality(
+                method_name=method_name,
+                tickers=tickers,
+                start_date=start_date,
+                end_date=end_date,
+                quarterly=quarterly,
+                benchmark_ticker=benchmark_ticker,
                 **method_kwargs,
             )
         elif category == "standalone":
-            result = self._call_standalone(
-                module_name,
-                method_name,
-                start_date,
-                end_date,
-                quarterly,
+            # Module such as Economics or FixedIncome that can be initialised
+            # without needing to call the Toolkit class first
+            result = self.call_standalone_module_functionality(
+                module_name=module_name,
+                method_name=method_name,
+                start_date=start_date,
+                end_date=end_date,
+                quarterly=quarterly,
                 countries=countries,
                 **method_kwargs,
             )
         elif category == "discovery":
-            result = self._call_discovery(method_name, **method_kwargs)
+            # Module that can also be initialized with the Toolkit class
+            # but doesn't require any parameters other than the API key
+            instance = Discovery(api_key=self._api_key)
+            result = getattr(instance, method_name)(**method_kwargs)
         else:
             raise ValueError(
                 f"Unknown category '{category}' for module '{module_name}'"
@@ -250,38 +201,49 @@ class ToolkitProvider:
         if isinstance(result, pd.Series):
             result = result.to_frame()
         if isinstance(result, pd.DataFrame):
-            self._cache.put(module_name, cache_params, result)
+            self._sqlitecache.store_dataframe(module_name, cache_params, result)
 
         return result
 
-    def clear_cache(self) -> int:
-        """Clear all caches. Returns number of evicted DB rows."""
-        with self._lock:
-            self._toolkit_cache.clear()
-            self._standalone_cache.clear()
-        return self._cache.clear()
-
-    def evict_expired(self) -> int:
-        return self._cache.evict_expired(ttl=self._cache_ttl)
-
-    def _get_toolkit(
+    def get_toolkit_instance(
         self,
         tickers: list[str],
         start_date: str,
         end_date: str,
         quarterly: bool,
         benchmark_ticker: str,
-    ) -> Any:
-        """Return a (potentially cached) Toolkit instance."""
+    ) -> Toolkit:
+        """
+        Return a (potentially cached) Toolkit instance for the requested tickers and date range.
+
+        This method will attempt to return a cached Toolkit instance if one exists for the
+        combination of tickers, start_date, end_date, quarterly flag and the provider API hash.
+        The cache key uses an uppercase, sorted representation of the tickers to ensure
+        consistent caching regardless of input order. Access to the cache is guarded by an
+        internal lock to ensure thread-safety. If no cached instance exists, a new Toolkit
+        is instantiated with the provider's API key and the provided parameters, stored in
+        the cache, and returned.
+
+        Args:
+            tickers (list[str]): List of ticker symbols to include in the Toolkit instance.
+            start_date (str): Start date for the Toolkit (format YYYY-MM-DD).
+            end_date (str): End date for the Toolkit (format YYYY-MM-DD).
+            quarterly (bool): Whether to initialize the Toolkit for quarterly (True)
+                or yearly (False) statements.
+            benchmark_ticker (str): Benchmark ticker symbol to use for comparative analysis.
+
+        Returns:
+            Toolkit: A Toolkit instance configured for the requested tickers and parameters.
+        """
         cache_key = (
             f"{','.join(sorted(t.upper() for t in tickers))}"
-            f"|{start_date}|{end_date}|{quarterly}"
+            f"|{start_date}|{end_date}|{quarterly}|{self._api_hash}"
         )
         with self._lock:
             if cache_key in self._toolkit_cache:
                 return self._toolkit_cache[cache_key]
 
-        tk = Toolkit(
+        toolkit_instance: Toolkit = Toolkit(
             tickers=tickers,
             api_key=self._api_key,
             start_date=start_date,
@@ -291,44 +253,11 @@ class ToolkitProvider:
         )
 
         with self._lock:
-            self._toolkit_cache[cache_key] = tk
-        return tk
+            self._toolkit_cache[cache_key] = toolkit_instance
 
-    def _get_standalone(
-        self,
-        module_name: str,
-        start_date: str,
-        end_date: str,
-        quarterly: bool,
-    ) -> Any:
-        """Return a (potentially cached) standalone controller instance."""
-        cache_key = f"{module_name}|{start_date}|{end_date}|{quarterly}"
+        return toolkit_instance
 
-        with self._lock:
-            if cache_key in self._standalone_cache:
-                return self._standalone_cache[cache_key]
-
-        if module_name == "economics":
-            instance = Economics(
-                start_date=start_date,
-                end_date=end_date,
-                quarterly=quarterly,
-            )
-        elif module_name == "fixedincome":
-
-            instance = FixedIncome(
-                start_date=start_date,
-                end_date=end_date,
-                quarterly=quarterly,
-            )
-        else:
-            raise ValueError(f"Unknown standalone module: {module_name}")
-
-        with self._lock:
-            self._standalone_cache[cache_key] = instance
-        return instance
-
-    def _call_ticker_module(
+    def call_sub_module_functionality(
         self,
         module_name: str,
         method_name: str,
@@ -338,20 +267,39 @@ class ToolkitProvider:
         quarterly: bool,
         benchmark_ticker: str,
         **kwargs: Any,
-    ) -> Any:
-        """Ticker-based modules: accessed via Toolkit property."""
-        tk = self._get_toolkit(
-            tickers,
-            start_date,
-            end_date,
-            quarterly,
-            benchmark_ticker,
+    ) -> pd.DataFrame | pd.Series | dict | float | int | str:
+        """
+        Invoke a method on a Toolkit sub-module for a given set of tickers and date range.
+
+        Args:
+            module_name (str): Name of the Toolkit sub-module to access (must match a Toolkit
+                    property name, e.g. "ratios", "models", "options", "performance").
+            method_name (str): Name of the method to call on the resolved sub-module.
+            tickers (list[str]): One or more ticker symbols to configure the Toolkit with.
+            start_date (str): Start date for data used by the Toolkit, formatted as "YYYY-MM-DD".
+            end_date (str): End date for data used by the Toolkit, formatted as "YYYY-MM-DD".
+            quarterly (bool): If True, Toolkit is configured to use quarterly financial statements;
+                    otherwise annual statements are used.
+            benchmark_ticker (str): Ticker used as benchmark (e.g. "SPY"); passed to Toolkit initialization.
+            **kwargs: Arbitrary keyword arguments forwarded to the resolved sub-module method.
+
+        Returns:
+            The result returned by the invoked sub-module method (typically a pandas DataFrame,
+                pd.Series, scalar or other domain-specific object).
+        """
+        toolkit_instance = self.get_toolkit_instance(
+            tickers=tickers,
+            start_date=start_date,
+            end_date=end_date,
+            quarterly=quarterly,
+            benchmark_ticker=benchmark_ticker,
         )
-        module = getattr(tk, module_name)
+        module = getattr(toolkit_instance, module_name)
         method = getattr(module, method_name)
+
         return method(**kwargs)
 
-    def _call_toolkit_direct(
+    def call_toolkit_functionality(
         self,
         method_name: str,
         tickers: list[str],
@@ -360,19 +308,39 @@ class ToolkitProvider:
         quarterly: bool,
         benchmark_ticker: str,
         **kwargs: Any,
-    ) -> Any:
-        """Toolkit direct methods: called on the Toolkit instance itself."""
-        tk = self._get_toolkit(
-            tickers,
-            start_date,
-            end_date,
-            quarterly,
-            benchmark_ticker,
+    ) -> pd.DataFrame | pd.Series | dict | float | int | str:
+        """
+        Call a Toolkit method on an instantiated Toolkit object for the specified tickers and date range.
+        This helper obtains (or creates) a Toolkit instance via self.get_toolkit_instance(...)
+        and invokes the requested method by name, forwarding any additional keyword arguments
+        to that method.
+
+        Args:
+            method_name (str): Name of the Toolkit method to invoke (e.g., "get_historical_data",
+                "get_profile", "get_quote").
+            tickers (list[str]): List of ticker symbols used to initialize the Toolkit instance.
+            start_date (str): Start date for the Toolkit data range in YYYY-MM-DD format.
+            end_date (str): End date for the Toolkit data range in YYYY-MM-DD format.
+            quarterly (bool): Whether to initialize the Toolkit for quarterly financial statements.
+            benchmark_ticker (str): Benchmark ticker symbol used for comparative analyses (e.g., "SPY").
+            **kwargs (Any): Additional keyword arguments forwarded to the invoked Toolkit method.
+
+        Returns:
+            The return value of the invoked Toolkit method (commonly a pandas.DataFrame,
+            pd.Series, dict, float, int, or str).
+        """
+        toolkit_instance = self.get_toolkit_instance(
+            tickers=tickers,
+            start_date=start_date,
+            end_date=end_date,
+            quarterly=quarterly,
+            benchmark_ticker=benchmark_ticker,
         )
-        method = getattr(tk, method_name)
+        method = getattr(toolkit_instance, method_name)
+
         return method(**kwargs)
 
-    def _call_standalone(
+    def call_standalone_module_functionality(
         self,
         module_name: str,
         method_name: str,
@@ -382,25 +350,79 @@ class ToolkitProvider:
         countries: list[str] | None = None,
         **kwargs: Any,
     ) -> Any:
-        """Standalone modules (Economics, FixedIncome): no tickers required."""
-        instance = self._get_standalone(
-            module_name,
-            start_date,
-            end_date,
-            quarterly,
-        )
+        """
+        Invoke a standalone module method (Economics, FixedIncome, Discovery) in a
+        thread-safe, cached manner and return its result.
+
+        Args:
+            module_name (str): Name of the standalone module to use. One of
+                "economics", "fixedincome", "discovery".
+            method_name (str): The name of the method to invoke on the module instance.
+            start_date (str): ISO formatted start date (YYYY-MM-DD) used when creating
+                module instances (ignored for discovery).
+            end_date (str): ISO formatted end date (YYYY-MM-DD) used when creating
+                module instances (ignored for discovery).
+            quarterly (bool): Whether the module instance should operate on quarterly
+                data (used for Economics and FixedIncome).
+            countries (list[str] | None): Optional list of country identifiers to pass
+                to the called method or to use for post-call column filtering if the
+                    method does not accept a 'countries' parameter.
+            **kwargs: Additional keyword arguments forwarded to the target method.
+
+        Returns:
+            The raw return value from the invoked method. If countries were
+            provided but the method does not accept them and the returned value is a
+            pandas.DataFrame, a filtered DataFrame containing only the requested country
+            columns (if present) is returned.
+        """
+        if module_name == "discovery":
+            cache_key = f"discovery|{self._api_hash}"
+        else:
+            cache_key = (
+                f"{module_name}|{start_date}|{end_date}|{quarterly}|{self._api_hash}"
+            )
+
+        with self._lock:
+            instance = self._standalone_cache.get(cache_key)
+
+        if instance is None:
+            if module_name == "economics":
+                instance = Economics(
+                    start_date=start_date,
+                    end_date=end_date,
+                    quarterly=quarterly,
+                )
+            elif module_name == "fixedincome":
+                instance = FixedIncome(
+                    start_date=start_date,
+                    end_date=end_date,
+                    quarterly=quarterly,
+                )
+            elif module_name == "discovery":
+                instance = Discovery(api_key=self._api_key)
+            else:
+                raise ValueError(f"Unknown standalone module: {module_name}")
+
+            with self._lock:
+                self._standalone_cache[cache_key] = instance
+
         method = getattr(instance, method_name)
 
-        # Only pass countries if the method accepts it
+        # If the method accepts a 'countries' parameter, pass it through.
+        countries_handled = False
         if countries:
             sig = inspect.signature(method)
             if "countries" in sig.parameters:
                 kwargs["countries"] = countries
+                countries_handled = True
 
-        return method(**kwargs)
+        result = method(**kwargs)
 
-    def _call_discovery(self, method_name: str, **kwargs: Any) -> Any:
-        """Discovery module: requires only api_key."""
-        instance = Discovery(api_key=self._api_key)
-        method = getattr(instance, method_name)
-        return method(**kwargs)
+        # If countries were requested but the method doesn't accept them and returned a DataFrame,
+        # filter columns post-call.
+        if countries and not countries_handled and isinstance(result, pd.DataFrame):
+            available = [c for c in countries if c in result.columns]
+            if available:
+                result = result[available]
+
+        return result

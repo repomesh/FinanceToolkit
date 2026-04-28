@@ -1,0 +1,662 @@
+# ──────────────────────────────────────────────────────────────────────────────
+# FinanceToolkit MCP Server — Configuration
+#
+# All module-level constants for the MCP server live here.
+# Edit this file to add/remove tools, adjust defaults, or tune behaviour
+# without touching Python source code.  Comments explain every key.
+# ──────────────────────────────────────────────────────────────────────────────
+
+instructions: 
+|
+  You are an expert financial analyst AI powered by the FinanceToolkit MCP server. 
+  You have access to 150+ pre-computed financial metrics, models, and economic indicators. 
+  Your primary goal is to retrieve precise financial data efficiently without hallucinating calculations.
+
+  CORE DIRECTIVES
+  1. **USE PRE-COMPUTED METRICS:** NEVER fetch raw financial statements (Income, Balance, Cash Flow) 
+  or historical price data to compute ratios, performance, or risk metrics manually. 
+  Always use the dedicated tool.
+  2. **BATCH REQUESTS:** Tools natively support multiple tickers/countries. Pass a list 
+  (e.g., `tickers='AAPL,MSFT'` or `countries='United States,Japan'`) 
+  instead of making multiple tool calls.
+  3. **MACRO VS MICRO:** Economics and FixedIncome tools do NOT take stock tickers. Use 
+  the `countries` parameter instead. To compare macro vs micro (e.g., Tesla P/E vs US Inflation), make separate tool calls 
+  and synthesize the results.
+  4. **PERIODICITY & CONTEXT:** Use `quarterly=true` for quarterly data. Limit output size using 
+  `start_date`, `end_date`, and `small_context=true` (limits output to 3 years) to avoid 
+  context window overflow.
+
+  TOOL ROUTING GUIDE
+  Each master tool takes an `indicator` parameter (enum) that selects the exact metric.
+  Always call with a specific indicator — never omit it.
+
+  The following tools are available, with indicator examples and required params:
+
+  - get_efficiency_ratios
+    - indicators: asset turnover, inventory turnover, DSO, DPO, cash conversion, …
+    - params: requires tickers
+    - example: indicator='get_inventory_turnover'
+  - get_liquidity_ratios
+    - indicators: current ratio, quick ratio, cash ratio, working capital, …
+    - params: requires tickers
+  - get_profitability_ratios
+    - indicators: gross/net/operating margin, ROE, ROA, ROIC, EPS, …
+    - params: requires tickers
+  - get_solvency_ratios
+    - indicators: debt/equity, interest coverage, debt-to-assets, …
+    - params: requires tickers
+  - get_valuation_ratios
+    - indicators: P/E, EPS, EV/EBITDA, P/B, market cap, dividend yield, …
+    - params: requires tickers
+
+  - get_breadth_indicators
+    - indicators: McClellan, OBV, A/D Line, Chaikin, …
+    - params: requires tickers
+  - get_momentum_indicators
+    - indicators: RSI, MACD, Stochastic, Williams %R, Aroon, …
+    - params: requires tickers
+  - get_overlap_indicators
+    - indicators: SMA, EMA, Bollinger Bands, Keltner Channels, …
+    - params: requires tickers
+  - get_volatility_indicators
+    - indicators: ATR, True Range, volatility series, …
+    - params: requires tickers
+
+  - get_models
+    - indicators: WACC, DuPont, Altman Z, Piotroski, intrinsic value, …
+    - params: requires tickers
+  - get_performance
+    - indicators: Sharpe, Sortino, Alpha, Beta, CAPM, Fama-French, …
+    - params: requires tickers
+  - get_risk
+    - indicators: VaR, CVaR, GARCH, max drawdown, skewness, kurtosis, …
+    - params: requires tickers
+  - get_options
+    - indicators: Black-Scholes, binomial, Greeks, implied vol, option chains
+    - params: requires tickers
+
+  - get_government_economy
+    - indicators: government debt, deficit, expenditure, revenue, tax, trust
+    - params: use countries
+  - get_general_economy
+    - indicators: GDP, CPI, inflation, trade, investment, consumption, confidence, exchange rates, …
+    - params: use countries
+
+  - get_environment (mixed)
+    - indicators: carbon footprint, renewable energy (countries); ESG scores (tickers)
+    - params: accepts both countries and tickers (specify which indicator target)
+  - get_jobs_and_society
+    - indicators: unemployment, population, poverty, income inequality
+    - params: use countries
+  - get_interest_rates (mixed)
+    - indicators: central bank rates, short/long term rates, govt/corp bond yields, EURIBOR, …
+    - params: use countries
+    - note: some indicators route to fixedincome module
+
+  - get_fixed_income_valuations
+    - indicators: bond duration, present value, yield-to-maturity, derivative pricing
+    - params: typically no tickers or countries required (input pricing params instead)
+  - get_discovery
+    - indicators: stock/ETF lists, screener, gainers/losers, sector performance
+    - params: no tickers needed (discovery-only queries)
+  - get_toolkit_data
+    - indicators: historical prices, statements, profile, quote, stats, …
+    - params: requires tickers (raw data methods; use sparingly)
+
+  Notes:
+  - Prefer passing lists (tickers='AAPL,MSFT' or countries='United States,Japan') to batch requests.
+  - When unsure which indicator to use, call search_metrics(query) first.
+
+  UTILITY TOOLS
+  - `search_metrics(query)`: Execute this first if you are unsure which indicator to use.
+  - `list_metrics_by_category(category)`: List all indicators for a category with descriptions.
+  - `calculate_growth(metric, tickers)`: Period-over-period growth rates.
+  Format: `metric='ratios_get_revenue_per_share'` (module_method).
+
+  COMMON ALIAS MAPPING
+  The following aliases are accepted for common financial metrics. Note that optional
+  parameters are not included.
+
+    valuation:
+      pe:         "get_valuation_ratios(indicator='get_price_to_earnings_ratio')"
+      ev_ebitda:  "get_valuation_ratios(indicator='get_ev_to_ebitda_ratio')"
+      market_cap: "get_valuation_ratios(indicator='get_market_cap')"
+    profitability:
+      eps: "get_profitability_ratios(indicator='get_earnings_per_share')"
+      roe: "get_profitability_ratios(indicator='get_return_on_equity')"
+      roa: "get_profitability_ratios(indicator='get_return_on_assets')"
+    margins:
+      gross:     "get_profitability_ratios(indicator='get_gross_margin')"
+      net:       "get_profitability_ratios(indicator='get_net_profit_margin')"
+      operating: "get_profitability_ratios(indicator='get_operating_margin')"
+    leverage_and_liquidity:
+      debt_to_equity: "get_solvency_ratios(indicator='get_debt_to_equity_ratio')"
+      current_ratio:  "get_liquidity_ratios(indicator='get_current_ratio')"
+    macro:
+      inflation:      "get_general_economy(indicator='get_inflation_rate')"
+      gdp:            "get_general_economy(indicator='get_gross_domestic_product')"
+      interest_rates: "get_interest_rates(indicator='get_long_term_interest_rate')"
+      bond_yields:    "get_interest_rates(indicator='get_government_bond_yield')"
+    risk_and_models:
+      sharpe: "get_performance(indicator='get_sharpe_ratio')"
+      wacc:   "get_models(indicator='get_weighted_average_cost_of_capital')"
+    momentum:
+      rsi:  "get_momentum_indicators(indicator='get_relative_strength_index')"
+      macd: "get_momentum_indicators(indicator='get_moving_average_convergence_divergence')"
+
+  OUTPUT PRESENTATION RULES
+  1. **ALWAYS USE TABLES:** When a tool returns data with multiple values (time series, multiple countries, multiple tickers),
+  ALWAYS present it as a Markdown table. NEVER collapse multi-value data into bullet points, inline lists, or comma-separated values.
+  2. **PRESERVE TOOL OUTPUT:** Tool results are already formatted as Markdown tables. Do not reformat, summarise,
+  or rewrite them as prose or lists.
+  3. **TRENDS IN INTERPRETATION ONLY:** Do not annotate trends, peaks, or ranges inline with the data table.
+  Reserve all trend commentary, observations, and analysis for a separate 'Interpretation' section that follows the table(s).
+  4. **RANGE SUMMARIES ARE FORBIDDEN:** Never write 'Netherlands (2015→2026): 792,438 → 974,434' as a
+  summary of a time series. Show the full table instead.
+  5. **NAN/INF VALUES:** If a tool returns NaN (or a string "nan") or infinite values, change the value to empty.
+  If the entire column or row is empty, omit it from the table.
+
+  EXECUTION DISCIPLINE
+  1. **NO DUPLICATE TOOL CALLS:** Before calling any tool, check whether you have already called that tool with the same
+  (or equivalent) parameters in this session. If you have, use the result you already received — do NOT call it again.
+  2. **ONE METRIC PER CALL:** Each tool call must target exactly one specific `indicator`. If you need multiple metrics
+  from the same tool group, make one call per metric. Never omit the `indicator` parameter.
+  3. **BATCH, DON'T REPEAT:** If you need the same metric for multiple countries or tickers, pass them all in one call (comma-separated).
+  Never split a multi-entity request into separate single-entity calls.
+  4. **STOP WHEN DONE:** Once you have all the data needed to answer the question, stop calling tools and present the analysis. Do not call additional tools speculatively.
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Category identifiers
+# These strings are used internally to route MCP tool calls to the correct
+# dispatch path in provider_model.py:
+#   ticker     — sub-module accessed via a Toolkit instance (needs tickers=)
+#   toolkit    — method called directly on a Toolkit instance (needs tickers=)
+#   standalone — module instantiated with countries/dates only (no tickers)
+#   discovery  — Discovery controller; no tickers, no date range
+#   mixed      — spans multiple modules / categories; per-indicator routing
+# ──────────────────────────────────────────────────────────────────────────────
+categories:
+  ticker:     "ticker"
+  toolkit:    "toolkit"
+  standalone: "standalone"
+  discovery:  "discovery"
+  mixed:      "mixed"
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# SQLite result-cache defaults
+# Both values can be overridden at runtime via environment variables:
+#   FINANCE_TOOLKIT_CACHE_DB   — path to the SQLite file
+#   FINANCE_TOOLKIT_CACHE_TTL  — TTL in seconds (integer)
+# ──────────────────────────────────────────────────────────────────────────────
+cache:
+  database_location: "financetoolkit_cache.db"
+  ttl_seconds: 600
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Module → Python class mapping
+# Keys are short logical names used throughout the server.
+# Values are fully-qualified class paths used for dynamic loading.
+# ──────────────────────────────────────────────────────────────────────────────
+module_class_map:
+  ratios:       "financetoolkit.ratios.ratios_controller.Ratios"
+  technicals:   "financetoolkit.technicals.technicals_controller.Technicals"
+  models:       "financetoolkit.models.models_controller.Models"
+  performance:  "financetoolkit.performance.performance_controller.Performance"
+  risk:         "financetoolkit.risk.risk_controller.Risk"
+  options:      "financetoolkit.options.options_controller.Options"
+  economics:    "financetoolkit.economics.economics_controller.Economics"
+  fixedincome:  "financetoolkit.fixedincome.fixedincome_controller.FixedIncome"
+  discovery:    "financetoolkit.discovery.discovery_controller.Discovery"
+  toolkit:      "financetoolkit.toolkit_controller.Toolkit"
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Methods to skip during class inspection
+# collect_* methods are aggregate helpers not exposed as individual indicators.
+# it doesn't make much sense to add those given it overloads the LLM with 
+# redundant options it has to filter before being able to answer the question
+# Also excluded get_normalization_files given that it it is purely meant for your own
+# data sources and not relevant for users of the MCP tools.
+# ──────────────────────────────────────────────────────────────────────────────
+skip_methods:
+  - "get_normalization_files"
+  - "collect_all_ratios"
+  - "collect_custom_ratios"
+  - "collect_efficiency_ratios"
+  - "collect_liquidity_ratios"
+  - "collect_profitability_ratios"
+  - "collect_solvency_ratios"
+  - "collect_valuation_ratios"
+  - "collect_all_greeks"
+  - "collect_first_order_greeks"
+  - "collect_second_order_greeks"
+  - "collect_third_order_greeks"
+  - "collect_all_indicators"
+  - "collect_breadth_indicators"
+  - "collect_momentum_indicators"
+  - "collect_overlap_indicators"
+  - "collect_volatility_indicators"
+  - "collect_all_metrics"
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Parameters removed from individual method signatures during inspection
+# These serve little purpose for the user given most will appear in the logs only
+# ──────────────────────────────────────────────────────────────────────────────
+skip_params:
+  - "self"
+  - "progress_bar"
+  - "overwrite"
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Parameters handled at wrapper level (not forwarded to sub-methods)
+# tickers, countries, start_date, end_date, quarterly are extracted from kwargs
+# by the wrapper and passed to the provider, not to individual method calls.
+# ──────────────────────────────────────────────────────────────────────────────
+init_handled_params:
+  - "tickers"
+  - "countries"
+  - "start_date"
+  - "end_date"
+  - "quarterly"
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Toolkit direct-method allowlist (exposed by get_toolkit_data)
+# These are raw-data methods on the Toolkit class that return uncomputed data
+# (financial statements, price history, company profile, quotes, …).
+#
+# get_esg_scores is not listed here as it is exposed by the get_environment
+# group instead (which mixes tickers and countries).
+# get_exchange_rates (Toolkit) is omitted here as it is mostly a helper functionality
+# economics.get_exchange_rates is exposed separately via get_general_economy.
+# ──────────────────────────────────────────────────────────────────────────────
+direct_methods:
+  - "get_analyst_estimates"
+  - "get_balance_sheet_statement"
+  - "get_cash_flow_statement"
+  - "get_dividend_calendar"
+  # - "get_esg_scores"
+  - "get_earnings_calendar"
+  - "get_historical_data"
+  - "get_historical_statistics"
+  - "get_income_statement"
+  - "get_intraday_data"
+  - "get_profile"
+  - "get_quote"
+  - "get_rating"
+  - "get_revenue_geographic_segmentation"
+  - "get_revenue_product_segmentation"
+  - "get_statistics_statement"
+  - "get_treasury_data"
+  # - "get_exchange_rates"
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Search stop-words used by the search_metrics utility tool
+# Common English function words that add no signal to financial keyword search.
+# ──────────────────────────────────────────────────────────────────────────────
+search_stop_words:
+  - "a"
+  - "an"
+  - "the"
+  - "and"
+  - "or"
+  - "of"
+  - "is"
+  - "are"
+  - "was"
+  - "were"
+  - "for"
+  - "to"
+  - "in"
+  - "on"
+  - "at"
+  - "by"
+  - "it"
+  - "its"
+  - "with"
+  - "this"
+  - "that"
+  - "what"
+  - "how"
+  - "get"
+  - "show"
+  - "me"
+  - "my"
+  - "our"
+  - "their"
+  - "which"
+  - "from"
+  - "as"
+  - "per"
+  - "be"
+  - "been"
+  - "has"
+  - "have"
+  - "had"
+  - "do"
+  - "does"
+  - "did"
+  - "will"
+  - "would"
+  - "can"
+  - "could"
+  - "should"
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Category descriptions shown by the list_categories utility tool
+# Keys must match the index_category (or module_name fallback) used when
+# registering each router group below.
+# ──────────────────────────────────────────────────────────────────────────────
+category_descriptions:
+  ratios:                  "Pre-computed financial ratios (PE, EPS, ROE, margins, liquidity, valuation). Use INSTEAD of raw financial statements."
+  performance:             "Risk-adjusted returns (Sharpe, Sortino, alpha, beta, CAPM, Fama-French). No need to fetch price data first."
+  risk:                    "Risk metrics (VaR, CVaR, GARCH, drawdown, skewness, kurtosis). No need to fetch price data first."
+  models:                  "Financial models (DCF/intrinsic value, WACC, DuPont, Altman Z, Piotroski). Pre-computed."
+  technicals:              "Technical indicators (RSI, MACD, Bollinger Bands, moving averages). Applied to price data automatically."
+  options:                 "Option pricing and Greeks (Black-Scholes, binomial, delta, gamma, theta, vega, implied vol)."
+  government_economy:      "Government fiscal metrics by country (debt, deficit, expenditure, revenue, tax). Use countries= param."
+  general_economy:         "Macroeconomic indicators by country (GDP, CPI, inflation, trade, investment, consumption, confidence). Use countries= param."
+  environment:             "Environmental and ESG data. Carbon footprint and renewable energy use countries=; ESG scores use tickers=."
+  jobs_and_society:        "Labour and social metrics by country (unemployment, population, poverty, income inequality). Use countries= param."
+  interest_rates:          "Interest rate data — central bank rates, government/corporate bond yields, EURIBOR, short/long-term rates. Use countries= param."
+  fixed_income_valuations: "Bond and derivative valuation calculations (duration, present value, yield-to-maturity, derivative pricing)."
+  discovery:               "Market discovery (stock/ETF/crypto lists, screener, gainers/losers, sector performance). No tickers needed."
+  toolkit:                 "Raw data (historical prices, financial statements, company profile, quotes). Use ratios/performance/risk tools for computed metrics."
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Module → category map used by calculate_growth
+# Maps the module prefix in 'ratios_get_revenue_per_share' to its routing
+# category.  Must stay in sync with module_class_map above.
+# ──────────────────────────────────────────────────────────────────────────────
+growth_category_map:
+  ratios:      "ticker"
+  technicals:  "ticker"
+  models:      "ticker"
+  performance: "ticker"
+  risk:        "ticker"
+  options:     "ticker"
+  economics:   "standalone"
+  fixedincome: "standalone"
+  discovery:   "discovery"
+  toolkit:     "toolkit"
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Router group specifications
+# Each entry becomes one MCP master tool.
+#
+# Fields:
+#   tool_name         — MCP tool function name (must be unique)
+#   display_name      — Human-friendly name for descriptions and logs
+#   module_name       — Key in module_class_map (or "mixed" for multi-module)
+#   category          — Routing category (see categories section above)
+#   collect_method    — collect_* method to call when indicator="all" (optional)
+#   method_override   — Explicit ordered list of indicator methods (optional;
+#                       if omitted, methods are discovered from collect_method
+#                       or by scanning all get_* on the controller class)
+#   method_to_module  — Per-indicator module/category map (required for mixed)
+#   index_category    — Key to use in the TOOL_INDEX (defaults to module_name;
+#                       set this for economics/fixedincome sub-groups so they
+#                       appear as separate categories in list_categories)
+#   use_direct_methods — if true, method_override is populated from
+#                       the direct_methods list above (get_toolkit_data only)
+# ──────────────────────────────────────────────────────────────────────────────
+tool_groups:
+
+  # ── Ratios (5 sub-groups) ────────────────────────────────────────────────
+  - tool_name:      "get_efficiency_ratios"
+    display_name:   "Efficiency Ratios"
+    module_name:    "ratios"
+    category:       "ticker"
+    collect_method: "collect_efficiency_ratios"
+
+  - tool_name:      "get_liquidity_ratios"
+    display_name:   "Liquidity Ratios"
+    module_name:    "ratios"
+    category:       "ticker"
+    collect_method: "collect_liquidity_ratios"
+
+  - tool_name:      "get_profitability_ratios"
+    display_name:   "Profitability Ratios"
+    module_name:    "ratios"
+    category:       "ticker"
+    collect_method: "collect_profitability_ratios"
+
+  - tool_name:      "get_solvency_ratios"
+    display_name:   "Solvency Ratios"
+    module_name:    "ratios"
+    category:       "ticker"
+    collect_method: "collect_solvency_ratios"
+
+  - tool_name:      "get_valuation_ratios"
+    display_name:   "Valuation Ratios"
+    module_name:    "ratios"
+    category:       "ticker"
+    collect_method: "collect_valuation_ratios"
+
+  # ── Technicals (4 sub-groups) ────────────────────────────────────────────
+  - tool_name:      "get_breadth_indicators"
+    display_name:   "Breadth Indicators"
+    module_name:    "technicals"
+    category:       "ticker"
+    collect_method: "collect_breadth_indicators"
+
+  - tool_name:      "get_momentum_indicators"
+    display_name:   "Momentum Indicators"
+    module_name:    "technicals"
+    category:       "ticker"
+    collect_method: "collect_momentum_indicators"
+
+  - tool_name:      "get_overlap_indicators"
+    display_name:   "Overlap Indicators"
+    module_name:    "technicals"
+    category:       "ticker"
+    collect_method: "collect_overlap_indicators"
+
+  - tool_name:      "get_volatility_indicators"
+    display_name:   "Volatility Indicators"
+    module_name:    "technicals"
+    category:       "ticker"
+    collect_method: "collect_volatility_indicators"
+
+  # ── Single-module ticker tools ───────────────────────────────────────────
+  - tool_name:    "get_models"
+    display_name: "Financial Models"
+    module_name:  "models"
+    category:     "ticker"
+
+  - tool_name:    "get_performance"
+    display_name: "Performance Metrics"
+    module_name:  "performance"
+    category:     "ticker"
+
+  - tool_name:    "get_risk"
+    display_name: "Risk Metrics"
+    module_name:  "risk"
+    category:     "ticker"
+
+  - tool_name:    "get_options"
+    display_name: "Options"
+    module_name:  "options"
+    category:     "ticker"
+
+  # ── Economics: Government & Fiscal ──────────────────────────────────────
+  # All government debt, deficit, expenditure, revenue, tax, and trust metrics.
+  - tool_name:       "get_government_economy"
+    display_name:    "Government & Fiscal Metrics"
+    module_name:     "economics"
+    category:        "standalone"
+    index_category:  "government_economy"
+    method_override:
+      - "get_government_debt"
+      - "get_government_debt_to_gdp_ratio"
+      - "get_government_deficit"
+      - "get_government_deficit_to_gdp_ratio"
+      - "get_government_expenditure"
+      - "get_government_expenditure_to_gdp_ratio"
+      - "get_government_revenue"
+      - "get_government_revenue_to_gdp_ratio"
+      - "get_government_tax_revenue"
+      - "get_government_tax_revenue_to_gdp_ratio"
+      - "get_trust_in_government"
+
+  # ── Economics: General Macroeconomic Indicators ──────────────────────────
+  # GDP, CPI, inflation, trade balances, investment, consumption,
+  # confidence indices, house/rent prices, exchange rates, share prices.
+  - tool_name:       "get_general_economy"
+    display_name:    "General Economy"
+    module_name:     "economics"
+    category:        "standalone"
+    index_category:  "general_economy"
+    method_override:
+      - "get_business_confidence_index"
+      - "get_composite_leading_indicator"
+      - "get_consumer_confidence_index"
+      - "get_consumer_price_index"
+      - "get_current_account_balance"
+      - "get_current_account_balance_to_gdp_ratio"
+      - "get_exchange_rates"
+      - "get_exports"
+      - "get_exports_to_gdp_ratio"
+      - "get_fixed_investment"
+      - "get_fixed_investment_to_gdp_ratio"
+      - "get_gross_domestic_product"
+      - "get_gross_domestic_product_deflator"
+      - "get_house_prices"
+      - "get_imports"
+      - "get_imports_to_gdp_ratio"
+      - "get_inflation_rate"
+      - "get_investment"
+      - "get_investment_to_gdp_ratio"
+      - "get_money_supply"
+      - "get_rent_prices"
+      - "get_share_prices"
+      - "get_total_consumption"
+      - "get_total_consumption_to_gdp_ratio"
+
+  # ── Environment & ESG (mixed: economics + toolkit) ───────────────────────
+  # Carbon footprint and renewable energy come from Economics (use countries=).
+  # ESG scores come from Toolkit (use tickers=). This is the only tool where
+  # BOTH tickers= and countries= are accepted.
+  - tool_name:       "get_environment"
+    display_name:    "Environment & ESG"
+    module_name:     "mixed"
+    category:        "mixed"
+    index_category:  "environment"
+    method_override:
+      - "get_carbon_footprint"
+      - "get_renewable_energy"
+      - "get_esg_scores"
+    method_to_module:
+      get_carbon_footprint:
+        module:   "economics"
+        category: "standalone"
+      get_renewable_energy:
+        module:   "economics"
+        category: "standalone"
+      get_esg_scores:
+        module:   "toolkit"
+        category: "toolkit"
+
+  # ── Economics: Jobs & Society ────────────────────────────────────────────
+  # Unemployment, labour productivity, population, poverty, income inequality.
+  - tool_name:       "get_jobs_and_society"
+    display_name:    "Jobs & Society"
+    module_name:     "economics"
+    category:        "standalone"
+    index_category:  "jobs_and_society"
+    method_override:
+      - "get_income_inequality"
+      - "get_labour_productivity"
+      - "get_population_statistics"
+      - "get_poverty_rate"
+      - "get_unemployment_rate"
+
+  # ── Interest Rates (mixed: economics + fixedincome) ──────────────────────
+  # Short/long-term interest rates and central bank policy from Economics.
+  # Government bond yields, ICE BofA corporate bond series, EURIBOR,
+  # ECB rates, and Federal Reserve rates from FixedIncome.
+  # All indicators use countries= (both modules are CATEGORY_STANDALONE).
+  - tool_name:       "get_interest_rates"
+    display_name:    "Interest Rates"
+    module_name:     "mixed"
+    category:        "mixed"
+    index_category:  "interest_rates"
+    method_override:
+      - "get_central_bank_policy_rate"
+      - "get_short_term_interest_rate"
+      - "get_long_term_interest_rate"
+      - "get_government_bond_yield"
+      - "get_euribor_rates"
+      - "get_european_central_bank_rates"
+      - "get_federal_reserve_rates"
+      - "get_ice_bofa_effective_yield"
+      - "get_ice_bofa_option_adjusted_spread"
+      - "get_ice_bofa_total_return"
+      - "get_ice_bofa_yield_to_worst"
+    method_to_module:
+      get_central_bank_policy_rate:
+        module:   "economics"
+        category: "standalone"
+      get_short_term_interest_rate:
+        module:   "economics"
+        category: "standalone"
+      get_long_term_interest_rate:
+        module:   "economics"
+        category: "standalone"
+      get_government_bond_yield:
+        module:   "fixedincome"
+        category: "standalone"
+      get_euribor_rates:
+        module:   "fixedincome"
+        category: "standalone"
+      get_european_central_bank_rates:
+        module:   "fixedincome"
+        category: "standalone"
+      get_federal_reserve_rates:
+        module:   "fixedincome"
+        category: "standalone"
+      get_ice_bofa_effective_yield:
+        module:   "fixedincome"
+        category: "standalone"
+      get_ice_bofa_option_adjusted_spread:
+        module:   "fixedincome"
+        category: "standalone"
+      get_ice_bofa_total_return:
+        module:   "fixedincome"
+        category: "standalone"
+      get_ice_bofa_yield_to_worst:
+        module:   "fixedincome"
+        category: "standalone"
+
+  # ── Fixed Income: Bond & Derivative Valuations ───────────────────────────
+  # Computational valuation tools: bond duration, present value,
+  # yield-to-maturity, and derivative pricing models.
+  - tool_name:       "get_fixed_income_valuations"
+    display_name:    "Bond & Derivative Valuations"
+    module_name:     "fixedincome"
+    category:        "standalone"
+    index_category:  "fixed_income_valuations"
+    method_override:
+      - "get_derivative_price"
+      - "get_duration"
+      - "get_present_value"
+      - "get_yield_to_maturity"
+
+  # ── Discovery ────────────────────────────────────────────────────────────
+  - tool_name:    "get_discovery"
+    display_name: "Market Discovery"
+    module_name:  "discovery"
+    category:     "discovery"
+
+  # ── Raw Financial Data (Toolkit direct methods) ──────────────────────────
+  # Method list is populated at startup from toolkit_direct_methods above.
+  - tool_name:                    "get_toolkit_data"
+    display_name:                 "Raw Financial Data"
+    module_name:                  "toolkit"
+    category:                     "toolkit"
+    use_direct_methods:   true
