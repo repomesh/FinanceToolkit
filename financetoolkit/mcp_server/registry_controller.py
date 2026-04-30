@@ -39,6 +39,7 @@ class RouterGroupSpec(NamedTuple):
     method_override: list[str] | None = None
     method_to_module: dict[str, dict[str, str]] | None = None
     index_category: str | None = None
+    description: str | None = None
 
 
 class ToolRegistry:
@@ -60,6 +61,7 @@ class ToolRegistry:
         skip_methods: list[str],
         direct_methods: list[str],
         tool_groups: list[dict[str, Any]],
+        blocked_periods: dict[str, list[str]] | None = None,
     ) -> None:
         """Initialise the registry with the FastMCP instance and shared subsystems.
 
@@ -94,6 +96,10 @@ class ToolRegistry:
         self._skip_methods = frozenset(skip_methods)
         self._direct_methods = frozenset(direct_methods)
         self._tool_groups = tool_groups
+        self._blocked_periods: dict[str, frozenset[str]] = {
+            tool: frozenset(periods)
+            for tool, periods in (blocked_periods or {}).items()
+        }
 
     @staticmethod
     def _resolve_class_map(class_map: dict[str, str]) -> dict[str, type]:
@@ -170,6 +176,7 @@ class ToolRegistry:
                     method_override=method_override,
                     method_to_module=raw.get("method_to_module"),
                     index_category=raw.get("index_category"),
+                    description=raw.get("description"),
                 )
             )
         return specifications
@@ -213,6 +220,7 @@ class ToolRegistry:
         category = spec.category
         inspector = self._inspector
         provider = self._provider
+        blocked_periods_for_tool = self._blocked_periods.get(tool_name, frozenset())
 
         if method_to_cls:
             method_param_names = {
@@ -287,17 +295,17 @@ class ToolRegistry:
                     "or `tickers='AAPL,MSFT'`."
                 )
 
+            quarterly = to_boolean(kwargs.pop("quarterly", False))
             start_date = validate_date(
                 kwargs.pop("start_date", inspector.start_date) or inspector.start_date,
-                default_date=(datetime.now() - timedelta(days=365 * 5)).strftime(
-                    "%Y-%m-%d"
-                ),
+                default_date=(
+                    datetime.now() - timedelta(days=90 * 5 if quarterly else 365 * 5)
+                ).strftime("%Y-%m-%d"),
             )
             end_date = validate_date(
                 kwargs.pop("end_date", inspector.end_date) or inspector.end_date,
                 default_date=datetime.now().strftime("%Y-%m-%d"),
             )
-            quarterly = to_boolean(kwargs.pop("quarterly", False))
             benchmark_ticker = kwargs.pop(
                 "benchmark_ticker", inspector.benchmark_ticker
             )
@@ -309,6 +317,17 @@ class ToolRegistry:
                     val = kwargs.pop(pname)
                     if pname in accepted_params:
                         method_kwargs[pname] = coerce_value(val, pann)
+
+            # Validate that the requested period (if any) is not blocked for this tool
+            if blocked_periods_for_tool and "period" in method_kwargs:
+                requested_period = str(method_kwargs["period"]).lower()
+                if requested_period in blocked_periods_for_tool:
+                    allowed = ["weekly", "monthly", "quarterly", "yearly"]
+                    return (
+                        f"`{tool_name}` (`{method_name}`) does not support "
+                        f"`period='{requested_period}'`. "
+                        f"Please use one of: {', '.join(allowed)}."
+                    )
 
             if method_dispatch and method_name in method_dispatch:
                 dispatch_module, dispatch_category = method_dispatch[method_name]
@@ -449,8 +468,13 @@ class ToolRegistry:
             return False
 
         method_list = ", ".join(group_methods)
-        description = f"{spec.display_name}. Set `indicator` to one of: {method_list}."
-        description = description[:800]
+        if spec.description:
+            description = f"{spec.description}\n\nAvailable indicators: {method_list}."
+        else:
+            description = (
+                f"{spec.display_name}. Set `indicator` to one of: {method_list}."
+            )
+        description = description[:1500]
 
         try:
             fn = self._build_router_wrapper(
