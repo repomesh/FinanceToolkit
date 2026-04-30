@@ -62,6 +62,7 @@ class ToolRegistry:
         direct_methods: list[str],
         tool_groups: list[dict[str, Any]],
         blocked_periods: dict[str, list[str]] | None = None,
+        response_guidelines: str = "",
     ) -> None:
         """Initialise the registry with the FastMCP instance and shared subsystems.
 
@@ -85,6 +86,9 @@ class ToolRegistry:
                 exposed as top-level tools instead of via router groups.
             tool_groups (list[dict[str, Any]]): List of router group specifications
                 from the config dict.
+            response_guidelines (str): Compact formatting rules appended to every
+                successful tool response so they are in-context when the model
+                generates its answer. Defaults to empty string (no footer).
         """
         self._mcp = mcp
         self._provider = provider
@@ -96,6 +100,7 @@ class ToolRegistry:
         self._skip_methods = frozenset(skip_methods)
         self._direct_methods = frozenset(direct_methods)
         self._tool_groups = tool_groups
+        self._response_guidelines: str = response_guidelines
         self._blocked_periods: dict[str, frozenset[str]] = {
             tool: frozenset(periods)
             for tool, periods in (blocked_periods or {}).items()
@@ -221,6 +226,7 @@ class ToolRegistry:
         inspector = self._inspector
         provider = self._provider
         blocked_periods_for_tool = self._blocked_periods.get(tool_name, frozenset())
+        response_guidelines = self._response_guidelines
 
         if method_to_cls:
             method_param_names = {
@@ -347,7 +353,12 @@ class ToolRegistry:
                     benchmark_ticker=benchmark_ticker,
                     **method_kwargs,
                 )
-                return format_result(result, title=f"{dispatch_module}.{method_name}")
+                formatted = format_result(
+                    result, title=f"{dispatch_module}.{method_name}"
+                )
+                if response_guidelines:
+                    return formatted + response_guidelines
+                return formatted
             except (ValueError, KeyError) as exc:
                 return f"Invalid input for `{tool_name}` (`{method_name}`): {exc}"
             except TypeError as exc:

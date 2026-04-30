@@ -52,6 +52,10 @@ class UtilityToolRegistry:
             (``search_instruments``).
         search_stop_words (list[str]): List of stop words to ignore during search.
         category_descriptions (dict[str, str]): Descriptions for each category.
+        response_guidelines (str): Compact formatting rules appended to every
+            tool response so they are in-context when the model writes its answer.
+        instructions (str): Full analyst instructions returned by
+            ``get_analyst_guidelines`` for models that want to consult them.
     """
 
     def __init__(
@@ -61,12 +65,16 @@ class UtilityToolRegistry:
         provider: ToolkitProvider,
         search_stop_words: list[str],
         category_descriptions: dict[str, str],
+        response_guidelines: str = "",
+        instructions: str = "",
     ) -> None:
         self._mcp = mcp
         self._registry = registry
         self._provider = provider
         self._search_stop_words: frozenset[str] = frozenset(search_stop_words)
         self._category_descriptions: dict[str, str] = category_descriptions
+        self._response_guidelines: str = response_guidelines
+        self._instructions: str = instructions
 
     def register_all_tools(self) -> int:
         """Register all utility tools on the FastMCP instance.
@@ -79,6 +87,7 @@ class UtilityToolRegistry:
             int: Number of utility tools successfully registered.
         """
         tools = [
+            self.get_analyst_guidelines,
             self.list_categories,
             self.list_metrics_by_category,
             self.search_metrics,
@@ -92,6 +101,21 @@ class UtilityToolRegistry:
         return len(tools)
 
     # ── Tool methods ──────────────────────────────────────────────────────────
+    def get_analyst_guidelines(self) -> str:
+        """Return the full analyst instructions and response style guidelines.
+
+        Call this tool at the start of a complex analysis session or whenever
+        you need to confirm how to structure, format, and present data-driven
+        financial responses. The returned text covers the analyst voice, data
+        presentation rules, tool routing guide, and common alias mappings.
+
+        Returns:
+            str: Full analyst instructions including response style, tool routing
+                guide, alias mappings, and all formatting rules.
+        """
+        if self._instructions:
+            return self._instructions
+        return "No analyst guidelines configured."
 
     def list_categories(self) -> str:
         """List all available metric categories and how many tools each contains.
@@ -113,7 +137,10 @@ class UtilityToolRegistry:
         lines.append(
             "\n**Tip:** Use `search_metrics('keyword')` to find tools by keyword."
         )
-        return "\n".join(lines)
+        result = "\n".join(lines)
+        if self._response_guidelines:
+            return result + self._response_guidelines
+        return result
 
     def list_metrics_by_category(self, category: str) -> str:
         """List every available metric/tool within a category.
@@ -143,7 +170,10 @@ class UtilityToolRegistry:
         ]
         for t in tools:
             lines.append(f"| `{t['tool']}` | {t['description']} |")
-        return "\n".join(lines)
+        result = "\n".join(lines)
+        if self._response_guidelines:
+            return result + self._response_guidelines
+        return result
 
     def search_metrics(self, query: str) -> str:
         """Search across all metrics by keyword with typo tolerance.
@@ -206,7 +236,10 @@ class UtilityToolRegistry:
         ]
         for _, h in hits:
             lines.append(f"| `{h['category']}` | `{h['tool']}` | {h['description']} |")
-        return "\n".join(lines)
+        result = "\n".join(lines)
+        if self._response_guidelines:
+            return result + self._response_guidelines
+        return result
 
     def search_instruments(self, query: str, search_method: str = "name") -> str:
         """Search for ticker symbols by company name, symbol, CIK, CUSIP, or ISIN.
@@ -228,6 +261,9 @@ class UtilityToolRegistry:
                 query=query,
                 search_method=search_method,
             )
-            return format_result(result, title=f"Search: {query}")
+            formatted = format_result(result, title=f"Search: {query}")
+            if self._response_guidelines:
+                return formatted + self._response_guidelines
+            return formatted
         except Exception as exc:
             return f"Search failed: {exc}"

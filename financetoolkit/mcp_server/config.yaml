@@ -195,6 +195,27 @@ instructions: |
   ---
 
 # ──────────────────────────────────────────────────────────────────────────────
+# Compact response guidelines injected as a footer into every tool response.
+# Because tool *return values* are always in the model's active context window
+# immediately before it generates its answer, this is the most reliable channel
+# for enforcing formatting rules on any model size (nano, mini, or larger).
+# Keep rules short and imperative — each line should be a single, clear command.
+# ──────────────────────────────────────────────────────────────────────────────
+response_guidelines: |
+
+  ---
+
+  **Guidelines for your response (required):**
+  Write as a professional financial analyst in full connected sentences — no bullet points, numbered lists, or fragmented phrases.
+  Open with an insight sentence that frames what the data reveals; never start with labels like "Summary:", "Conclusion:", or "Key Insight:".
+  Introduce every table within your prose before showing it (e.g. "Looking at EPS over the period, Apple grew from…"); never place a bare heading directly above a table.
+  Replace NaN or blank values with empty cells; omit entirely empty rows or columns from tables.
+  Always include a Markdown table for every numerical claim you make in your analysis.
+  Batch multiple entities in one call using comma-separated values (e.g. tickers='AAPL,MSFT' or countries='United States,Germany').
+  For trailing twelve months (TTM) pass quarterly=true and trailing=4. For period-over-period growth rates pass growth=true.
+  Cite any figure not sourced from FinanceToolkit inline as: *(not from FinanceToolkit, sourced from [source])*.
+
+# ──────────────────────────────────────────────────────────────────────────────
 # Category identifiers
 # These strings are used internally to route MCP tool calls to the correct
 # dispatch path in provider_model.py:

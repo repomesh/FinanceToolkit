@@ -20,6 +20,37 @@ except ImportError:
     UnionType = None
 
 
+def _try_parse_list_of_int(val: Any) -> list[int] | None:
+    """Attempt to parse *val* as a list of integers.
+
+    Accepts:
+    - An existing ``list`` (elements coerced to ``int`` where possible).
+    - A bracket-notation string such as ``"[1, 4]"`` or ``"1,4"``.
+
+    Returns ``None`` if the input cannot be interpreted as a list of integers.
+    """
+    if isinstance(val, list):
+        try:
+            return [int(float(v)) for v in val]
+        except (ValueError, TypeError):
+            return None
+
+    if isinstance(val, str):
+        # Strip optional brackets
+        stripped = val.strip().lstrip("[").rstrip("]").strip()
+        if not stripped:
+            return None
+        parts = [p.strip() for p in stripped.split(",") if p.strip()]
+        if len(parts) <= 1:
+            return None  # A single value should be coerced as int, not list
+        try:
+            return [int(float(p)) for p in parts]
+        except (ValueError, TypeError):
+            return None
+
+    return None
+
+
 def coerce_value(val: Any, annotation: Any) -> Any:
     """
     Best-effort type coercion for values based on a type annotation.
@@ -28,6 +59,11 @@ def coerce_value(val: Any, annotation: Any) -> Any:
     delegates to to_boolean; for integers it attempts int(float(val)) to gracefully handle
     numeric strings with decimals; for floats it uses float(val). Optional/Union annotations
     (including PEP 604 ``int | None``) are unwrapped to their first non-None member.
+
+    For ``int | list[int]`` annotations (used by the ``lag`` parameter), the value is first
+    tried as a plain integer; if that fails it is tried as a comma-separated or bracket-
+    notation list of integers before falling back to the original value.
+
     If conversion fails or the target type is not recognised, the original value is returned.
 
     Args:
@@ -47,12 +83,22 @@ def coerce_value(val: Any, annotation: Any) -> Any:
     )
     if is_union:
         args = [a for a in get_args(annotation) if a is not type(None)]
-        target = args[0] if args else str
+        # Check whether any member of the union is list[int] (or list)
+        has_list_int = any(get_origin(a) is list or a is list for a in args)
+        int_args = [a for a in args if a is int]
+        target = int_args[0] if int_args else (args[0] if args else str)
     else:
+        has_list_int = get_origin(annotation) is list or annotation is list
         target = annotation
+
     if target is bool:
         return to_boolean(val)
     if target is int:
+        # For int | list[int], try list parsing first when the raw value looks like a list
+        if has_list_int:
+            parsed_list = _try_parse_list_of_int(val)
+            if parsed_list is not None:
+                return parsed_list
         try:
             return int(float(val))
         except (ValueError, TypeError):

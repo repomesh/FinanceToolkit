@@ -48,6 +48,8 @@ toolkit_registry = ToolRegistry(
     skip_methods=configuration["skip_methods"],
     direct_methods=configuration["direct_methods"],
     tool_groups=configuration["tool_groups"],
+    blocked_periods=configuration.get("blocked_periods", {}),
+    response_guidelines=configuration.get("response_guidelines", ""),
 )
 
 utility_registry = UtilityToolRegistry(
@@ -56,6 +58,8 @@ utility_registry = UtilityToolRegistry(
     provider=provider,
     search_stop_words=configuration["search_stop_words"],
     category_descriptions=configuration["category_descriptions"],
+    response_guidelines=configuration.get("response_guidelines", ""),
+    instructions=configuration.get("instructions", ""),
 )
 
 toolkit_count = toolkit_registry.register_all_tools()
