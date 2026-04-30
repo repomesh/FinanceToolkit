@@ -324,9 +324,9 @@ class FixedIncome:
             range(1, 11) if years_to_maturity is None else years_to_maturity
         )
 
-        if isinstance(coupon_rate, (int, float)):
+        if isinstance(coupon_rate, int | float):
             coupon_rate = [coupon_rate]
-        if isinstance(years_to_maturity, (int, float)):
+        if isinstance(years_to_maturity, int | float):
             years_to_maturity = [years_to_maturity]
 
         bond_prices: dict[int, dict[float, dict[float, float]]] = {}
@@ -419,9 +419,9 @@ class FixedIncome:
             range(1, 11) if years_to_maturity is None else years_to_maturity
         )
 
-        if isinstance(coupon_rate, (int, float)):
+        if isinstance(coupon_rate, int | float):
             coupon_rate = [coupon_rate]
-        if isinstance(years_to_maturity, (int, float)):
+        if isinstance(years_to_maturity, int | float):
             years_to_maturity = [years_to_maturity]
 
         bond_prices: dict[str, dict[float, dict[float, float]]] = {}
@@ -557,9 +557,9 @@ class FixedIncome:
             range(1, 11) if years_to_maturity is None else years_to_maturity
         )
 
-        if isinstance(bond_price, (int, float)):
+        if isinstance(bond_price, int | float):
             bond_price = [bond_price]
-        if isinstance(years_to_maturity, (int, float)):
+        if isinstance(years_to_maturity, int | float):
             years_to_maturity = [years_to_maturity]
 
         yield_to_maturities: dict[int, dict[float, dict[float, float]]] = {}
@@ -713,9 +713,9 @@ class FixedIncome:
             range(1, 11) if years_to_maturity is None else years_to_maturity
         )
 
-        if isinstance(years_to_maturity, (int, float)):
+        if isinstance(years_to_maturity, int | float):
             years_to_maturity = [years_to_maturity]
-        if isinstance(strike_rate, (int, float)):
+        if isinstance(strike_rate, int | float):
             strike_rate = [strike_rate]
 
         years_to_maturity_dates = [
@@ -1382,16 +1382,16 @@ class FixedIncome:
         The BGCR is calculated as a volume-weighted median of transaction-level
         tri-party repo data collected from the Bank of New York Mellon as well
         as GCF Repo transaction data obtained from the U.S. Department of the
-        Treasury’s Office of Financial Research (OFR).
+        Treasury's Office of Financial Research (OFR).
 
         The SOFR is calculated as a volume-weighted median of transaction-level
         tri-party repo data collected from the Bank of New York Mellon as well as
         GCF Repo transaction data and data on bilateral Treasury repo transactions
         cleared through FICC's DVP service, which are obtained from the U.S.
-        Department of the Treasury’s Office of Financial Research (OFR).
+        Department of the Treasury's Office of Financial Research (OFR).
 
         The New York Fed publishes the rates for the prior business day on the New
-        York Fed’s website between 8:00 and 9:00 a.m.
+        York Fed's website between 8:00 and 9:00 a.m.
 
         See source: https://www.newyorkfed.org/markets/reference-rates/
 
