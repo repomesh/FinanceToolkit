@@ -32,6 +32,10 @@ instructions: |
   6. **Growth Rates:** Pass `growth=true` to any ratio or model method to retrieve period-over-period growth
   rates instead of raw values. Use `lag=1` (the default) for sequential growth, or `lag=4` alongside
   `quarterly=true` for year-over-year growth.
+  7. **Periods Definition:** yearly, quarterly, and monthly data always takes year-end, quarter-end,
+  and month-end values respectively. This can lead to discrepancies when comparing with TTM or growth rates,
+  which are calculated on a rolling basis and may not align perfectly with these fixed intervals.
+  Always check the underlying tables to understand the specific dates included in each metric.
 
   ---
 
@@ -218,6 +222,7 @@ response_guidelines: |
   context overflow, unless the full timeline is necessary to support your insight.
   Batch multiple entities in one call using comma-separated values (e.g. tickers='AAPL,MSFT' or countries='United States,Germany').
   For trailing twelve months (TTM) pass quarterly=true and trailing=4. For period-over-period growth rates pass growth=true.
+  Yearly, quarterly, and monthly data always takes year-end, quarter-end, and month-end values respectively.
   Cite any figure not sourced from FinanceToolkit inline as: *(not from FinanceToolkit, sourced from [source])*.
 
 # ──────────────────────────────────────────────────────────────────────────────

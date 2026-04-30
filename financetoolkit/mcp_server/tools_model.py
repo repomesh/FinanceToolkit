@@ -23,7 +23,7 @@ from typing import TYPE_CHECKING
 
 from mcp.server.fastmcp import FastMCP
 
-from financetoolkit.mcp_server.formatting_model import format_result
+from financetoolkit.mcp_server.formatting_model import claim_guidelines, format_result
 from financetoolkit.utilities.logger_model import get_logger
 
 if TYPE_CHECKING:
@@ -138,7 +138,7 @@ class UtilityToolRegistry:
             "\n**Tip:** Use `search_metrics('keyword')` to find tools by keyword."
         )
         result = "\n".join(lines)
-        if self._response_guidelines:
+        if self._response_guidelines and claim_guidelines():
             return result + self._response_guidelines
         return result
 
@@ -171,7 +171,7 @@ class UtilityToolRegistry:
         for t in tools:
             lines.append(f"| `{t['tool']}` | {t['description']} |")
         result = "\n".join(lines)
-        if self._response_guidelines:
+        if self._response_guidelines and claim_guidelines():
             return result + self._response_guidelines
         return result
 
@@ -237,7 +237,7 @@ class UtilityToolRegistry:
         for _, h in hits:
             lines.append(f"| `{h['category']}` | `{h['tool']}` | {h['description']} |")
         result = "\n".join(lines)
-        if self._response_guidelines:
+        if self._response_guidelines and claim_guidelines():
             return result + self._response_guidelines
         return result
 
@@ -261,8 +261,8 @@ class UtilityToolRegistry:
                 query=query,
                 search_method=search_method,
             )
-            formatted = format_result(result, title=f"Search: {query}")
-            if self._response_guidelines:
+            formatted = format_result(result)
+            if self._response_guidelines and claim_guidelines():
                 return formatted + self._response_guidelines
             return formatted
         except Exception as exc:

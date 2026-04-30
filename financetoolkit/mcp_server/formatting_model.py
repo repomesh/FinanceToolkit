@@ -2,42 +2,50 @@
 Formatting Model, used for formatting FinanceToolkit results into Markdown strings for LLMs.
 """
 
+import threading
+import time
+
 import pandas as pd
 
 from financetoolkit.utilities.logger_model import get_logger
 
 logger = get_logger()
 
+# ruff: noqa: PLW0603
 
-def _to_human_title(raw_title: str) -> str:
-    """Convert a technical method title into a readable label.
+_GUIDELINES_COOLDOWN_SECONDS: float = 30.0
+_last_guidelines_time: float = 0.0
+_guidelines_lock = threading.Lock()
 
-    Strips the module prefix (e.g. ``ratios.``) and the ``get_`` verb prefix,
-    then title-cases the remainder for display.
 
-    Examples:
-        ``"ratios.get_earnings_per_share"``  →  ``"Earnings per Share"``
-        ``"economics.get_inflation_rate"``   →  ``"Inflation Rate"``
-        ``"AAPL"``                            →  ``"AAPL"``
+def claim_guidelines() -> bool:
+    """
+    When the LLM issues multiple tool calls for a single user message, each call
+    would otherwise append the guidelines text independently.  We allow the
+    guidelines to be included at most once per COOLDOWN window so that parallel
+    or rapid sequential calls only emit them once.
 
-    Args:
-        raw_title (str): Raw title string, typically ``"{module}.{method_name}"``.
+    The first call within a ``_GUIDELINES_COOLDOWN_SECONDS`` window returns
+    ``True`` and resets the timer; all subsequent calls within the same window
+    return ``False``.  After the window expires the next call returns ``True``
+    again, ensuring each new user turn eventually receives the guidelines.
 
     Returns:
-        str: Human-readable label.
+        bool: Whether the caller should append the guidelines this time.
     """
-    # Take only the portion after the last dot (strip module prefix)
-    label = raw_title.split(".")[-1]
-    # Remove leading get_ verb
-    if label.startswith("get_"):
-        label = label[4:]
-    # Underscores → spaces, then title-case
-    return label.replace("_", " ").title()
+    # It's not best practice to define global variables in this way, but it allows
+    # for avoidance of complex state management
+    global _last_guidelines_time
+    now = time.monotonic()
+    with _guidelines_lock:
+        if now - _last_guidelines_time > _GUIDELINES_COOLDOWN_SECONDS:
+            _last_guidelines_time = now
+            return True
+    return False
 
 
 def format_result(
     dataset: dict | pd.Series | pd.DataFrame | int | float | str | None,
-    title: str,
 ) -> str:
     """
     Universal formatter for FinanceToolkit outputs into compact Markdown strings
@@ -83,7 +91,7 @@ def format_result(
         lines = []
         for key, value in dataset.items():
             if isinstance(value, pd.DataFrame):
-                formatted = format_result(value, title=str(key))
+                formatted = format_result(value)
                 if formatted != "No data available.":
                     lines.append(f"**{key}**\n\n{formatted}")
                 else:

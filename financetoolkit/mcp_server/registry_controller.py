@@ -22,7 +22,7 @@ from financetoolkit.mcp_server.coercion_model import (
     to_boolean,
     validate_date,
 )
-from financetoolkit.mcp_server.formatting_model import format_result
+from financetoolkit.mcp_server.formatting_model import claim_guidelines, format_result
 from financetoolkit.mcp_server.inspection_controller import ControllerInspector
 from financetoolkit.mcp_server.provider_model import ToolkitProvider
 from financetoolkit.utilities.logger_model import get_logger
@@ -353,10 +353,8 @@ class ToolRegistry:
                     benchmark_ticker=benchmark_ticker,
                     **method_kwargs,
                 )
-                formatted = format_result(
-                    result, title=f"{dispatch_module}.{method_name}"
-                )
-                if response_guidelines:
+                formatted = format_result(result)
+                if response_guidelines and claim_guidelines():
                     return formatted + response_guidelines
                 return formatted
             except (ValueError, KeyError) as exc:
