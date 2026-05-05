@@ -202,7 +202,8 @@ instructions: |
   ---
 
 # ──────────────────────────────────────────────────────────────────────────────
-# Compact response guidelines injected as a footer into every tool response.
+# Compact response guidelines injected as a footer into a tool response (with a
+# cooldown to prevent repetition if multiple tools are called in the same session).
 # Because tool *return values* are always in the model's active context window
 # immediately before it generates its answer, this is the most reliable channel
 # for enforcing formatting rules on any model size (nano, mini, or larger).
@@ -250,9 +251,8 @@ categories:
 #   FINANCE_TOOLKIT_CACHE_TTL  — TTL in seconds (integer)
 # ──────────────────────────────────────────────────────────────────────────────
 cache:
-  database_location: "financetoolkit_cache.db"
+  database_location: "cached/financetoolkit_cache.db"
   ttl_seconds: 600
-
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Module → Python class mapping
@@ -270,7 +270,6 @@ module_class_map:
   fixedincome:  "financetoolkit.fixedincome.fixedincome_controller.FixedIncome"
   discovery:    "financetoolkit.discovery.discovery_controller.Discovery"
   toolkit:      "financetoolkit.toolkit_controller.Toolkit"
-
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Methods to skip during class inspection
@@ -300,7 +299,6 @@ skip_methods:
   - "collect_volatility_indicators"
   - "collect_all_metrics"
 
-
 # ──────────────────────────────────────────────────────────────────────────────
 # Parameters removed from individual method signatures during inspection
 # These serve little purpose for the user given most will appear in the logs only
@@ -309,7 +307,6 @@ skip_params:
   - "self"
   - "progress_bar"
   - "overwrite"
-
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Parameters handled at wrapper level (not forwarded to sub-methods)
@@ -322,7 +319,6 @@ init_handled_params:
   - "start_date"
   - "end_date"
   - "quarterly"
-
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Toolkit direct-method allowlist (exposed by get_toolkit_data)
@@ -430,25 +426,8 @@ category_descriptions:
 # ──────────────────────────────────────────────────────────────────────────────
 # Router group specifications
 # Each entry becomes one MCP master tool.
-#
-# Fields:
-#   tool_name         — MCP tool function name (must be unique)
-#   display_name      — Human-friendly name for descriptions and logs
-#   module_name       — Key in module_class_map (or "mixed" for multi-module)
-#   category          — Routing category (see categories section above)
-#   collect_method    — collect_* method to call when indicator="all" (optional)
-#   method_override   — Explicit ordered list of indicator methods (optional;
-#                       if omitted, methods are discovered from collect_method
-#                       or by scanning all get_* on the controller class)
-#   method_to_module  — Per-indicator module/category map (required for mixed)
-#   index_category    — Key to use in the TOOL_INDEX (defaults to module_name;
-#                       set this for economics/fixedincome sub-groups so they
-#                       appear as separate categories in list_categories)
-#   use_direct_methods — if true, method_override is populated from
-#                       the direct_methods list above (get_toolkit_data only)
-# ──────────────────────────────────────────────────────────────────────────────
-tool_groups:
 
+tool_groups:
   # ── Ratios (5 sub-groups) ────────────────────────────────────────────────
   - tool_name:      "get_efficiency_ratios"
     display_name:   "Efficiency Ratios"

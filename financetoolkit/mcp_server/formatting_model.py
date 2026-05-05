@@ -20,18 +20,20 @@ _guidelines_lock = threading.Lock()
 
 def claim_guidelines() -> bool:
     """
-    When the LLM issues multiple tool calls for a single user message, each call
-    would otherwise append the guidelines text independently.  We allow the
-    guidelines to be included at most once per COOLDOWN window so that parallel
+    Determine whether the current call should append the response guidelines.
+
+    When an LLM issues multiple tool calls for a single user message, each call
+    would otherwise append the guidelines text independently. This function allows
+    the guidelines to be included at most once per cooldown window so that parallel
     or rapid sequential calls only emit them once.
 
-    The first call within a ``_GUIDELINES_COOLDOWN_SECONDS`` window returns
-    ``True`` and resets the timer; all subsequent calls within the same window
-    return ``False``.  After the window expires the next call returns ``True``
-    again, ensuring each new user turn eventually receives the guidelines.
+    The first call within a _GUIDELINES_COOLDOWN_SECONDS window returns True and
+    resets the timer. All subsequent calls within the same window return False.
+    After the window expires the next call returns True again, ensuring each new
+    user turn eventually receives the guidelines.
 
     Returns:
-        bool: Whether the caller should append the guidelines this time.
+        bool: True if the caller should append the guidelines this time, False otherwise.
     """
     # It's not best practice to define global variables in this way, but it allows
     # for avoidance of complex state management
@@ -48,23 +50,19 @@ def format_result(
     dataset: dict | pd.Series | pd.DataFrame | int | float | str | None,
 ) -> str:
     """
-    Universal formatter for FinanceToolkit outputs into compact Markdown strings
-    suitable for LLM consumption.
+    Format a FinanceToolkit result into a compact Markdown string for LLM consumption.
 
     Args:
         dataset (dict | pd.Series | pd.DataFrame | int | float | str | None):
-            The value to format. Supported behaviors:
-              - None: returns "No data available."
-              - pd.Series: converted to a one-column DataFrame and handled like a DataFrame.
-              - pd.DataFrame: rendered as a Markdown table. Empty or all-NaN frames
-                return "No data available." Very wide tables (more than 20 columns)
-                with <= 10 rows are auto-transposed before rendering.
-              - dict: each key/value pair is formatted; DataFrame values are formatted
-                recursively via this function.
-              - int | float | str: returned as a plain string.
-        title (str): Title used when rendering DataFrames. Converted to a human-readable
-            label (e.g. ``"ratios.get_earnings_per_share"`` → ``"Earnings per Share"``)
-            and prefixed as a Markdown H4 heading.
+            The value to format. Supported behaviors per type:
+            - None: returns "No data available."
+            - pd.Series: converted to a one-column DataFrame and handled like a DataFrame.
+            - pd.DataFrame: rendered as a Markdown table. Empty or all-NaN frames
+              return "No data available.". Very wide tables (more than 20 columns)
+              with 10 or fewer rows are auto-transposed before rendering.
+            - dict: each key/value pair is formatted; DataFrame values are formatted
+              recursively.
+            - int | float | str: returned as a plain string.
 
     Returns:
         str: A compact Markdown string representation of the input dataset.

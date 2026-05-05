@@ -68,6 +68,25 @@ class UtilityToolRegistry:
         response_guidelines: str = "",
         instructions: str = "",
     ) -> None:
+        """
+        Initializes the UtilityToolRegistry.
+
+        Args:
+            mcp (FastMCP): The FastMCP server instance to register utility tools on.
+            registry (ToolRegistry): The populated tool registry used to query the
+                tool index. register_all_tools() must be called on the ToolRegistry
+                before calling register_all_tools() on this registry.
+            provider (ToolkitProvider): Provider used for live data calls in
+                search_instruments.
+            search_stop_words (list[str]): Words to exclude from keyword search
+                tokenization (e.g. "the", "and", "for").
+            category_descriptions (dict[str, str]): Human-readable description for
+                each category, keyed by category name.
+            response_guidelines (str, optional): Compact formatting rules appended
+                to every tool response. Defaults to empty string.
+            instructions (str, optional): Full analyst instructions returned by
+                get_analyst_guidelines. Defaults to empty string.
+        """
         self._mcp = mcp
         self._registry = registry
         self._provider = provider

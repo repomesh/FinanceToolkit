@@ -11,6 +11,7 @@ import logging
 import sqlite3
 import time
 from io import StringIO
+from pathlib import Path
 from threading import Lock
 from typing import Any
 
@@ -23,23 +24,30 @@ class SQLiteCache:
     """Thread-safe SQLite cache for DataFrame API results."""
 
     def __init__(self, database_location: str) -> None:
-        """Initialize the cache.
-
-        Sets the SQLite database path, creates a thread lock and ensures the
-        database schema is initialized.
+        """
+        Initializes the SQLiteCache.
 
         Args:
-            database_location (str): Path to the SQLite database file.
+            database_location (str): Path to the SQLite database file. The parent
+                directory is created automatically if it does not already exist.
         """
         self._database_location = database_location
         self._lock = Lock()
+
         self.initialize_database()
 
     def initialize_database(self) -> None:
-        """Create the cache table and index if they do not exist.
-
-        This ensures the underlying SQLite schema required for caching is present.
         """
+        Create the cache table and index if they do not exist.
+
+        This ensures the underlying SQLite schema required for caching is present
+        before any read or write operations are attempted.
+        """
+        # If the parent folder doesn't exist, create it to avoid SQLite errors.
+        # This allows for flexible database locations, including in-memory or
+        # on-disk paths.
+        Path(self._database_location).parent.mkdir(parents=True, exist_ok=True)
+
         with self._lock, sqlite3.connect(self._database_location) as conn:
             conn.execute("""
                 CREATE TABLE IF NOT EXISTS cache (
@@ -52,17 +60,18 @@ class SQLiteCache:
 
     @staticmethod
     def create_unique_key(namespace: str, params: dict[str, Any]) -> str:
-        """Create a deterministic cache key for the given namespace and parameters.
+        """
+        Create a deterministic cache key for the given namespace and parameters.
 
-        The function serializes the namespace and params (sorted keys) to JSON
-        and returns a SHA256 hex digest as the cache key.
+        Serializes the namespace and params (with sorted keys) to JSON and returns
+        a SHA256 hex digest as the cache key.
 
         Args:
-            namespace (str): Logical namespace for the cache entry.
+            namespace (str): Logical namespace for the cache entry (e.g. module name).
             params (dict[str, Any]): Parameters that uniquely identify the request.
 
         Returns:
-            str: SHA256 hex digest representing the cache key.
+            str: SHA256 hex digest representing the unique cache key.
         """
         raw = json.dumps({"ns": namespace, **params}, sort_keys=True, default=str)
         return hashlib.sha256(raw.encode()).hexdigest()
@@ -73,12 +82,14 @@ class SQLiteCache:
         params: dict[str, Any],
         ttl: int,
     ) -> pd.DataFrame | None:
-        """Retrieve a cached DataFrame if present and not expired.
+        """
+        Retrieve a cached DataFrame if present and not expired.
 
         Args:
             namespace (str): Logical namespace for the cache entry.
             params (dict[str, Any]): Parameters used to compute the cache key.
-            ttl (int): Time-to-live in seconds. Entries older than ttl are treated as missing.
+            ttl (int): Time-to-live in seconds. Entries older than this value are
+                treated as missing and None is returned.
 
         Returns:
             pd.DataFrame | None: The cached DataFrame if found and fresh, otherwise None.
@@ -102,16 +113,16 @@ class SQLiteCache:
     def store_dataframe(
         self, namespace: str, params: dict[str, Any], df: pd.DataFrame
     ) -> None:
-        """Store a DataFrame in the cache under the computed key.
+        """
+        Store a DataFrame in the cache under the computed key.
+
+        If serialization of the DataFrame fails, the write is silently skipped
+        so that a caching error never interrupts the calling code.
 
         Args:
             namespace (str): Logical namespace for the cache entry.
             params (dict[str, Any]): Parameters used to compute the cache key.
-            df (pd.DataFrame): DataFrame to serialize and store. If serialization
-                fails, the write is silently skipped.
-
-        Returns:
-            None
+            df (pd.DataFrame): DataFrame to serialize and store.
         """
         key = self.create_unique_key(namespace, params)
         try:
@@ -125,10 +136,12 @@ class SQLiteCache:
             )
 
     def remove_expired_entries(self, ttl: int) -> int:
-        """Evict cache entries older than the given TTL.
+        """
+        Evict cache entries older than the given TTL.
 
         Args:
-            ttl (int): Time-to-live in seconds. Entries older than now - ttl are removed.
+            ttl (int): Time-to-live in seconds. Entries with a timestamp older
+                than ``now - ttl`` are deleted from the database.
 
         Returns:
             int: Number of rows deleted.
@@ -139,7 +152,8 @@ class SQLiteCache:
             return cur.rowcount
 
     def clear_all(self) -> int:
-        """Remove all entries from the cache regardless of age.
+        """
+        Remove all entries from the cache regardless of age.
 
         Returns:
             int: Number of rows deleted.

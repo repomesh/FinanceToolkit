@@ -39,6 +39,18 @@ class ToolkitProvider:
         database_location: str,
         api_key: str = API_KEY,
     ) -> None:
+        """
+        Initializes the ToolkitProvider.
+
+        Args:
+            cache_ttl (int): Time-to-live in seconds for SQLite-cached results.
+                Set to 0 to disable caching.
+            database_location (str): Path to the SQLite database file used for
+                caching DataFrame results across calls.
+            api_key (str, optional): FinancialModelingPrep API key used to
+                initialize Toolkit and Discovery instances. Defaults to the value
+                of the FINANCIAL_MODELING_PREP_API_KEY environment variable.
+        """
         self._api_key = api_key
         self._cache_ttl: int = cache_ttl
         self._sqlitecache: SQLiteCache = SQLiteCache(

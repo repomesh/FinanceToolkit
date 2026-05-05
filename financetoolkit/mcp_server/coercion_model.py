@@ -21,13 +21,19 @@ except ImportError:
 
 
 def _try_parse_list_of_int(val: Any) -> list[int] | None:
-    """Attempt to parse *val* as a list of integers.
+    """
+    Attempt to parse a value as a list of integers.
 
-    Accepts:
-    - An existing ``list`` (elements coerced to ``int`` where possible).
-    - A bracket-notation string such as ``"[1, 4]"`` or ``"1,4"``.
+    Accepts an existing list (with elements coerced to int where possible) or a
+    bracket-notation string such as "[1, 4]" or "1,4". A single-element string is
+    not treated as a list and returns None so that it can be coerced as a plain int.
 
-    Returns ``None`` if the input cannot be interpreted as a list of integers.
+    Args:
+        val (Any): The value to parse. Can be an existing list or a string
+            representation of a list.
+
+    Returns:
+        list[int] | None: A list of integers if parsing succeeds, otherwise None.
     """
     if isinstance(val, list):
         try:
@@ -129,17 +135,17 @@ def to_boolean(value: str | int | float | bool) -> bool:
 
 
 def validate_date(date_str: str, default_date: str) -> str:
-    """Normalise a date string to YYYY-MM-DD or return a safe default.
+    """
+    Normalise a date string to YYYY-MM-DD or return a safe default.
 
     Args:
-        date_str (str): Input date string to validate. Accepts both ``YYYY-MM-DD``
-            and ``YYYY/MM/DD`` formats.
-        default_date (str): Fallback date returned when ``date_str`` is absent or
+        date_str (str): Input date string to validate. Accepts both YYYY-MM-DD
+            and YYYY/MM/DD formats.
+        default_date (str): Fallback date returned when date_str is absent or
             does not match the expected pattern.
 
     Returns:
-        str: A validated ``YYYY-MM-DD`` date string, or ``default_date`` if
-            validation fails.
+        str: A validated YYYY-MM-DD date string, or default_date if validation fails.
     """
     if date_str:
         cleaned = date_str.replace("/", "-")

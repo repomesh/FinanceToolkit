@@ -31,6 +31,33 @@ logger = get_logger()
 
 
 class RouterGroupSpec(NamedTuple):
+    """
+    Immutable specification for a single router group tool.
+
+    Each instance describes one categorical master tool — the metadata needed
+    to discover controller methods, build a dispatcher wrapper, and register
+    the tool on the FastMCP instance.
+
+    Args:
+        tool_name (str): Unique name for the FastMCP tool (e.g. "get_valuation_ratios").
+        display_name (str): Human-readable label shown in tool descriptions.
+        module_name (str): Key into module_class_map identifying the controller class.
+        category (str): Dispatch category ("ticker", "standalone", "toolkit",
+            "discovery", or "mixed").
+        collect_method (str | None): Optional name of a collect_* method on the
+            controller class whose source is parsed to discover the ordered list of
+            get_* methods.
+        method_override (list[str] | None): Explicit ordered list of method names.
+            When set, method discovery is bypassed entirely.
+        method_to_module (dict[str, dict[str, str]] | None): Per-method routing table
+            used by Mixed groups, mapping method names to {"module": ..., "category": ...}
+            dicts.
+        index_category (str | None): Category key used when inserting the tool into
+            the tool index. Defaults to module_name when None.
+        description (str | None): Optional custom description for the tool. When None,
+            a default description is generated from display_name and the method list.
+    """
+
     tool_name: str
     display_name: str
     module_name: str
@@ -241,7 +268,14 @@ class ToolRegistry:
         all_indicators = group_methods
 
         def wrapper(**kwargs):
-            raw_indicator = str(kwargs.pop("indicator", "")).strip()
+            """
+            Dispatch a router group tool call to the correct FinanceToolkit method.
+
+            Resolves the indicator name, coerces all typed parameters, validates
+            required inputs (tickers, period), routes the call through the provider,
+            and returns a formatted Markdown string suitable for LLM consumption.
+            """
+            raw_indicator = kwargs.pop("indicator", None)
             if not raw_indicator:
                 return (
                     f"Please specify an `indicator`. "

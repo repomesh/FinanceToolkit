@@ -40,27 +40,28 @@ class ControllerInspector:
         end_date: str | None = None,
         benchmark_ticker: str = "SPY",
     ) -> None:
-        """Initialise the inspector.
+        """
+        Initializes the ControllerInspector.
 
         Args:
             categories (dict[str, str]): Mapping of category role names (e.g.
-                ``"ticker"``, ``"standalone"``, ``"mixed"``) to their string
-                identifiers used in config and dispatch.
+                "ticker", "standalone", "mixed") to their string identifiers
+                used in config and dispatch.
             skip_params (frozenset[str] | list[str] | None): Parameter names to
-                exclude from every inspected method signature (e.g. ``"self"``,
-                ``"progress_bar"``). Accepts either a frozenset or a list; ``None``
+                exclude from every inspected method signature (e.g. "self",
+                "progress_bar"). Accepts either a frozenset or a list; None
                 is treated as an empty set.
             init_handled_params (frozenset[str] | list[str] | None): Parameter
                 names consumed by the router wrapper and not forwarded to individual
-                method calls (e.g. ``"tickers"``, ``"start_date"``). Accepts either
-                a frozenset or a list; ``None`` is treated as an empty set.
-            start_date (str | None): Default start date string (``YYYY-MM-DD``) used
-                for tool signature defaults. When ``None``, defaults to five years
+                method calls (e.g. "tickers", "start_date"). Accepts either
+                a frozenset or a list; None is treated as an empty set.
+            start_date (str | None): Default start date string (YYYY-MM-DD) used
+                for tool signature defaults. When None, defaults to five years
                 before today.
-            end_date (str | None): Default end date string (``YYYY-MM-DD``) used for
-                tool signature defaults. When ``None``, defaults to today.
+            end_date (str | None): Default end date string (YYYY-MM-DD) used for
+                tool signature defaults. When None, defaults to today.
             benchmark_ticker (str): Default benchmark ticker symbol used for tool
-                signature defaults. Defaults to ``"SPY"``.
+                signature defaults. Defaults to "SPY".
         """
         self._categories: dict[str, str] = categories
         self._skip_params: frozenset[str] = frozenset(skip_params or [])
@@ -300,18 +301,19 @@ class ControllerInspector:
         category: str,
         mixed_categories: set[str] | None = None,
     ) -> list[inspect.Parameter]:
-        """Build the common MCP-level parameters for a given category.
+        """
+        Build the common MCP-level parameters for a given category.
 
         Generates a list of inspect.Parameter objects used to define the exposed
         FastMCP tool signature for a router group. The returned parameters include
         common inputs such as tickers, countries, date range, quarterly flag, and
         benchmark_ticker. Which parameters are included depends on the group's
-        routing category; for Mixed groups the mixed_categories set
-        controls which common parameters are present.
+        routing category; for Mixed groups the mixed_categories set controls which
+        common parameters are present.
 
         Args:
-            category (str): Routing category (e.g. Ticker, Standalone,
-                Toolkit, Discovery, Mixed).
+            category (str): Routing category (e.g. "ticker", "standalone",
+                "toolkit", "discovery", or "mixed").
             mixed_categories (set[str] | None): For Mixed groups, the set of
                 sub-categories present across the group's methods. Used to decide
                 which common params (tickers, countries, dates, etc.) to include.
