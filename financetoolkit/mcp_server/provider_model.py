@@ -255,16 +255,54 @@ class ToolkitProvider:
         Returns:
             Toolkit: A Toolkit instance configured for the requested tickers and parameters.
         """
+        upper_tickers = [t.upper() for t in tickers]
+
+        # Auto-resolve benchmark conflict: the Toolkit silently removes a ticker from
+        # the tickers list when it also appears as the benchmark_ticker.  To ensure
+        # every requested ticker returns data, pick an alternative benchmark from a
+        # prioritised fallback list whenever the current benchmark_ticker collides.
+        if benchmark_ticker and benchmark_ticker.upper() in upper_tickers:
+            fallback_benchmarks = ["SPY", "QQQ", "^GSPC", "IWM", "DIA", "VTI"]
+            resolved_benchmark: str | None = None
+            for candidate in fallback_benchmarks:
+                if candidate.upper() not in upper_tickers:
+                    resolved_benchmark = candidate
+                    break
+            if resolved_benchmark:
+                logger.info(
+                    "benchmark_ticker '%s' conflicts with a requested ticker. "
+                    "Automatically switching benchmark to '%s'.",
+                    benchmark_ticker,
+                    resolved_benchmark,
+                )
+                benchmark_ticker = resolved_benchmark
+            else:
+                logger.warning(
+                    "benchmark_ticker '%s' conflicts with a requested ticker and no "
+                    "non-conflicting fallback could be found. Setting benchmark_ticker to None.",
+                    benchmark_ticker,
+                )
+                benchmark_ticker = None  # type: ignore[assignment]
+
         cache_key = (
-            f"{','.join(sorted(t.upper() for t in tickers))}"
-            f"|{start_date}|{end_date}|{quarterly}|{self._api_hash}"
+            f"{','.join(sorted(upper_tickers))}"
+            f"|{start_date}|{end_date}|{quarterly}"
+            f"|{benchmark_ticker or 'none'}|{self._api_hash}"
         )
+
         # Hold the lock for the full check-create-store sequence to prevent
         # TOCTOU races where two threads both see a cache miss and each create
         # a separate Toolkit instance for the same key.
         with self._lock:
             if cache_key in self._toolkit_cache:
                 return self._toolkit_cache[cache_key]
+
+            if not self._api_key:
+                raise ValueError(
+                    "A FinancialModelingPrep API key is required for this tool. "
+                    "Set FINANCIAL_MODELING_PREP_API_KEY in your environment or .env file. "
+                    "Get a key with 15% off via https://www.jeroenbouma.com/fmp"
+                )
 
             toolkit_instance: Toolkit = Toolkit(
                 tickers=tickers,
