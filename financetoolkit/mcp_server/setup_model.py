@@ -13,30 +13,68 @@ import pathlib
 import platform
 from contextlib import suppress
 
-# --- ANSI Styling Constants ---
-CLR = "\033[0m"
-BOLD = "\033[1m"
-DIM = "\033[2m"
-CYAN = "\033[36m"
-GREEN = "\033[32m"
-YELLOW = "\033[33m"
-RED = "\033[31m"
+from dotenv import dotenv_values
+from rich.console import Console
+from rich.panel import Panel
+from rich.prompt import Confirm
+from rich.text import Text
 
-BANNER = f"""
-{CYAN}{BOLD}╔══════════════════════════════════════════════════════════╗
-║       FinanceToolkit MCP Server  —  Setup Wizard         ║
-╚══════════════════════════════════════════════════════════╝{CLR}"""
+console = Console()
 
-MENU = f"""
-  {BOLD}Select MCP client(s) to configure:{CLR}
-  {DIM}(e.g., '1' for Claude, or '12' for Claude + VS Code){CLR}
 
-    {CYAN}1{CLR}  Claude Desktop
-    {CYAN}2{CLR}  VS Code
-    {CYAN}3{CLR}  Cursor
+def print_banner() -> None:
+    """Print the FinanceToolkit MCP setup wizard header."""
+    body = Text()
+    body.append("\nFinanceToolkit", style="bold cyan")
+    body.append("  ·  ", style="dim")
+    body.append("MCP Setup Wizard\n", style="bold")
+    body.append("Transparent and Efficient Financial Analysis\n", style="dim")
+    console.print(Panel(body, border_style="cyan", padding=(0, 2)))
+    console.print()
 
-    {DIM}0  Exit{CLR}
-"""
+
+def print_menu() -> None:
+    """Print the numbered client-selection menu."""
+    text = Text()
+    text.append("  1  ", style="bold cyan")
+    text.append("Claude Desktop\n")
+    text.append("  2  ", style="bold cyan")
+    text.append("VS Code\n")
+    text.append("  3  ", style="bold cyan")
+    text.append("Cursor\n\n")
+    text.append("  4  ", style="yellow")
+    text.append("Remove configuration\n")
+    text.append("  0  ", style="dim")
+    text.append("Exit", style="dim")
+    console.print(
+        Panel(
+            text,
+            title="[bold]Configure Clients[/]",
+            subtitle="[dim]e.g. [cyan]12[/] for Claude + VS Code[/]",
+            border_style="dim",
+            padding=(1, 2),
+        )
+    )
+
+
+def ok(message: str) -> None:
+    """Print a success line."""
+    console.print(f"  [green]✔[/]  {message}")
+
+
+def warn(message: str) -> None:
+    """Print a warning line."""
+    console.print(f"  [yellow]⚠[/]  {message}")
+
+
+def err(message: str) -> None:
+    """Print an error line."""
+    console.print(f"  [red]✘[/]  {message}")
+
+
+def info(message: str) -> None:
+    """Print a dim informational line."""
+    console.print(f"  [dim]{message}[/]")
 
 
 def get_claude_config_path() -> pathlib.Path:
@@ -65,17 +103,288 @@ def get_claude_config_path() -> pathlib.Path:
     return pathlib.Path.home() / ".config" / "claude" / "claude_desktop_config.json"
 
 
+def get_global_env_path() -> pathlib.Path:
+    """
+    Return the platform-specific path to the global FinanceToolkit .env file.
+
+    The file lives inside a ``financetoolkit`` subdirectory of the platform's
+    standard user-configuration directory:
+
+    * **Windows** — ``%APPDATA%\\financetoolkit\\.env``
+    * **macOS / Linux** — ``$XDG_CONFIG_HOME/financetoolkit/.env``
+      (falls back to ``~/.config/financetoolkit/.env`` when the variable is
+      not set)
+
+    Returns:
+        pathlib.Path: Absolute path to the global .env file.
+    """
+    system = platform.system()
+    if system == "Windows":
+        base = pathlib.Path(
+            os.environ.get("APPDATA")
+            or str(pathlib.Path.home() / "AppData" / "Roaming")
+        )
+    else:
+        xdg = os.environ.get("XDG_CONFIG_HOME")
+        base = pathlib.Path(xdg) if xdg else pathlib.Path.home() / ".config"
+    return base / "financetoolkit" / ".env"
+
+
+def write_global_env_key(api_key: str) -> None:
+    """
+    Write or update ``FINANCIAL_MODELING_PREP_API_KEY`` in the global .env file.
+
+    The file (and any missing parent directories) are created automatically if
+    they do not already exist. When the key is already present it is updated
+    in-place without disturbing any other entries in the file.
+
+    Args:
+        api_key (str): The API key value to write.
+    """
+    env_path = get_global_env_path()
+    env_path.parent.mkdir(parents=True, exist_ok=True)
+
+    env_key = "FINANCIAL_MODELING_PREP_API_KEY"
+    env_line = f"{env_key}={api_key}\n"
+
+    existing_lines: list[str] = []
+    existing_index: int | None = None
+
+    if env_path.exists():
+        existing_lines = env_path.read_text(encoding="utf-8").splitlines(keepends=True)
+        for idx, line in enumerate(existing_lines):
+            if line.strip().startswith(f"{env_key}="):
+                existing_index = idx
+                break
+
+    if existing_index is None:
+        if existing_lines and not existing_lines[-1].endswith("\n"):
+            existing_lines[-1] += "\n"
+        existing_lines.append(env_line)
+    else:
+        existing_lines[existing_index] = env_line
+
+    env_path.write_text("".join(existing_lines), encoding="utf-8")
+    ok(f"API key saved to [dim cyan]{env_path}[/]")
+
+
+_ENV_KEY = "FINANCIAL_MODELING_PREP_API_KEY"
+
+
+def discover_api_key() -> tuple[str, str]:
+    """
+    Probe all known key sources and return the first API key found together with
+    a human-readable description of where it came from.
+
+    The search order is:
+
+    1. Global FinanceToolkit env file (``get_global_env_path()``)
+    2. Local ``.env`` in the current working directory
+    3. ``FINANCIAL_MODELING_PREP_API_KEY`` already set in the process environment
+       (e.g. exported in the shell before running the wizard)
+
+    Returns:
+        tuple[str, str]: ``(api_key, source)`` where *source* is a short label
+            such as ``"global config"`` or ``"local .env"``.  Both values are
+            empty strings when the key cannot be found.
+    """
+    # 1. Global env file
+    global_env = get_global_env_path()
+    if global_env.exists():
+        values = dotenv_values(global_env)
+        key = values.get(_ENV_KEY, "")
+        if key:
+            return key, "global config"
+
+    # 2. Local .env in cwd
+    local_env = pathlib.Path.cwd() / ".env"
+    if local_env.exists():
+        values = dotenv_values(local_env)
+        key = values.get(_ENV_KEY, "")
+        if key:
+            return key, f"local .env ({local_env})"
+
+    # 3. Process environment (exported shell variable)
+    key = os.environ.get(_ENV_KEY, "")
+    if key:
+        return key, "shell environment"
+
+    return "", ""
+
+
+def remove_global_env_key() -> None:
+    """
+    Delete the global FinanceToolkit .env file and remove the parent directory
+    if it is left empty.
+    """
+    env_path = get_global_env_path()
+    if not env_path.exists():
+        info("Global env file not found — nothing to remove.")
+        return
+    env_path.unlink()
+    ok(f"Deleted [dim cyan]{env_path}[/]")
+    with suppress(OSError):
+        env_path.parent.rmdir()  # only succeeds if the directory is now empty
+
+
+def _remove_entry_from_config(
+    config_path: pathlib.Path,
+    outer_key: str,
+    entry_key: str = "finance-toolkit",
+) -> None:
+    """
+    Remove *entry_key* from *outer_key* inside *config_path* (a JSON file).
+
+    If the file does not exist or the entry is absent, a short notice is printed
+    and the function returns without modifying anything.
+
+    Args:
+        config_path: Absolute path to the JSON config file.
+        outer_key: Top-level JSON key that contains the server map
+            (``"servers"`` for VS Code, ``"mcpServers"`` for others).
+        entry_key: The server entry to remove. Defaults to ``"finance-toolkit"``.
+    """
+    if not config_path.exists():
+        info(f"No config found at {config_path} — skipping.")
+        return
+
+    existing: dict = {}
+    with suppress(json.JSONDecodeError):
+        existing = json.loads(config_path.read_text(encoding="utf-8"))
+
+    if entry_key not in existing.get(outer_key, {}):
+        info(f"No '{entry_key}' entry found in {config_path} — skipping.")
+        return
+
+    del existing[outer_key][entry_key]
+    config_path.write_text(json.dumps(existing, indent=2) + "\n", encoding="utf-8")
+    ok(f"Removed [bold]'{entry_key}'[/] from [dim cyan]{config_path}[/]")
+
+
+def remove_vscode_config(target_dir: pathlib.Path) -> None:
+    """
+    Remove the ``finance-toolkit`` entry from ``.vscode/mcp.json``.
+
+    Args:
+        target_dir: Directory that contains the ``.vscode`` subdirectory.
+    """
+    _remove_entry_from_config(
+        target_dir / ".vscode" / "mcp.json",
+        outer_key="servers",
+    )
+
+
+def remove_cursor_config(target_dir: pathlib.Path) -> None:
+    """
+    Remove the ``finance-toolkit`` entry from ``.cursor/mcp.json``.
+
+    Args:
+        target_dir: Directory that contains the ``.cursor`` subdirectory.
+    """
+    _remove_entry_from_config(
+        target_dir / ".cursor" / "mcp.json",
+        outer_key="mcpServers",
+    )
+
+
+def remove_claude_config() -> None:
+    """Remove the ``finance-toolkit`` entry from the Claude Desktop config file."""
+    _remove_entry_from_config(
+        get_claude_config_path(),
+        outer_key="mcpServers",
+    )
+
+
+def remove_all_configs(target_dir: pathlib.Path) -> None:
+    """
+    Remove the ``finance-toolkit`` entry from every known client config file and
+    delete the global FinanceToolkit .env file.
+
+    The function prints a summary of what exists before asking for confirmation
+    so the user knows exactly what will be removed.
+
+    Args:
+        target_dir: Working directory used to resolve ``.vscode`` and ``.cursor``
+            paths (typically ``pathlib.Path.cwd()``).
+    """
+    candidates = [
+        ("Claude Desktop", get_claude_config_path(), "mcpServers"),
+        ("VS Code", target_dir / ".vscode" / "mcp.json", "servers"),
+        ("Cursor", target_dir / ".cursor" / "mcp.json", "mcpServers"),
+    ]
+
+    found: list[tuple[str, pathlib.Path, str]] = []
+    for name, path, key in candidates:
+        if not path.exists():
+            continue
+        existing: dict = {}
+        with suppress(json.JSONDecodeError):
+            existing = json.loads(path.read_text(encoding="utf-8"))
+        if "finance-toolkit" in existing.get(key, {}):
+            found.append((name, path, key))
+
+    global_env = get_global_env_path()
+    has_global_env = global_env.exists()
+
+    if not found and not has_global_env:
+        console.print()
+        info("No FinanceToolkit configuration found — nothing to remove.")
+        console.print()
+        return
+
+    summary = Text()
+    summary.append("The following will be removed:\n\n", style="bold")
+    for name, path, _ in found:
+        summary.append("  ·  ", style="yellow")
+        summary.append(f"{name}  ", style="bold")
+        summary.append(f"{path}\n", style="dim cyan")
+    if has_global_env:
+        summary.append("  ·  ", style="yellow")
+        summary.append("Global env file  ", style="bold")
+        summary.append(f"{global_env}\n", style="dim cyan")
+
+    console.print()
+    console.print(
+        Panel(
+            summary,
+            title="[bold yellow]Remove Configuration[/]",
+            border_style="yellow",
+            padding=(1, 2),
+        )
+    )
+    console.print()
+    if not Confirm.ask("  Proceed with removal?", default=False):
+        info("Removal cancelled — nothing was changed.")
+        console.print()
+        return
+
+    console.print()
+    for _, path, key in found:
+        _remove_entry_from_config(path, outer_key=key)
+    if has_global_env:
+        remove_global_env_key()
+
+    console.print()
+    ok("[bold]Removal complete.[/]  Restart your client(s) to apply.")
+    console.print()
+
+
 def write_vscode_config(api_key: str, target_dir: pathlib.Path) -> None:
     """
     Write (or merge) a .vscode/mcp.json file in the given directory.
+
+    The API key is never embedded in the JSON file. Instead, the entry points
+    the server to the global FinanceToolkit .env file via ``FINANCETOOLKIT_ENV_FILE``
+    so that the key is loaded at runtime from a file outside version control.
 
     If the file already exists and the ``finance-toolkit`` entry is present, the
     user is shown the existing entry and asked to confirm before overwriting. All
     other existing server entries are always preserved.
 
     Args:
-        api_key (str): FinancialModelingPrep API key to embed in the config. Pass
-            an empty string to leave the placeholder comment in the file.
+        api_key (str): Unused — kept for signature compatibility. The key is
+            written to the global .env file by the caller before this function
+            is invoked.
         target_dir (pathlib.Path): Directory in which .vscode/mcp.json is created.
     """
     vscode_dir = target_dir / ".vscode"
@@ -89,37 +398,42 @@ def write_vscode_config(api_key: str, target_dir: pathlib.Path) -> None:
 
     current_entry = existing.get("servers", {}).get("finance-toolkit")
     if current_entry is not None:
-        print(
-            f"\n  {YELLOW}⚠{CLR}  An existing {BOLD}'finance-toolkit'{CLR} entry was "
-            f"found in {CYAN}{config_path}{CLR}:"
+        console.print()
+        warn(
+            f"Existing [bold]'finance-toolkit'[/] entry found in [dim cyan]{config_path}[/]"
         )
-        print(f"  {DIM}{json.dumps(current_entry, indent=4)}{CLR}")
-        confirm = input(f"\n  Overwrite this entry? {DIM}[y/N]{CLR} ").strip().lower()
-        if confirm != "y":
-            print(f"\n{DIM}Skipped — existing VS Code config left unchanged.{CLR}")
+        console.print(f"  [dim]{json.dumps(current_entry, indent=4)}[/]")
+        console.print()
+        if not Confirm.ask("  Overwrite this entry?", default=False):
+            info("Skipped — existing VS Code config left unchanged.")
             return
 
     existing.setdefault("servers", {})
     existing["servers"]["finance-toolkit"] = {
         "command": "financetoolkit-mcp",
-        "env": {"FINANCIAL_MODELING_PREP_API_KEY": api_key or "YOUR_API_KEY_HERE"},
+        "env": {"FINANCETOOLKIT_ENV_FILE": str(get_global_env_path())},
     }
 
     config_path.write_text(json.dumps(existing, indent=2) + "\n", encoding="utf-8")
-    print(f"{GREEN}✔{CLR} VS Code config written to {CYAN}{config_path}{CLR}")
+    ok(f"VS Code config written to [dim cyan]{config_path}[/]")
 
 
 def write_cursor_config(api_key: str, target_dir: pathlib.Path) -> None:
     """
     Write (or merge) a .cursor/mcp.json file in the given directory.
 
+    The API key is never embedded in the JSON file. Instead, the entry points
+    the server to the global FinanceToolkit .env file via ``FINANCETOOLKIT_ENV_FILE``
+    so that the key is loaded at runtime from a file outside version control.
+
     If the file already exists and the ``finance-toolkit`` entry is present, the
     user is shown the existing entry and asked to confirm before overwriting. All
     other existing server entries are always preserved.
 
     Args:
-        api_key (str): FinancialModelingPrep API key to embed in the config. Pass
-            an empty string to leave the placeholder comment in the file.
+        api_key (str): Unused — kept for signature compatibility. The key is
+            written to the global .env file by the caller before this function
+            is invoked.
         target_dir (pathlib.Path): Directory in which .cursor/mcp.json is created.
     """
     cursor_dir = target_dir / ".cursor"
@@ -133,29 +447,33 @@ def write_cursor_config(api_key: str, target_dir: pathlib.Path) -> None:
 
     current_entry = existing.get("mcpServers", {}).get("finance-toolkit")
     if current_entry is not None:
-        print(
-            f"\n  {YELLOW}⚠{CLR}  An existing {BOLD}'finance-toolkit'{CLR} entry was "
-            f"found in {CYAN}{config_path}{CLR}:"
+        console.print()
+        warn(
+            f"Existing [bold]'finance-toolkit'[/] entry found in [dim cyan]{config_path}[/]"
         )
-        print(f"  {DIM}{json.dumps(current_entry, indent=4)}{CLR}")
-        confirm = input(f"\n  Overwrite this entry? {DIM}[y/N]{CLR} ").strip().lower()
-        if confirm != "y":
-            print(f"\n{DIM}Skipped — existing Cursor config left unchanged.{CLR}")
+        console.print(f"  [dim]{json.dumps(current_entry, indent=4)}[/]")
+        console.print()
+        if not Confirm.ask("  Overwrite this entry?", default=False):
+            info("Skipped — existing Cursor config left unchanged.")
             return
 
     existing.setdefault("mcpServers", {})
     existing["mcpServers"]["finance-toolkit"] = {
         "command": "financetoolkit-mcp",
-        "env": {"FINANCIAL_MODELING_PREP_API_KEY": api_key or "YOUR_API_KEY_HERE"},
+        "env": {"FINANCETOOLKIT_ENV_FILE": str(get_global_env_path())},
     }
 
     config_path.write_text(json.dumps(existing, indent=2) + "\n", encoding="utf-8")
-    print(f"{GREEN}✔{CLR} Cursor config written to {CYAN}{config_path}{CLR}")
+    ok(f"Cursor config written to [dim cyan]{config_path}[/]")
 
 
 def write_claude_config(api_key: str) -> None:
     """
     Patch the Claude Desktop configuration file to add the FinanceToolkit server.
+
+    The API key is never embedded in the JSON file. Instead, the entry points
+    the server to the global FinanceToolkit .env file via ``FINANCETOOLKIT_ENV_FILE``
+    so that the key is loaded at runtime from a file outside version control.
 
     If the configuration file does not exist it is created from scratch, including
     any missing parent directories. If it already exists and the ``finance-toolkit``
@@ -163,8 +481,9 @@ def write_claude_config(api_key: str) -> None:
     before overwriting. All other existing server entries are always preserved.
 
     Args:
-        api_key (str): FinancialModelingPrep API key to embed in the config. Pass
-            an empty string to leave the placeholder comment in the file.
+        api_key (str): Unused — kept for signature compatibility. The key is
+            written to the global .env file by the caller before this function
+            is invoked.
     """
     config_path = get_claude_config_path()
     config_path.parent.mkdir(parents=True, exist_ok=True)
@@ -176,23 +495,21 @@ def write_claude_config(api_key: str) -> None:
 
     current_entry = existing.get("mcpServers", {}).get("finance-toolkit")
     if current_entry is not None:
-        print(
-            f"\n  {YELLOW}⚠{CLR}  An existing {BOLD}'finance-toolkit'{CLR} entry was found in "
-            f"{CYAN}{config_path}{CLR}:"
+        console.print()
+        warn(
+            f"Existing [bold]'finance-toolkit'[/] entry found in [dim cyan]{config_path}[/]"
         )
-        print(f"  {DIM}{json.dumps(current_entry, indent=4)}{CLR}")
-        confirm = input(f"\n  Overwrite this entry? {DIM}[y/N]{CLR} ").strip().lower()
-        if confirm != "y":
-            print(
-                f"\n{DIM}Skipped — existing Claude Desktop config left unchanged.{CLR}"
-            )
+        console.print(f"  [dim]{json.dumps(current_entry, indent=4)}[/]")
+        console.print()
+        if not Confirm.ask("  Overwrite this entry?", default=False):
+            info("Skipped — existing Claude Desktop config left unchanged.")
             return
 
     existing.setdefault("mcpServers", {})
     existing["mcpServers"]["finance-toolkit"] = {
         "command": "financetoolkit-mcp",
-        "env": {"FINANCIAL_MODELING_PREP_API_KEY": api_key or "YOUR_API_KEY_HERE"},
+        "env": {"FINANCETOOLKIT_ENV_FILE": str(get_global_env_path())},
     }
 
     config_path.write_text(json.dumps(existing, indent=2) + "\n", encoding="utf-8")
-    print(f"{GREEN}✔{CLR} Claude Desktop config written to {CYAN}{config_path}{CLR}")
+    ok(f"Claude Desktop config written to [dim cyan]{config_path}[/]")
