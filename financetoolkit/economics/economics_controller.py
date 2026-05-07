@@ -31,7 +31,7 @@ class Economics:
         self,
         start_date: str | None = None,
         end_date: str | None = None,
-        gmdb_source: bool = False,
+        gmdb_source: bool = True,
         quarterly: bool | None = None,
         rounding: int | None = 4,
     ):
@@ -41,7 +41,7 @@ class Economics:
         Args:
             start_date (str | None, optional): The start date to retrieve data from. Defaults to None.
             end_date (str | None, optional): The end date to retrieve data from. Defaults to None.
-            gmdb_source (bool, optional): If True, retrieves data from the GMDB source. Defaults to False.
+            gmdb_source (bool, optional): If True, retrieves data from the GMDB source. Defaults to True.
             quarterly (bool | None, optional): If True, returns quarterly data; otherwise, returns yearly data.
                 Defaults to None. This only works for data retrieved from the OECD source.
             rounding (int | None, optional): The number of decimals to round the results to. Defaults to None.
