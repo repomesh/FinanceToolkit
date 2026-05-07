@@ -268,14 +268,9 @@ class ToolRegistry:
         all_indicators = group_methods
 
         def wrapper(**kwargs):
-            """
-            Dispatch a router group tool call to the correct FinanceToolkit method.
+            raw_indicator: str | None = kwargs.pop("indicator", None)
+            method_name: str = raw_indicator or ""
 
-            Resolves the indicator name, coerces all typed parameters, validates
-            required inputs (tickers, period), routes the call through the provider,
-            and returns a formatted Markdown string suitable for LLM consumption.
-            """
-            raw_indicator = kwargs.pop("indicator", None)
             if not raw_indicator:
                 return (
                     f"Please specify an `indicator`. "
