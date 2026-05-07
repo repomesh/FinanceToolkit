@@ -8,7 +8,7 @@ import subprocess
 import sys
 
 import yaml
-from dotenv import load_dotenv
+from dotenv import dotenv_values, load_dotenv
 from mcp.server.fastmcp import FastMCP
 
 from financetoolkit.mcp_server import setup_model
@@ -18,7 +18,18 @@ from financetoolkit.mcp_server.registry_controller import ToolRegistry
 from financetoolkit.mcp_server.tools_model import UtilityToolRegistry
 from financetoolkit.utilities.logger_model import get_logger
 
-load_dotenv()
+# Resolution order at import time:
+#   1. Local cwd .env (highest priority — wins over everything)
+#   2. FINANCETOOLKIT_ENV_FILE (global path written by setup wizard)
+#   3. Global config dir fallback (~/.config/financetoolkit/.env)
+_local_env = pathlib.Path.cwd() / ".env"
+if _local_env.exists():
+    load_dotenv(_local_env, override=True)
+_env_file = os.environ.get("FINANCETOOLKIT_ENV_FILE")
+if _env_file and pathlib.Path(_env_file).exists():
+    load_dotenv(_env_file, override=False)
+else:
+    load_dotenv(override=False)
 
 
 def _build_mcp_app() -> FastMCP:
@@ -35,7 +46,21 @@ def _build_mcp_app() -> FastMCP:
         FastMCP: A fully configured FastMCP instance with all toolkit and utility
             tools registered and ready to serve requests.
     """
-    load_dotenv()
+    # Resolution order:
+    #   1. Local cwd .env — takes precedence so developers / workspace overrides win.
+    #   2. FINANCETOOLKIT_ENV_FILE (set by MCP client configs via setup wizard).
+    #   3. Global config dir (~/.config/financetoolkit/.env) as written by setup wizard.
+    # Each subsequent source uses override=False so it never stomps a key already set.
+    local_env = pathlib.Path.cwd() / ".env"
+    if local_env.exists():
+        load_dotenv(local_env, override=True)
+    env_file = os.environ.get("FINANCETOOLKIT_ENV_FILE")
+    if env_file and pathlib.Path(env_file).exists():
+        load_dotenv(env_file, override=False)
+    else:
+        global_env = setup_model.get_global_env_path()
+        if global_env.exists():
+            load_dotenv(global_env, override=False)
     logger = get_logger()
 
     configuration_path = pathlib.Path(__file__).parent / "config.yaml"
@@ -125,91 +150,56 @@ def inspector() -> None:
 
 
 def setup() -> None:
-    print(setup_model.BANNER)
+    setup_model.print_banner()
 
-    api_key: str = os.environ.get("FINANCIAL_MODELING_PREP_API_KEY", "")
+    # Discover an existing key from all known sources before prompting.
+    api_key, key_source = setup_model.discover_api_key()
+    global_env = setup_model.get_global_env_path()
 
     if api_key:
         masked_key = (
             f"{api_key[:4]}...{api_key[-4:]}" if len(api_key) > 8 else "****"  # noqa
         )
-        print(
-            f"\n{setup_model.GREEN}✔{setup_model.CLR} API key loaded: "
-            f"{setup_model.DIM}{masked_key}{setup_model.CLR}"
+        setup_model.ok(
+            f"API key found  [dim]·[/]  [dim]{key_source}[/]  [dim]·[/]  [dim cyan]{masked_key}[/]"
         )
+        # If the key came from the local .env or the shell but the global file
+        # doesn't have it yet, sync it there now so all clients can use it.
+        if not global_env.exists() or key_source != "global config":
+            global_values = dotenv_values(global_env) if global_env.exists() else {}
+            if global_values.get("FINANCIAL_MODELING_PREP_API_KEY") != api_key:
+                setup_model.info(f"Syncing key to global config ({global_env})…")
+                setup_model.write_global_env_key(api_key)
     else:
-        print(
-            f"\n  {setup_model.YELLOW}⚠{setup_model.CLR}  {setup_model.BOLD}"
-            f"FinancialModelingPrep API key required{setup_model.CLR}"
+        setup_model.warn(
+            "No API key found.  Get one at [cyan]https://www.jeroenbouma.com/fmp[/]  [dim](15% discount)[/]"
         )
-        print(
-            f"     Get a 15% discount at: {setup_model.CYAN}"
-            f"https://www.jeroenbouma.com/fmp{setup_model.CLR}"
-        )
-        print(
-            f"     {setup_model.DIM}Press Enter to skip and "
-            f"configure via .env later.{setup_model.CLR}"
-        )
-        api_key = input(
-            f"\n  {setup_model.BOLD}Enter API key:{setup_model.CLR} "
+        setup_model.info("Press [bold]Enter[/] to skip and configure via .env later.")
+        setup_model.console.print()
+        api_key = setup_model.console.input(
+            "  [bold]API Key[/]  [dim cyan]›[/] "
         ).strip()
 
         if api_key:
-            env_path = pathlib.Path.cwd() / ".env"
-            env_key = "FINANCIAL_MODELING_PREP_API_KEY"
-            env_line = f"{env_key}={api_key}\n"
+            setup_model.write_global_env_key(api_key)
 
-            existing_lines: list[str] = []
-            existing_index: int | None = None
-
-            if env_path.exists():
-                existing_lines = env_path.read_text(encoding="utf-8").splitlines(
-                    keepends=True
-                )
-                for idx, line in enumerate(existing_lines):
-                    if line.strip().startswith(f"{env_key}="):
-                        existing_index = idx
-                        break
-
-            if existing_index is None:
-                if existing_lines and not existing_lines[-1].endswith("\n"):
-                    existing_lines[-1] += "\n"
-                existing_lines.append(env_line)
-                env_path.write_text("".join(existing_lines), encoding="utf-8")
-                print(
-                    f"{setup_model.GREEN}✔{setup_model.CLR} Added {setup_model.BOLD}{env_key}"
-                    f"{setup_model.CLR} to {setup_model.CYAN}{env_path}{setup_model.CLR}."
-                )
-            else:
-                overwrite = (
-                    input(
-                        f"{setup_model.YELLOW}⚠{setup_model.CLR} {setup_model.BOLD}{env_key}"
-                        f"{setup_model.CLR} already exists in {setup_model.CYAN}{env_path}"
-                        f"{setup_model.CLR}. Overwrite? {setup_model.DIM}[y/N]{setup_model.CLR} "
-                    )
-                    .strip()
-                    .lower()
-                )
-                if overwrite in {"y", "yes"}:
-                    existing_lines[existing_index] = env_line
-                    env_path.write_text("".join(existing_lines), encoding="utf-8")
-                    print(
-                        f"{setup_model.GREEN}✔{setup_model.CLR} Updated {setup_model.BOLD}{env_key}"
-                        f"{setup_model.CLR} in {setup_model.CYAN}{env_path}{setup_model.CLR}."
-                    )
-                else:
-                    print(
-                        f"{setup_model.DIM}Skipped updating {env_path}.{setup_model.CLR}"
-                    )
-
-    print(setup_model._MENU)
-    choice_str = input(f"{setup_model.CYAN}›{setup_model.CLR} ").strip()
+    setup_model.console.print()
+    setup_model.print_menu()
+    setup_model.console.print()
+    choice_str = setup_model.console.input("  [cyan]›[/] ").strip()
 
     if not choice_str or "0" in choice_str:
-        print(f"\n{setup_model.DIM}Setup cancelled.{setup_model.CLR}\n")
+        setup_model.console.print()
+        setup_model.info("Setup cancelled.")
+        setup_model.console.print()
         return
 
     cwd = pathlib.Path.cwd()
+
+    # Option 4 is handled as a distinct removal flow.
+    if "4" in choice_str:
+        setup_model.remove_all_configs(cwd)
+        return
 
     # Extract unique valid choices from the input string (e.g., '12' -> ['1', '2'])
     valid_map = {
@@ -222,37 +212,28 @@ def setup() -> None:
     to_process = [c for c in dict.fromkeys(choice_str) if c in valid_map]
 
     if not to_process:
-        print(f"\n{setup_model.RED}✘ No valid options selected.{setup_model.CLR}")
+        setup_model.console.print()
+        setup_model.err("No valid options selected.")
         return
 
-    print("")  # Spacer
-
+    setup_model.console.print()
     for char in to_process:
         name, func = valid_map[char]
-        print(
-            f"  {setup_model.CYAN}→{setup_model.CLR} Configuring {setup_model.BOLD}{name}{setup_model.CLR}..."
-        )
-
         try:
-            # Execute the specific config function
-            if char == "1":
-                func(api_key)
-            else:
-                func(api_key)
-            print(
-                f"{setup_model.GREEN}✔{setup_model.CLR} {name} configuration complete."
-            )
+            func(api_key)
         except Exception as e:
-            print(f"{setup_model.RED}✘ Error configuring {name}:{setup_model.CLR} {e}")
+            setup_model.err(f"Error configuring {name}: {e}")
 
-    # Final Exit message
-    print(
-        f"\n{setup_model.GREEN}✔ All selected configurations updated!{setup_model.CLR}"
+    # Final summary
+    setup_model.console.print()
+    setup_model.console.rule("[dim]Done[/]", style="dim")
+    setup_model.console.print()
+    setup_model.ok("[bold]All selected configurations updated![/]")
+    setup_model.info("Restart your client(s) to apply changes.")
+    setup_model.info(
+        "Run [bold]financetoolkit-mcp-inspector[/] to test the connection."
     )
-    print("Restart your client(s) to apply changes.")
-    print(
-        f"Run {setup_model.BOLD}'financetoolkit-mcp-inspector'{setup_model.CLR} to test.\n"
-    )
+    setup_model.console.print()
 
 
 if __name__ == "__main__":
