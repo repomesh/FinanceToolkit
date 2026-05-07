@@ -319,6 +319,7 @@ init_handled_params:
   - "start_date"
   - "end_date"
   - "quarterly"
+  - "benchmark_ticker"
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Toolkit direct-method allowlist (exposed by get_toolkit_data)
