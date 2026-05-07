@@ -97,7 +97,7 @@ def format_result(
             else:
                 lines.append(f"**{key}:** {value}")
         return "\n\n".join(lines)
-    elif isinstance(dataset, int | float | str):
+    elif isinstance(dataset, (int, float, str)):
         return str(dataset)
     else:
         logger.warning(
