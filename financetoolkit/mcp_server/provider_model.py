@@ -133,6 +133,7 @@ class ToolkitProvider:
             "start": start_date,
             "end": end_date,
             "quarterly": quarterly,
+            "benchmark_ticker": benchmark_ticker,
             **{
                 k: v
                 for k, v in method_kwargs.items()
@@ -140,12 +141,19 @@ class ToolkitProvider:
             },
         }
 
-        cached = self._sqlitecache.get_dataframe(
-            module_name, cache_params, ttl=self._cache_ttl
-        )
-        if cached is not None:
-            logger.info(f"Acquired cache information ({module_name}, {method_name})")
-            return cached
+        # When TTL is 0 or falsy, caching is explicitly disabled — skip both
+        # the cache read and the subsequent write to avoid pointless I/O.
+        if not self._cache_ttl:
+            pass  # fall through directly to the live call below
+        else:
+            cached = self._sqlitecache.get_dataframe(
+                module_name, cache_params, ttl=self._cache_ttl
+            )
+            if cached is not None:
+                logger.info(
+                    f"Acquired cache information ({module_name}, {method_name})"
+                )
+                return cached
 
         logger.info(
             f"Calling Finance Toolkit functionality ({module_name}, {method_name})"
@@ -212,7 +220,7 @@ class ToolkitProvider:
 
         if isinstance(result, pd.Series):
             result = result.to_frame()
-        if isinstance(result, pd.DataFrame):
+        if self._cache_ttl and isinstance(result, pd.DataFrame):
             self._sqlitecache.store_dataframe(module_name, cache_params, result)
 
         return result
@@ -251,20 +259,21 @@ class ToolkitProvider:
             f"{','.join(sorted(t.upper() for t in tickers))}"
             f"|{start_date}|{end_date}|{quarterly}|{self._api_hash}"
         )
+        # Hold the lock for the full check-create-store sequence to prevent
+        # TOCTOU races where two threads both see a cache miss and each create
+        # a separate Toolkit instance for the same key.
         with self._lock:
             if cache_key in self._toolkit_cache:
                 return self._toolkit_cache[cache_key]
 
-        toolkit_instance: Toolkit = Toolkit(
-            tickers=tickers,
-            api_key=self._api_key,
-            start_date=start_date,
-            end_date=end_date,
-            quarterly=quarterly,
-            benchmark_ticker=benchmark_ticker,
-        )
-
-        with self._lock:
+            toolkit_instance: Toolkit = Toolkit(
+                tickers=tickers,
+                api_key=self._api_key,
+                start_date=start_date,
+                end_date=end_date,
+                quarterly=quarterly,
+                benchmark_ticker=benchmark_ticker,
+            )
             self._toolkit_cache[cache_key] = toolkit_instance
 
         return toolkit_instance
@@ -394,28 +403,30 @@ class ToolkitProvider:
                 f"{module_name}|{start_date}|{end_date}|{quarterly}|{self._api_hash}"
             )
 
+        # Hold the lock for the full check-create-store sequence to prevent
+        # TOCTOU races where two threads both see a cache miss and create
+        # duplicate standalone module instances for the same cache key.
         with self._lock:
             instance = self._standalone_cache.get(cache_key)
 
-        if instance is None:
-            if module_name == "economics":
-                instance = Economics(
-                    start_date=start_date,
-                    end_date=end_date,
-                    quarterly=quarterly,
-                )
-            elif module_name == "fixedincome":
-                instance = FixedIncome(
-                    start_date=start_date,
-                    end_date=end_date,
-                    quarterly=quarterly,
-                )
-            elif module_name == "discovery":
-                instance = Discovery(api_key=self._api_key)
-            else:
-                raise ValueError(f"Unknown standalone module: {module_name}")
+            if instance is None:
+                if module_name == "economics":
+                    instance = Economics(
+                        start_date=start_date,
+                        end_date=end_date,
+                        quarterly=quarterly,
+                    )
+                elif module_name == "fixedincome":
+                    instance = FixedIncome(
+                        start_date=start_date,
+                        end_date=end_date,
+                        quarterly=quarterly,
+                    )
+                elif module_name == "discovery":
+                    instance = Discovery(api_key=self._api_key)
+                else:
+                    raise ValueError(f"Unknown standalone module: {module_name}")
 
-            with self._lock:
                 self._standalone_cache[cache_key] = instance
 
         method = getattr(instance, method_name)
