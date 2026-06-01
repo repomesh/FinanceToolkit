@@ -1,5 +1,5 @@
 """
-Static class and method inspection utilities for the FinanceToolkit MCP server.
+Static class and method inspection utilities for the Finance Toolkit MCP server.
 
 Provides helpers for introspecting controller classes, extracting and filtering
 method parameters, unwrapping decorated functions, and building FastMCP tool
@@ -21,7 +21,7 @@ logger = get_logger()
 
 class ControllerInspector:
     """
-    Stateless inspector for FinanceToolkit controller classes.
+    Stateless inspector for Finance Toolkit controller classes.
 
     Encapsulates all static inspection logic needed at server startup to
     discover group methods, extract parameters, and build FastMCP tool

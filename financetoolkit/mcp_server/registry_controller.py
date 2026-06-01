@@ -1,5 +1,5 @@
 """
-Dynamic tool registration for the FinanceToolkit MCP Server — Router Pattern.
+Dynamic tool registration for the Finance Toolkit MCP Server — Router Pattern.
 
 Consolidates 200+ individual methods into ~21 categorical master tools, each
 accepting an indicator parameter (Literal enum) that routes to the
@@ -74,7 +74,7 @@ class ToolRegistry:
 
     Reads router-group specifications from ``tool_groups`` in the config dict,
     resolves ``module_class_map`` string paths to actual class objects via
-    :meth:`_resolve_class_map`, introspects the relevant FinanceToolkit controller
+    :meth:`_resolve_class_map`, introspects the relevant Finance Toolkit controller
     classes via :class:`ControllerInspector`, and calls ``mcp.add_tool()`` for each
     group. The resulting tool index can be queried via :meth:`get_tool_index`.
     """
@@ -220,7 +220,7 @@ class ToolRegistry:
         """Build the ``**kwargs`` callable that powers a router group tool.
 
         Constructs a closure (``wrapper``) that dispatches to the correct
-        FinanceToolkit method based on the ``indicator`` keyword argument, coerces
+        Finance Toolkit method based on the ``indicator`` keyword argument, coerces
         inputs, calls the provider, and formats the result as Markdown. The
         closure's ``__signature__`` is replaced with a proper FastMCP-compatible
         signature derived from the group's common and extra parameters.
@@ -263,7 +263,7 @@ class ToolRegistry:
 
         def wrapper(**kwargs):
             """
-            Dispatch a router group tool call to the correct FinanceToolkit method.
+            Dispatch a router group tool call to the correct Finance Toolkit method.
 
             Resolves the indicator name, coerces all typed parameters, validates
             required inputs (tickers, period), routes the call through the provider,

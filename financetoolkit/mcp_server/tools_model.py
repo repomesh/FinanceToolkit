@@ -1,8 +1,8 @@
 """
-Utility MCP tools for the FinanceToolkit MCP server.
+Utility MCP tools for the Finance Toolkit MCP server.
 
 Registers the four built-in discovery and utility tools that operate on the
-*tool index* (the registry) rather than directly on FinanceToolkit controllers:
+*tool index* (the registry) rather than directly on Finance Toolkit controllers:
 
 - ``list_categories``          — table of registered categories + counts
 - ``list_metrics_by_category`` — all metrics within a single category
@@ -39,7 +39,7 @@ class UtilityToolRegistry:
 
     These tools are separate from the router groups managed by ``ToolRegistry``
     because they operate on the tool index rather than routing to a
-    FinanceToolkit controller method.
+    Finance Toolkit controller method.
 
     ``ToolRegistry.register_all_tools()`` must be called before calling
     :meth:`register_all_tools` on this registry so that ``get_tool_index``

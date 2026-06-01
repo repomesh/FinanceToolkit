@@ -1,5 +1,5 @@
 """
-Formatting Model, used for formatting FinanceToolkit results into Markdown strings for LLMs.
+Formatting Model, used for formatting Finance Toolkit results into Markdown strings for LLMs.
 """
 
 import pandas as pd
@@ -13,7 +13,7 @@ def format_result(
     dataset: dict | pd.Series | pd.DataFrame | int | float | str | None,
 ) -> str:
     """
-    Format a FinanceToolkit result into a compact Markdown string for LLM consumption.
+    Format a Finance Toolkit result into a compact Markdown string for LLM consumption.
 
     Args:
         dataset (dict | pd.Series | pd.DataFrame | int | float | str | None):

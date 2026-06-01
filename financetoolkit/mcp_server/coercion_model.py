@@ -1,5 +1,5 @@
 """
-Type coercion and input normalisation utilities for the FinanceToolkit MCP server.
+Type coercion and input normalisation utilities for the Finance Toolkit MCP server.
 
 Provides best-effort conversion of LLM- or user-supplied string values to the
 Python types required by controller methods, as well as date-string validation.

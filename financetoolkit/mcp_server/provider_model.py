@@ -1,5 +1,5 @@
 """
-Centralized FinanceToolkit provider with SQLite-backed caching.
+Centralized Finance Toolkit provider with SQLite-backed caching.
 """
 
 from __future__ import annotations
@@ -30,7 +30,7 @@ API_KEY: str = os.environ.get("FINANCIAL_MODELING_PREP_API_KEY", "")
 class ToolkitProvider:
     """
     Stateless provider that routes MCP tool calls to the appropriate
-    FinanceToolkit module.
+    Finance Toolkit module.
     """
 
     def __init__(
@@ -80,7 +80,7 @@ class ToolkitProvider:
         **method_kwargs: Any,
     ) -> Any:
         """
-        Route a tool call to the correct FinanceToolkit module.
+        Route a tool call to the correct Finance Toolkit module.
 
         The ``tickers``, ``countries``, ``start_date``, ``end_date``,
         ``quarterly``, and ``benchmark_ticker`` parameters are all optional so
@@ -109,7 +109,7 @@ class ToolkitProvider:
                 the underlying controller method.
 
         Returns:
-            Any: The raw result from the underlying FinanceToolkit method —
+            Any: The raw result from the underlying Finance Toolkit method —
                 typically a ``pd.DataFrame``, ``pd.Series``, scalar, or dict.
         """
         current_time = time.time()
