@@ -9,69 +9,28 @@
 [![PYPI Version](https://img.shields.io/pypi/v/FinanceToolkit)](https://pypi.org/project/FinanceToolkit/)
 [![PYPI Downloads](https://static.pepy.tech/badge/financetoolkit/month)](https://pepy.tech/project/financetoolkit)
 
-The FinanceToolkit MCP Server exposes 200+ pre-computed financial metrics, models, and economic indicators directly to any AI assistant that supports the [Model Context Protocol](https://modelcontextprotocol.io). This means you can ask Claude, Copilot, Cursor, or any other MCP-compatible assistant to analyse equities, benchmark performance, inspect macro conditions, and run technical indicators — all backed by the transparent, open-source calculation methods of the FinanceToolkit.
+The Finance Toolkit MCP Server exposes 200+ pre-computed financial metrics, models, and economic indicators directly to any AI assistant that supports the [Model Context Protocol](https://modelcontextprotocol.io). This means you can ask Claude, Copilot, Cursor, or any other MCP-compatible assistant to analyse equities, benchmark performance, inspect macro conditions, and run technical indicators — all backed by the transparent, open-source calculation methods of the Finance Toolkit.
 
-The server consolidates the entire FinanceToolkit surface into a small number of categorical master tools (e.g. `get_valuation_ratios`, `get_profitability_ratios`, `get_momentum_indicators`) so that the AI can discover and call the right metric without being overwhelmed by hundreds of individual function signatures.
-
-# Table of Contents
-
-1. [Installation](#installation)
-2. [Shortest Path to a Working Finance Assistant](#shortest-path-to-a-working-finance-assistant)
-3. [Manual Client Configuration](#manual-client-configuration)
-4. [Available Tools](#available-tools)
+The server consolidates the entire Finance Toolkit surface into a small number of categorical master tools (e.g. `get_valuation_ratios`, `get_profitability_ratios`, `get_momentum_indicators`) so that the AI can discover and call the right metric without being overwhelmed by hundreds of individual function signatures.
 
 # Installation
 
+The installation process is designed to be as seamless as possible, with an interactive setup wizard that configures your clients and securely stores your API key. The server itself runs on demand via `uvx`, so no local installation is required for the clients.
 
-The MCP server is an optional add-on to the FinanceToolkit. The core library installs without any MCP dependencies, keeping the footprint small for users who want to work with the Finance Toolkit directly. To include the server, add the `[mcp]` extra:
+> **Step 1: Run the Setup Wizard**
 
-```
-pip install financetoolkit[mcp] -U
-```
-
-This pulls in `mcp`, `tabulate`, `python-dotenv`, and `PyYAML` on top of the standard FinanceToolkit dependencies.
-
-After installation, three new commands are available on your PATH:
-
-| Command | Purpose |
-|:---|:---|
-| `financetoolkit-mcp` | Start the MCP server |
-| `financetoolkit-mcp-setup` | Auto-generate client config files |
-| `financetoolkit-mcp-inspector` | Open the interactive Inspector UI |
-
-To be able to get setup the MCP server, you need to obtain an API Key from FinancialModelingPrep. This is used to gain access to 30+ years of financial statement both annually and quarterly. Note that the Free plan is limited to 250 requests each day, 5 years of data and only features companies listed on US exchanges.
-
-___ 
-
-<b><div align="center">Obtain an API Key from FinancialModelingPrep <a href="https://www.jeroenbouma.com/fmp" target="_blank">here</a>.</div></b>
-___
-
-Through the link you are able to subscribe for the free plan and also premium plans at a **15% discount**. This is an affiliate link and thus supports the project at the same time.
-
-# Shortest Path to a Working Finance Assistant
-
-The fastest path from installation to a working AI assistant is two (or actually three) steps.
-
-> **Step 1: Install**
+Clients are configured to launch the server on demand via [uvx](https://docs.astral.sh/uv/guides/tools/), so as long as [uv](https://docs.astral.sh/uv/getting-started/installation/) is installed,you can run the setup wizard directly with:
 
 ```
-pip install financetoolkit[mcp] -U
+uvx --from "financetoolkit[mcp]" financetoolkit-mcp-setup
 ```
 
-> **Step 2: Run the Setup Wizard**
+> **Step 2: Configure your client(s)**
 
-```
-financetoolkit-mcp-setup
-```
-
-The wizard asks for your FinancialModelingPrep API key, then presents a menu where you select which clients to configure. You can configure multiple clients at once by entering their numbers together (e.g. `23` for Claude Code + VS Code).
-
-The wizard stores the API key in a dedicated global config file on your system (never inside the project or any version-controlled file) and writes a config entry for each selected client that points to it. It safely merges the `finance-toolkit` entry into any existing config without disturbing other server entries, and asks for confirmation before overwriting an entry that is already present.
-
-See below:
+The wizard asks for your FinancialModelingPrep API key which you can obtain from FinancialModelingPrep **<a href="https://www.jeroenbouma.com/fmp" target="_blank">here</a>**.
 
 ```bash
-(financetoolkit) (base) jeroenbouma@Jeroens-MacBook-Pro FinanceToolkit % financetoolkit-mcp-setup
+(base) jeroenbouma@Jeroens-MacBook-Pro FinanceToolkit % uvx --from "financetoolkit[mcp]" financetoolkit-mcp-setup
 ╭───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
 │                                                                                                                                               │
 │  FinanceToolkit  ·  MCP Setup Wizard                                                                                                          │
@@ -83,6 +42,13 @@ See below:
   Press Enter to skip and configure via .env later.
 
   API Key  › YOUR_FINANCIAL_MODELING_PREP_API_KEY_HERE
+```
+
+The wizard securely stores it in a global config file on your system (never inside the project or any version-controlled file) and writes a config entry for each selected client that launches the server via `uvx`. It safely merges the `finance-toolkit` entry into any existing config without disturbing other server entries, and asks for confirmation before overwriting an entry that is already present.
+
+Next up is deciding what client(s) you want to configure. You can select multiple clients at once (e.g. 23 for both Claude Code and VS Code) and the wizard will write the necessary config entries for each selected client to launch the MCP server on demand.
+
+```bash
   ✔  API key saved to /Users/jeroenbouma/.config/financetoolkit/.env
 
 ╭────────────────────────────────────────────────────────────── Configure Clients ──────────────────────────────────────────────────────────────╮
@@ -91,12 +57,18 @@ See below:
 │    2  Claude Code                                                                                                                             │
 │    3  VS Code                                                                                                                                 │
 │    4  Cursor                                                                                                                                  │
+│    5  Gemini                                                                                                                                  │
+│    6  Windsurf                                                                                                                                │
 │                                                                                                                                               │
-│    5  Remove configuration                                                                                                                    │
+│    7  Remove configuration                                                                                                                    │
 │    0  Exit                                                                                                                                    │
 │                                                                                                                                               │
-╰──────────────────────────────────────────────────── e.g. 13 for Claude Desktop + VS Code ─────────────────────────────────────────────────────╯
+╰──────────────────────────────────────────────────── e.g. 23 for Claude Code + VS Code ────────────────────────────────────────────────────────╯
+```
 
+It will inform you where it saved the files and ask if you want to install the optional SKILL.md analyst instructions for each client, which provides guidance to the LLM on how to use the tools and interpret the results. This greatly enhances the quality of the responses and ensures the LLM understands the unique formatting and response style of the Finance Toolkit MCP.
+
+```bash
   › 23
 
   ✔  Claude Code config written to /Users/jeroenbouma/.claude.json
@@ -106,24 +78,16 @@ See below:
   ✔  Skill file written to /Users/jeroenbouma/Documents/FinanceToolkit/.agents/skills/finance-toolkit-analyst/SKILL.md
 
   Install the SKILL.md analyst instructions for Claude Code (.claude/skills/)? [y/n] (y): y
-  ✔  Claude Code skill file written to /Users/jeroenbouma/Documents/FinanceToolkit/.claude/skills/finance-toolkit-analyst.md
-
-───────────────────────────────────────────────────────────────────── Done ──────────────────────────────────────────────────────────────────────
-
-  ✔  All selected configurations updated!
-  Restart your client(s) to apply changes.
-  Run financetoolkit-mcp-inspector to test the connection.
-
-(financetoolkit) (base) jeroenbouma@Jeroens-MacBook-Pro FinanceToolkit %    
+  ✔  Claude Code skill file written to /Users/jeroenbouma/Documents/FinanceToolkit/.claude/skills/finance_toolkit.md
 ```
 
-After the wizard completes, restart your AI client and the FinanceToolkit tools will appear.
+After the wizard completes, restart your AI client and the Finance Toolkit tools will appear.
 
 > **Step 3: Start using the Tools!**
 
-As seen above an optional SKILL.md file can be acquired, this creates a `finance-toolkit-analyst` skill in the `.agents/skill` directory. It is possible your LLM will automatically select this skill when you ask financial questions, but if not you can explicitly invoke it by name (e.g. `/finance-toolkit-analyst What is the current P/E ratio of Apple?`).
+As seen above an optional SKILL.md file can be acquired, this creates a `finance-toolkit-analyst` skill in, for GitHub CoPilot `.agents/skill` directory. It is possible your LLM will automatically select this skill when you ask financial questions, but if not you can explicitly invoke it by name (e.g. `/finance-toolkit-analyst What is the current P/E ratio of Apple?`).
 
-You can ask your assistant questions about stocks, ETFs, macro conditions, and more all powered by the FinanceToolkit server. The LLM will automatically select the right tool and metric based on your question.
+You can ask your assistant questions about stocks, ETFs, macro conditions, and more all powered by the Finance Toolkit MCP. The LLM will automatically select the right tool and metric based on your question.
 
 A few example prompts using a simple model (`GPT-5 mini`) are shown below. The MCP server is explicitly modelled to work well with simpler models to limit costs and token usage. Feel free to try them out in your preferred environment to see the full interactivity!
 
@@ -293,7 +257,7 @@ The most recent RSI on 2026-05-07 is 59.82, which is below the common overbought
 <i>
 I'll fetch ESG scores for a set of leading semiconductor companies (NVDA, AMD, INTC, ASML, TSM, TXN, QCOM, AVGO, MRVL, ON) to identify the most sustainable firm.
 
-ASML clearly stands out as the most sustainable company in this semiconductor sample, scoring far higher on the FinanceToolkit ESG metric than its peers in 2026.
+ASML clearly stands out as the most sustainable company in this semiconductor sample, scoring far higher on the Finance Toolkit ESG metric than its peers in 2026.
 
 The latest (2026) ESG scores for the sampled semiconductor companies are shown below.
 
@@ -320,67 +284,42 @@ ASML’s lead is supported by very strong component scores in 2026, which indica
 </details>
 </i>
 
-<br>
+<br
 
-# Manual Client Configuration
+# Advanced Usage
 
-The setup wizard (`financetoolkit-mcp-setup`) is the recommended way to configure any supported client. It writes the correct config file in the correct location for each platform automatically. Manual configuration is also possible — refer to the MCP documentation for each client for the exact file path and format:
+The setup wizard provides a user-friendly way to configure the MCP server, but for advanced users looking to automate the process or integrate it into a larger setup script, the `financetoolkit-mcp-setup` command accepts various arguments that allow you to bypass the interactive prompts and directly configure the server for specific clients and options.
 
-- **VS Code** — [MCP in VS Code](https://code.visualstudio.com/docs/copilot/chat/mcp-servers)
-- **Claude Desktop** — [MCP in Claude Desktop](https://modelcontextprotocol.io/quickstart/user)
-- **Cursor** — [MCP in Cursor](https://cursor.com/docs/mcp)
-- **Windsurf** — [MCP in Windsurf](https://docs.windsurf.com/windsurf/cascade/mcp#model-context-protocol-mcp)
+## Automating the MCP Server Setup
 
-Regardless of the client, the setup wizard generates a config entry that looks like this — pointing the server to the global key file rather than embedding the key directly:
+When looking to automate the setup process, this can be done through arguments passed to the `financetoolkit-mcp-setup` command. For example, to bypass the setup wizard and directly configure the MCP server for Claude Code, you can run:
 
-```json
-{
-  "command": "financetoolkit-mcp",
-  "env": {
-    "FINANCETOOLKIT_ENV_FILE": "/path/to/.config/financetoolkit/.env"
-  }
-}
+```
+uvx --from "financetoolkit[mcp]" financetoolkit-mcp-setup --client claude-code --include-skills
 ```
 
-The path is determined automatically per operating system:
+The following arguments are available:
 
-| OS | Global key file location |
-|:---|:---|
-| macOS / Linux | `~/.config/financetoolkit/.env` |
-| Windows | `%APPDATA%\financetoolkit\.env` |
+- `--client`: Install the MCP server for a specific client.
+- `--include_skills`: Whether to install the optional SKILL.md analyst instructions that guide the LLM on how to use the tools effectively.
+- `--overwrite`: Whether to overwrite existing config entries if they are already present.
 
-If you prefer to configure clients manually and supply the key directly, you can also pass it in the `env` block. The server resolves the key in this order at runtime: local `.env` in the working directory (highest priority) → `FINANCETOOLKIT_ENV_FILE` → global config file → system environment variable.
+On purpose there exists no `--api-key` flag given that the create configuration will include a location to an `.env` file (e.g. `/Users/jeroenbouma/.config/financetoolkit/.env`) and therefore it is more secure to write the API key directly to that file instead of having it appear in the command history.
 
-```json
-{
-  "command": "financetoolkit-mcp",
-  "env": {
-    "FINANCIAL_MODELING_PREP_API_KEY": "YOUR_API_KEY_HERE"
-  }
-}
-```
+## Inspecting the Available Tools
 
-The setup wizard (`financetoolkit-mcp-setup`) handles key discovery automatically. When run, it searches for an existing key in the global config file first, then the local `.env`, then the shell environment — and only prompts you to enter one if none is found. If the key is discovered in a local `.env` or the shell but the global config file does not yet contain it, the wizard syncs it there automatically and informs you.
-
-# Available Tools
-
-The server exposes tools grouped into categories. Use the built-in `list_categories` tool to see all categories and their tool counts, or `search_metrics` to find a specific indicator by keyword. 
-
-___
-
-<b><div align="center">To properly inspect these tools use the interactive Inspector UI by running `financetoolkit-mcp-inspector`</div></b>
-
-___
+The server exposes tools grouped into categories. Use the built-in `list_categories` tool to see all categories and their tool counts, or `search_metrics` to find a specific indicator by keyword. To properly inspect these tools use the interactive Inspector UI by running `uvx --from "financetoolkit[mcp]" financetoolkit-mcp-inspector` which allows you to explore the tools, their parameters, and example calls in a user-friendly way.
 
 Each tool accepts an `indicator` parameter that selects the exact metric to compute. For example, to get the Price-to-Earnings ratio you would call `get_valuation_ratios` with `indicator='get_price_to_earnings_ratio'`. The AI assistant handles this routing automatically, simply ask your question in plain English and the assistant will select the right tool and indicator.
 
 Tools that operate on equities accept a `tickers` parameter (comma-separated list, e.g. `tickers='AAPL,MSFT'`). Tools that operate on macro data accept a `countries` parameter (e.g. `countries='United States,Germany'`). All tools accept `start_date`, `end_date`, and `quarterly` to control the time range and periodicity.
 
-Find below a full list of available tools and their descriptions.
-
+Find below a full list of available tools and their descriptions, all tools return data in a standardized Markdown format.
 
 <details>
   <summary><b>Fundamentals</b></summary>
+
+  These tools provide a wide range of fundamental data points and financial metrics for companies, including historical prices, financial statements, company profiles, ESG scores, and performance/risk metrics.
 
 | Tool | Description |
 |:---|:---|
@@ -396,6 +335,8 @@ Find below a full list of available tools and their descriptions.
 <details>
   <summary><b>Financial Ratios and Models</b></summary>
 
+  These tools compute a wide range of financial ratios and models that are commonly used for fundamental analysis, valuation, and credit risk assessment. They can be applied to any company with available financial statement data.
+
 | Tool | Description |
 |:---|:---|
 | `get_efficiency_ratios` | Asset/inventory turnover, days of sales outstanding, cash conversion cycle |
@@ -410,6 +351,8 @@ Find below a full list of available tools and their descriptions.
 <details>
   <summary><b>Technical Indicators</b></summary>
 
+  These tools compute a wide range of technical indicators used for momentum, trend, volatility, and breadth analysis. They can be applied to any instrument with historical price data.
+
 | Tool | Description |
 |:---|:---|
 | `get_momentum_indicators` | RSI, MACD, Stochastic oscillator, Williams %R, Aroon |
@@ -421,6 +364,8 @@ Find below a full list of available tools and their descriptions.
 
 <details>
   <summary><b>Macro Economics and Fixed Income</b></summary>
+
+  These tools provide insights into the broader economic environment and fixed income valuations, helping you understand the macro conditions that can impact financial markets.
 
 | Tool | Description |
 |:---|:---|
@@ -447,5 +392,3 @@ These tools help you navigate the available functionality before making any data
 
 </details>
 <br>
-
-All tools return data in a standardized Markdown format.
