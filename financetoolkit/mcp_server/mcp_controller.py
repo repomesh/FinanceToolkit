@@ -76,7 +76,6 @@ def _build_mcp_app() -> FastMCP:
 
     mcp = FastMCP(
         name="FinanceToolkit Analyst",
-        instructions=configuration["instructions"],
     )
 
     controller_inspector = ControllerInspector(
@@ -94,7 +93,6 @@ def _build_mcp_app() -> FastMCP:
         direct_methods=configuration["direct_methods"],
         tool_groups=configuration["tool_groups"],
         blocked_periods=configuration.get("blocked_periods", {}),
-        response_guidelines=configuration.get("response_guidelines", ""),
     )
 
     utility_registry = UtilityToolRegistry(
@@ -103,8 +101,6 @@ def _build_mcp_app() -> FastMCP:
         provider=provider,
         search_stop_words=configuration["search_stop_words"],
         category_descriptions=configuration["category_descriptions"],
-        response_guidelines=configuration.get("response_guidelines", ""),
-        instructions=configuration.get("instructions", ""),
     )
 
     toolkit_count = toolkit_registry.register_all_tools()
@@ -223,6 +219,39 @@ def setup() -> None:
             func(api_key)
         except Exception as e:
             setup_model.err(f"Error configuring {name}: {e}")
+
+    # Offer SKILL.md installation for clients that support file-based skills.
+    # Claude Desktop has no equivalent concept, so it is offered separately as a
+    # cwd copy the user can move into place themselves.
+    skill_clients = {"2": "VS Code", "3": "Cursor"}
+    claude_selected = "1" in to_process
+    if any(c in to_process for c in skill_clients):
+        client_names = " / ".join(
+            skill_clients[c] for c in to_process if c in skill_clients
+        )
+        setup_model.console.print()
+        if setup_model.Confirm.ask(
+            f"  Install the SKILL.md analyst instructions for {client_names}?",
+            default=True,
+        ):
+            success = setup_model.write_skill_file(cwd)
+            if not success:
+                setup_model.console.print()
+                setup_model.warn("Could not write to the standard skill location.")
+                if setup_model.Confirm.ask(
+                    "  Copy SKILL.md to current directory so you can move it yourself?",
+                    default=True,
+                ):
+                    setup_model.copy_skill_file_to_cwd(cwd)
+
+    if claude_selected and not any(c in to_process for c in skill_clients):
+        setup_model.console.print()
+        setup_model.info("Claude Desktop does not support file-based skills natively.")
+        if setup_model.Confirm.ask(
+            "  Copy SKILL.md to current directory so you can move it yourself?",
+            default=True,
+        ):
+            setup_model.copy_skill_file_to_cwd(cwd)
 
     # Final summary
     setup_model.console.print()
