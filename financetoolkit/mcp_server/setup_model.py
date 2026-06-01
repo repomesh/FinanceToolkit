@@ -11,6 +11,7 @@ import json
 import os
 import pathlib
 import platform
+import shutil
 from contextlib import suppress
 
 from dotenv import dotenv_values
@@ -513,3 +514,73 @@ def write_claude_config(api_key: str) -> None:
 
     config_path.write_text(json.dumps(existing, indent=2) + "\n", encoding="utf-8")
     ok(f"Claude Desktop config written to [dim cyan]{config_path}[/]")
+
+
+def write_skill_file(target_dir: pathlib.Path) -> None:
+    """Copy the bundled SKILL.md to the correct location in the target directory.
+
+    The skill file is placed at ``.agents/skills/finance-toolkit-analyst/SKILL.md``
+    relative to *target_dir*, which is the convention used by VS Code Copilot and
+    Cursor for custom skill definitions.
+
+    If the file already exists the user is asked to confirm before overwriting.
+    The source file is the ``finance-toolkit-analyst/SKILL.md`` that ships with
+    this package.
+
+    Args:
+        target_dir (pathlib.Path): Workspace root directory in which the skill
+            file should be installed.
+    """
+    source = pathlib.Path(__file__).parent / "SKILL.md"
+    if not source.exists():
+        err(f"Skill source file not found at [dim cyan]{source}[/] — skipping.")
+        return
+
+    dest = target_dir / ".agents" / "skills" / "finance-toolkit-analyst" / "SKILL.md"
+
+    if dest.exists():
+        console.print()
+        warn(f"Existing skill file found at [dim cyan]{dest}[/]")
+        console.print()
+        if not Confirm.ask("  Overwrite this skill file?", default=False):
+            info("Skipped — existing skill file left unchanged.")
+            return
+
+    try:
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(source, dest)
+        ok(f"Skill file written to [dim cyan]{dest}[/]")
+        return True
+    except OSError as exc:
+        err(f"Failed to write skill file: {exc}")
+        return False
+
+
+def copy_skill_file_to_cwd(target_dir: pathlib.Path) -> None:
+    """Copy the bundled SKILL.md to *target_dir* directly so the user can move it.
+
+    Used as a fallback when the standard ``.agents/skills/`` path cannot be
+    written, or when Claude Desktop is selected (which has no native skill
+    concept).
+
+    Args:
+        target_dir (pathlib.Path): Directory to copy SKILL.md into.
+    """
+    source = pathlib.Path(__file__).parent / "SKILL.md"
+    if not source.exists():
+        err(f"Skill source file not found at [dim cyan]{source}[/] — skipping.")
+        return
+
+    dest = target_dir / "SKILL.md"
+    if dest.exists():
+        console.print()
+        warn(f"Existing SKILL.md found at [dim cyan]{dest}[/]")
+        console.print()
+        if not Confirm.ask("  Overwrite this file?", default=False):
+            info("Skipped — existing file left unchanged.")
+            return
+
+    shutil.copy2(source, dest)
+    ok(
+        f"SKILL.md copied to [dim cyan]{dest}[/]  — move it to the correct location for your client."
+    )

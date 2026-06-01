@@ -22,7 +22,7 @@ from financetoolkit.mcp_server.coercion_model import (
     to_boolean,
     validate_date,
 )
-from financetoolkit.mcp_server.formatting_model import claim_guidelines, format_result
+from financetoolkit.mcp_server.formatting_model import format_result
 from financetoolkit.mcp_server.inspection_controller import ControllerInspector
 from financetoolkit.mcp_server.provider_model import ToolkitProvider
 from financetoolkit.utilities.logger_model import get_logger
@@ -89,7 +89,6 @@ class ToolRegistry:
         direct_methods: list[str],
         tool_groups: list[dict[str, Any]],
         blocked_periods: dict[str, list[str]] | None = None,
-        response_guidelines: str = "",
     ) -> None:
         """Initialise the registry with the FastMCP instance and shared subsystems.
 
@@ -113,9 +112,6 @@ class ToolRegistry:
                 exposed as top-level tools instead of via router groups.
             tool_groups (list[dict[str, Any]]): List of router group specifications
                 from the config dict.
-            response_guidelines (str): Compact formatting rules appended to every
-                successful tool response so they are in-context when the model
-                generates its answer. Defaults to empty string (no footer).
         """
         self._mcp = mcp
         self._provider = provider
@@ -127,7 +123,6 @@ class ToolRegistry:
         self._skip_methods = frozenset(skip_methods)
         self._direct_methods = frozenset(direct_methods)
         self._tool_groups = tool_groups
-        self._response_guidelines: str = response_guidelines
         self._blocked_periods: dict[str, frozenset[str]] = {
             tool: frozenset(periods)
             for tool, periods in (blocked_periods or {}).items()
@@ -253,7 +248,6 @@ class ToolRegistry:
         inspector = self._inspector
         provider = self._provider
         blocked_periods_for_tool = self._blocked_periods.get(tool_name, frozenset())
-        response_guidelines = self._response_guidelines
 
         if method_to_cls:
             method_param_names = {
@@ -268,9 +262,14 @@ class ToolRegistry:
         all_indicators = group_methods
 
         def wrapper(**kwargs):
-            raw_indicator: str | None = kwargs.pop("indicator", None)
-            method_name: str = raw_indicator or ""
+            """
+            Dispatch a router group tool call to the correct FinanceToolkit method.
 
+            Resolves the indicator name, coerces all typed parameters, validates
+            required inputs (tickers, period), routes the call through the provider,
+            and returns a formatted Markdown string suitable for LLM consumption.
+            """
+            raw_indicator = kwargs.pop("indicator", None)
             if not raw_indicator:
                 return (
                     f"Please specify an `indicator`. "
@@ -383,8 +382,6 @@ class ToolRegistry:
                     **method_kwargs,
                 )
                 formatted = format_result(result)
-                if response_guidelines and claim_guidelines():
-                    return formatted + response_guidelines
                 return formatted
             except (ValueError, KeyError) as exc:
                 return f"Invalid input for `{tool_name}` (`{method_name}`): {exc}"

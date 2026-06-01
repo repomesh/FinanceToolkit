@@ -2,48 +2,11 @@
 Formatting Model, used for formatting FinanceToolkit results into Markdown strings for LLMs.
 """
 
-import threading
-import time
-
 import pandas as pd
 
 from financetoolkit.utilities.logger_model import get_logger
 
 logger = get_logger()
-
-# ruff: noqa: PLW0603
-
-_GUIDELINES_COOLDOWN_SECONDS: float = 30.0
-_last_guidelines_time: float = 0.0
-_guidelines_lock = threading.Lock()
-
-
-def claim_guidelines() -> bool:
-    """
-    Determine whether the current call should append the response guidelines.
-
-    When an LLM issues multiple tool calls for a single user message, each call
-    would otherwise append the guidelines text independently. This function allows
-    the guidelines to be included at most once per cooldown window so that parallel
-    or rapid sequential calls only emit them once.
-
-    The first call within a _GUIDELINES_COOLDOWN_SECONDS window returns True and
-    resets the timer. All subsequent calls within the same window return False.
-    After the window expires the next call returns True again, ensuring each new
-    user turn eventually receives the guidelines.
-
-    Returns:
-        bool: True if the caller should append the guidelines this time, False otherwise.
-    """
-    # It's not best practice to define global variables in this way, but it allows
-    # for avoidance of complex state management
-    global _last_guidelines_time
-    now = time.monotonic()
-    with _guidelines_lock:
-        if now - _last_guidelines_time > _GUIDELINES_COOLDOWN_SECONDS:
-            _last_guidelines_time = now
-            return True
-    return False
 
 
 def format_result(
