@@ -264,7 +264,7 @@ class Discovery:
     def get_stock_list(self) -> pd.DataFrame:
         """
         The stock list function returns a complete list of all the symbols that can be used
-        in the FinanceToolkit. These are over 60.000 symbols.
+        in the Finance Toolkit. These are over 60.000 symbols.
 
         Returns:
             pd.DataFrame: A dataframe with all the symbols in the toolkit.
@@ -553,7 +553,7 @@ class Discovery:
     def get_crypto_list(self) -> pd.DataFrame:
         """
         The crypto list function returns a complete list of all crypto symbols that can be
-        used in the FinanceToolkit. These are over 4.000 symbols.
+        used in the Finance Toolkit. These are over 4.000 symbols.
 
         Returns:
             pd.DataFrame: A dataframe with all the symbols in the toolkit.
@@ -594,7 +594,7 @@ class Discovery:
     def get_forex_list(self) -> pd.DataFrame:
         """
         The forex list function returns a complete list of all forex symbols that can be
-        used in the FinanceToolkit. These are over 1.000 symbols.
+        used in the Finance Toolkit. These are over 1.000 symbols.
 
         Returns:
             pd.DataFrame: A dataframe with the forex symbols.
@@ -635,7 +635,7 @@ class Discovery:
     def get_commodity_list(self) -> pd.DataFrame:
         """
         The commodity list function returns a complete list of all commodity symbols that can be
-        used in the FinanceToolkit.
+        used in the Finance Toolkit.
 
         Returns:
             pd.DataFrame: A dataframe with all the commodities available.
@@ -676,7 +676,7 @@ class Discovery:
     def get_etf_list(self) -> pd.DataFrame:
         """
         The etf list function returns a complete list of all etf symbols that can be
-        used in the FinanceToolkit.
+        used in the Finance Toolkit.
 
         Returns:
             pd.DataFrame: A dataframe with all the etf symbols.
@@ -718,7 +718,7 @@ class Discovery:
     def get_index_list(self) -> pd.DataFrame:
         """
         The index list function returns a complete list of all etf symbols that can be
-        used in the FinanceToolkit.
+        used in the Finance Toolkit.
 
         Returns:
             pd.DataFrame: A dataframe with all the index symbols.
