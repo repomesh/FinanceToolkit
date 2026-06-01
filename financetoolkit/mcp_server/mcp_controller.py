@@ -192,16 +192,17 @@ def setup() -> None:
 
     cwd = pathlib.Path.cwd()
 
-    # Option 4 is handled as a distinct removal flow.
-    if "4" in choice_str:
+    # Option 5 is handled as a distinct removal flow.
+    if "5" in choice_str:
         setup_model.remove_all_configs(cwd)
         return
 
-    # Extract unique valid choices from the input string (e.g., '12' -> ['1', '2'])
+    # Extract unique valid choices from the input string (e.g., '13' -> ['1', '3'])
     valid_map = {
         "1": ("Claude Desktop", setup_model.write_claude_config),
-        "2": ("VS Code", lambda k: setup_model.write_vscode_config(k, cwd)),
-        "3": ("Cursor", lambda k: setup_model.write_cursor_config(k, cwd)),
+        "2": ("Claude Code", setup_model.write_claude_code_config),
+        "3": ("VS Code", lambda k: setup_model.write_vscode_config(k, cwd)),
+        "4": ("Cursor", lambda k: setup_model.write_cursor_config(k, cwd)),
     }
 
     # Filter only valid numeric choices from input
@@ -223,8 +224,9 @@ def setup() -> None:
     # Offer SKILL.md installation for clients that support file-based skills.
     # Claude Desktop has no equivalent concept, so it is offered separately as a
     # cwd copy the user can move into place themselves.
-    skill_clients = {"2": "VS Code", "3": "Cursor"}
-    claude_selected = "1" in to_process
+    skill_clients = {"3": "VS Code", "4": "Cursor"}
+    claude_code_selected = "2" in to_process
+    claude_desktop_selected = "1" in to_process
     if any(c in to_process for c in skill_clients):
         client_names = " / ".join(
             skill_clients[c] for c in to_process if c in skill_clients
@@ -244,7 +246,27 @@ def setup() -> None:
                 ):
                     setup_model.copy_skill_file_to_cwd(cwd)
 
-    if claude_selected and not any(c in to_process for c in skill_clients):
+    if claude_code_selected:
+        setup_model.console.print()
+        if setup_model.Confirm.ask(
+            "  Install the SKILL.md analyst instructions for Claude Code (.claude/skills/)?",
+            default=True,
+        ):
+            success = setup_model.write_claude_skill_file(cwd)
+            if not success:
+                setup_model.console.print()
+                setup_model.warn("Could not write to .claude/skills/.")
+                if setup_model.Confirm.ask(
+                    "  Copy SKILL.md to current directory so you can move it yourself?",
+                    default=True,
+                ):
+                    setup_model.copy_skill_file_to_cwd(cwd)
+
+    if (
+        claude_desktop_selected
+        and not any(c in to_process for c in skill_clients)
+        and not claude_code_selected
+    ):
         setup_model.console.print()
         setup_model.info("Claude Desktop does not support file-based skills natively.")
         if setup_model.Confirm.ask(

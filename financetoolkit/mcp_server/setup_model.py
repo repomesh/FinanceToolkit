@@ -40,10 +40,12 @@ def print_menu() -> None:
     text.append("  1  ", style="bold cyan")
     text.append("Claude Desktop\n")
     text.append("  2  ", style="bold cyan")
-    text.append("VS Code\n")
+    text.append("Claude Code\n")
     text.append("  3  ", style="bold cyan")
+    text.append("VS Code\n")
+    text.append("  4  ", style="bold cyan")
     text.append("Cursor\n\n")
-    text.append("  4  ", style="yellow")
+    text.append("  5  ", style="yellow")
     text.append("Remove configuration\n")
     text.append("  0  ", style="dim")
     text.append("Exit", style="dim")
@@ -51,7 +53,7 @@ def print_menu() -> None:
         Panel(
             text,
             title="[bold]Configure Clients[/]",
-            subtitle="[dim]e.g. [cyan]12[/] for Claude + VS Code[/]",
+            subtitle="[dim]e.g. [cyan]13[/] for Claude Desktop + VS Code[/]",
             border_style="dim",
             padding=(1, 2),
         )
@@ -102,6 +104,19 @@ def get_claude_config_path() -> pathlib.Path:
             / "claude_desktop_config.json"
         )
     return pathlib.Path.home() / ".config" / "claude" / "claude_desktop_config.json"
+
+
+def get_claude_code_config_path() -> pathlib.Path:
+    """
+    Return the path to the Claude Code user-level MCP configuration file.
+
+    Claude Code stores its user-scoped MCP server registry at
+    ``~/.claude.json`` on all platforms.
+
+    Returns:
+        pathlib.Path: Absolute path to ``~/.claude.json``.
+    """
+    return pathlib.Path.home() / ".claude.json"
 
 
 def get_global_env_path() -> pathlib.Path:
@@ -310,6 +325,7 @@ def remove_all_configs(target_dir: pathlib.Path) -> None:
     """
     candidates = [
         ("Claude Desktop", get_claude_config_path(), "mcpServers"),
+        ("Claude Code", get_claude_code_config_path(), "mcpServers"),
         ("VS Code", target_dir / ".vscode" / "mcp.json", "servers"),
         ("Cursor", target_dir / ".cursor" / "mcp.json", "mcpServers"),
     ]
@@ -368,6 +384,104 @@ def remove_all_configs(target_dir: pathlib.Path) -> None:
     console.print()
     ok("[bold]Removal complete.[/]  Restart your client(s) to apply.")
     console.print()
+
+
+def write_claude_code_config(api_key: str) -> None:
+    """
+    Patch the Claude Code user configuration file (``~/.claude.json``) to add
+    the FinanceToolkit MCP server entry.
+
+    The API key is never embedded in the JSON file. Instead, the entry points
+    the server to the global FinanceToolkit .env file via ``FINANCETOOLKIT_ENV_FILE``
+    so that the key is loaded at runtime from a file outside version control.
+
+    If the configuration file does not exist it is created from scratch. If it
+    already exists and the ``finance-toolkit`` entry is present, the user is
+    shown the existing entry and asked to confirm before overwriting. All other
+    existing entries are always preserved.
+
+    Args:
+        api_key (str): Unused — kept for signature compatibility. The key is
+            written to the global .env file by the caller before this function
+            is invoked.
+    """
+    config_path = get_claude_code_config_path()
+    config_path.parent.mkdir(parents=True, exist_ok=True)
+
+    existing: dict = {}
+    if config_path.exists():
+        with suppress(json.JSONDecodeError):
+            existing = json.loads(config_path.read_text(encoding="utf-8"))
+
+    current_entry = existing.get("mcpServers", {}).get("finance-toolkit")
+    if current_entry is not None:
+        console.print()
+        warn(
+            f"Existing [bold]'finance-toolkit'[/] entry found in [dim cyan]{config_path}[/]"
+        )
+        console.print(f"  [dim]{json.dumps(current_entry, indent=4)}[/]")
+        console.print()
+        if not Confirm.ask("  Overwrite this entry?", default=False):
+            info("Skipped — existing Claude Code config left unchanged.")
+            return
+
+    existing.setdefault("mcpServers", {})
+    existing["mcpServers"]["finance-toolkit"] = {
+        "command": "financetoolkit-mcp",
+        "env": {"FINANCETOOLKIT_ENV_FILE": str(get_global_env_path())},
+    }
+
+    config_path.write_text(json.dumps(existing, indent=2) + "\n", encoding="utf-8")
+    ok(f"Claude Code config written to [dim cyan]{config_path}[/]")
+
+
+def remove_claude_code_config() -> None:
+    """Remove the ``finance-toolkit`` entry from the Claude Code config file."""
+    _remove_entry_from_config(
+        get_claude_code_config_path(),
+        outer_key="mcpServers",
+    )
+
+
+def write_claude_skill_file(target_dir: pathlib.Path) -> bool:
+    """Copy the bundled SKILL.md to ``.claude/skills/`` in the target directory.
+
+    Claude Code looks for skill/instruction files inside the project-level
+    ``.claude/skills/`` directory. The file is placed at
+    ``.claude/skills/finance-toolkit-analyst.md``.
+
+    If the file already exists the user is asked to confirm before overwriting.
+
+    Args:
+        target_dir (pathlib.Path): Workspace root directory in which
+            ``.claude/skills/`` should be created.
+
+    Returns:
+        bool: True on success, False on failure.
+    """
+    source = pathlib.Path(__file__).parent / "SKILL.md"
+    if not source.exists():
+        err(f"Skill source file not found at [dim cyan]{source}[/] — skipping.")
+        return False
+
+    dest = target_dir / ".claude" / "skills" / "finance-toolkit-analyst.md"
+
+    if dest.exists():
+        console.print()
+        warn(f"Existing Claude skill file found at [dim cyan]{dest}[/]")
+        console.print()
+        if not Confirm.ask("  Overwrite this skill file?", default=False):
+            info("Skipped — existing skill file left unchanged.")
+            return False
+
+    try:
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(source, dest)
+        ok(f"Claude Code skill file written to [dim cyan]{dest}[/]")
+        return True
+    except OSError as exc:
+        err(f"Failed to write Claude skill file: {exc}")
+        return False
 
 
 def write_vscode_config(api_key: str, target_dir: pathlib.Path) -> None:
