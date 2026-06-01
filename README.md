@@ -3,6 +3,7 @@
 [![GitHub Sponsors](https://img.shields.io/badge/Sponsor_this_Project-grey?logo=github)](https://github.com/sponsors/JerBouma)
 [![Buy Me a Coffee](https://img.shields.io/badge/Buy_Me_a_Coffee-grey?logo=buymeacoffee)](https://www.buymeacoffee.com/jerbouma)
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-grey?logo=Linkedin&logoColor=white)](https://www.linkedin.com/in/boumajeroen/)
+[![MCP Server](https://img.shields.io/badge/MCP_Server-grey?logo=modelcontextprotocol)](https://github.com/JerBouma/FinanceToolkit/blob/main/MCP.md)
 [![Documentation](https://img.shields.io/badge/Documentation-grey?logo=readme)](https://www.jeroenbouma.com/projects/financetoolkit/docs)
 [![Supported Python Versions](https://img.shields.io/pypi/pyversions/financetoolkit)](https://pypi.org/project/FinanceToolkit/)
 [![PYPI Version](https://img.shields.io/pypi/v/FinanceToolkit)](https://pypi.org/project/FinanceToolkit/)
@@ -17,6 +18,9 @@ For example, Microsoft's Price-to-Earnings (PE) ratio on the 6th of May, 2023 is
 The Finance Toolkit not only supports Equities. Even for Options, Currencies, Cryptocurrencies, ETFs, Mutual Funds, Indices, Money Markets, Commodities, Key Economic Indicators and more, the Finance Toolkit can be used to obtain historical data as well as important performance and risk measurements such as the Sharpe Ratio and Value at Risk.
 
 The Finance Toolkit is complimented very well with the [Finance Database 🌎](https://github.com/JerBouma/FinanceDatabase), a database that features 300.000+ symbols containing Equities, ETFs, Funds, Indices, Currencies, Cryptocurrencies and Money Markets. By utilising both, it is possible to do a fully-fledged competitive analysis with the tickers found from the FinanceDatabase inputted into the FinanceToolkit.
+
+**The Finance Toolkit has its own MCP Server which allows you to connect the Finance Toolkit to any LLM that supports the Model Context Protocol.** This means that you can use the Finance Toolkit in a conversational way through an LLM interface such as ChatGPT, Claude or Gemini. **Learn more about this [here](https://github.com/JerBouma/FinanceToolkit/blob/main/MCP.md).**
+
 
 # Table of Contents
 

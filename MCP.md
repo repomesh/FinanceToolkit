@@ -1,8 +1,9 @@
-# FinanceToolkit — MCP Server
+[![FinanceToolkit](https://github.com/JerBouma/FinanceToolkit/assets/46355364/198d47bd-e1b3-492d-acc4-5d9f02d1d009)](https://github.com/JerBouma/FinanceToolkit)
 
 [![GitHub Sponsors](https://img.shields.io/badge/Sponsor_this_Project-grey?logo=github)](https://github.com/sponsors/JerBouma)
 [![Buy Me a Coffee](https://img.shields.io/badge/Buy_Me_a_Coffee-grey?logo=buymeacoffee)](https://www.buymeacoffee.com/jerbouma)
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-grey?logo=Linkedin&logoColor=white)](https://www.linkedin.com/in/boumajeroen/)
+[![MCP Server](https://img.shields.io/badge/MCP_Server-grey?logo=modelcontextprotocol)](https://github.com/JerBouma/FinanceToolkit/blob/main/MCP.md)
 [![Documentation](https://img.shields.io/badge/Documentation-grey?logo=readme)](https://www.jeroenbouma.com/projects/financetoolkit/docs)
 [![Supported Python Versions](https://img.shields.io/pypi/pyversions/financetoolkit)](https://pypi.org/project/FinanceToolkit/)
 [![PYPI Version](https://img.shields.io/pypi/v/FinanceToolkit)](https://pypi.org/project/FinanceToolkit/)
@@ -11,12 +12,6 @@
 The FinanceToolkit MCP Server exposes 200+ pre-computed financial metrics, models, and economic indicators directly to any AI assistant that supports the [Model Context Protocol](https://modelcontextprotocol.io). This means you can ask Claude, Copilot, Cursor, or any other MCP-compatible assistant to analyse equities, benchmark performance, inspect macro conditions, and run technical indicators — all backed by the transparent, open-source calculation methods of the FinanceToolkit.
 
 The server consolidates the entire FinanceToolkit surface into a small number of categorical master tools (e.g. `get_valuation_ratios`, `get_profitability_ratios`, `get_momentum_indicators`) so that the AI can discover and call the right metric without being overwhelmed by hundreds of individual function signatures.
-
-___
-
-<b><div align="center">Obtain a free API Key from FinancialModelingPrep <a href="https://www.jeroenbouma.com/fmp" target="_blank">here</a> to get started.</div></b>
-
-___
 
 # Table of Contents
 
@@ -27,13 +22,14 @@ ___
 
 # Installation
 
-The MCP server is an optional add-on to the FinanceToolkit. The core library installs without any MCP dependencies, keeping the footprint small for users who only need the Python API. To include the server, add the `[mcp]` extra:
+
+The MCP server is an optional add-on to the FinanceToolkit. The core library installs without any MCP dependencies, keeping the footprint small for users who want to work with the Finance Toolkit directly. To include the server, add the `[mcp]` extra:
 
 ```
 pip install financetoolkit[mcp] -U
 ```
 
-This pulls in the MCP SDK, `tabulate`, `python-dotenv`, and `PyYAML` on top of the standard FinanceToolkit dependencies.
+This pulls in `mcp`, `tabulate`, `python-dotenv`, and `PyYAML` on top of the standard FinanceToolkit dependencies.
 
 After installation, three new commands are available on your PATH:
 
@@ -42,6 +38,15 @@ After installation, three new commands are available on your PATH:
 | `financetoolkit-mcp` | Start the MCP server |
 | `financetoolkit-mcp-setup` | Auto-generate client config files |
 | `financetoolkit-mcp-inspector` | Open the interactive Inspector UI |
+
+To be able to get setup the MCP server, you need to obtain an API Key from FinancialModelingPrep. This is used to gain access to 30+ years of financial statement both annually and quarterly. Note that the Free plan is limited to 250 requests each day, 5 years of data and only features companies listed on US exchanges.
+
+___ 
+
+<b><div align="center">Obtain an API Key from FinancialModelingPrep <a href="https://www.jeroenbouma.com/fmp" target="_blank">here</a>.</div></b>
+___
+
+Through the link you are able to subscribe for the free plan and also premium plans at a **15% discount**. This is an affiliate link and thus supports the project at the same time.
 
 # Shortest Path to a Working Finance Assistant
 
@@ -59,20 +64,20 @@ pip install financetoolkit[mcp] -U
 financetoolkit-mcp-setup
 ```
 
-The wizard asks for your FinancialModelingPrep API key, then presents a menu where you select which clients to configure. You can configure multiple clients at once by entering their numbers together (e.g. `12` for Claude + VS Code).
+The wizard asks for your FinancialModelingPrep API key, then presents a menu where you select which clients to configure. You can configure multiple clients at once by entering their numbers together (e.g. `23` for Claude Code + VS Code).
 
 The wizard stores the API key in a dedicated global config file on your system (never inside the project or any version-controlled file) and writes a config entry for each selected client that points to it. It safely merges the `finance-toolkit` entry into any existing config without disturbing other server entries, and asks for confirmation before overwriting an entry that is already present.
 
 See below:
 
 ```bash
-jeroenbouma@Jeroens-MacBook-Pro FinanceToolkit % financetoolkit-mcp-setup
-╭─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│                                                                                                                                                                             │
-│  FinanceToolkit  ·  MCP Setup Wizard                                                                                                                                        │
-│  Transparent and Efficient Financial Analysis                                                                                                                               │
-│                                                                                                                                                                             │
-╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+(financetoolkit) (base) jeroenbouma@Jeroens-MacBook-Pro FinanceToolkit % financetoolkit-mcp-setup
+╭───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│                                                                                                                                               │
+│  FinanceToolkit  ·  MCP Setup Wizard                                                                                                          │
+│  Transparent and Efficient Financial Analysis                                                                                                 │
+│                                                                                                                                               │
+╰───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
 
   ⚠  No API key found.  Get one at https://www.jeroenbouma.com/fmp  (15% discount)
   Press Enter to skip and configure via .env later.
@@ -80,37 +85,45 @@ jeroenbouma@Jeroens-MacBook-Pro FinanceToolkit % financetoolkit-mcp-setup
   API Key  › YOUR_FINANCIAL_MODELING_PREP_API_KEY_HERE
   ✔  API key saved to /Users/jeroenbouma/.config/financetoolkit/.env
 
-╭───────────────────────────────────────────────────────────────────────────── Configure Clients ─────────────────────────────────────────────────────────────────────────────╮
-│                                                                                                                                                                             │
-│    1  Claude Desktop                                                                                                                                                        │
-│    2  VS Code                                                                                                                                                               │
-│    3  Cursor                                                                                                                                                                │
-│                                                                                                                                                                             │
-│    4  Remove configuration                                                                                                                                                  │
-│    0  Exit                                                                                                                                                                  │
-│                                                                                                                                                                             │
-╰─────────────────────────────────────────────────────────────────────── e.g. 12 for Claude + VS Code ────────────────────────────────────────────────────────────────────────╯
+╭────────────────────────────────────────────────────────────── Configure Clients ──────────────────────────────────────────────────────────────╮
+│                                                                                                                                               │
+│    1  Claude Desktop                                                                                                                          │
+│    2  Claude Code                                                                                                                             │
+│    3  VS Code                                                                                                                                 │
+│    4  Cursor                                                                                                                                  │
+│                                                                                                                                               │
+│    5  Remove configuration                                                                                                                    │
+│    0  Exit                                                                                                                                    │
+│                                                                                                                                               │
+╰──────────────────────────────────────────────────── e.g. 13 for Claude Desktop + VS Code ─────────────────────────────────────────────────────╯
 
-  › 12
+  › 23
 
-  ✔  Claude Desktop config written to /Users/jeroenbouma/Library/Application Support/Claude/claude_desktop_config.json
+  ✔  Claude Code config written to /Users/jeroenbouma/.claude.json
   ✔  VS Code config written to /Users/jeroenbouma/Documents/FinanceToolkit/.vscode/mcp.json
 
   Install the SKILL.md analyst instructions for VS Code? [y/n] (y): y
   ✔  Skill file written to /Users/jeroenbouma/Documents/FinanceToolkit/.agents/skills/finance-toolkit-analyst/SKILL.md
 
-──────────────────────────────────────────────────────────────────────────────────── Done ─────────────────────────────────────────────────────────────────────────────────────
+  Install the SKILL.md analyst instructions for Claude Code (.claude/skills/)? [y/n] (y): y
+  ✔  Claude Code skill file written to /Users/jeroenbouma/Documents/FinanceToolkit/.claude/skills/finance-toolkit-analyst.md
+
+───────────────────────────────────────────────────────────────────── Done ──────────────────────────────────────────────────────────────────────
 
   ✔  All selected configurations updated!
   Restart your client(s) to apply changes.
   Run financetoolkit-mcp-inspector to test the connection.
+
+(financetoolkit) (base) jeroenbouma@Jeroens-MacBook-Pro FinanceToolkit %    
 ```
 
 After the wizard completes, restart your AI client and the FinanceToolkit tools will appear.
 
 > **Step 3: Start using the Tools!**
 
-You can ask your assistant questions about stocks, ETFs, macro conditions, and more all powered by the FinanceToolkit server. The AI will automatically select the right tool and metric based on your question.
+As seen above an optional SKILL.md file can be acquired, this creates a `finance-toolkit-analyst` skill in the `.agents/skill` directory. It is possible your LLM will automatically select this skill when you ask financial questions, but if not you can explicitly invoke it by name (e.g. `/finance-toolkit-analyst What is the current P/E ratio of Apple?`).
+
+You can ask your assistant questions about stocks, ETFs, macro conditions, and more all powered by the FinanceToolkit server. The LLM will automatically select the right tool and metric based on your question.
 
 A few example prompts using a simple model (`GPT-5 mini`) are shown below. The MCP server is explicitly modelled to work well with simpler models to limit costs and token usage. Feel free to try them out in your preferred environment to see the full interactivity!
 
@@ -203,7 +216,7 @@ Market capitalization (year‑end) shows Amazon’s much larger market value thr
 | 2024 | 2352.1               | 215.8                |
 | 2025 | 2499.1               | 354.0                |
 
-Interpretation: Amazon is the dominant scale and value creator by revenue and market cap and converted that scale into rising ROE/ROIC and large net income gains after 2022, while Alibaba delivered steadier margin improvement and a notable profitability recovery by 2025 but remained materially smaller in absolute terms.
+Amazon is the dominant scale and value creator by revenue and market cap and converted that scale into rising ROE/ROIC and large net income gains after 2022, while Alibaba delivered steadier margin improvement and a notable profitability recovery by 2025 but remained materially smaller in absolute terms.
 </details>
 </i>
 
@@ -248,7 +261,7 @@ Amazon's WACC is elevated historically, driven by a high implied cost of equity 
 | Corporate Tax Rate               | 0.1256      |  0.5417      | 0.1896      | 0.1352      | 0.1973      |
 | Weighted Average Cost of Capital | 0.2607      | -0.2926      | 0.3219      | 0.3181      | 0.1923      |
 
-What this means: the WACC represents the blended after-tax cost of the capital providers (equity and debt) and is the discount rate a company must earn on its existing asset base to satisfy its investors. Amazon's high reported cost of equity in several years makes the WACC unusually large relative to typical large-cap firms, indicating investors require high returns for bearing equity risk; by contrast, Amazon's cost of debt is low, so debt contributes little to WACC because equity dominates the capital structure by market value. 
+The WACC represents the blended after-tax cost of the capital providers (equity and debt) and is the discount rate a company must earn on its existing asset base to satisfy its investors. Amazon's high reported cost of equity in several years makes the WACC unusually large relative to typical large-cap firms, indicating investors require high returns for bearing equity risk; by contrast, Amazon's cost of debt is low, so debt contributes little to WACC because equity dominates the capital structure by market value. 
 </details>
 </i>
 
