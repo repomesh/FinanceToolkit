@@ -31,12 +31,12 @@ The wizard asks for your FinancialModelingPrep API key which you can obtain from
 
 ```bash
 (base) jeroenbouma@Jeroens-MacBook-Pro FinanceToolkit % uvx --from "financetoolkit[mcp]" financetoolkit-mcp-setup
-╭─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│                                                                                                                                 │
-│  FinanceToolkit  ·  MCP Setup Wizard                                                                                            │
-│  Transparent and Efficient Financial Analysis                                                                                   │
-│                                                                                                                                 │
-╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+╭──────────────────────────────────────────────────────────────────────────────────────────╮
+│                                                                                          │
+│  FinanceToolkit  ·  MCP Setup Wizard                                                     │
+│  Transparent and Efficient Financial Analysis                                            │
+│                                                                                          │
+╰──────────────────────────────────────────────────────────────────────────────────────────╯
 
   ⚠  No API key found.  Get one at https://www.jeroenbouma.com/fmp  (15% discount)
   Press Enter to skip and configure via .env later.
@@ -51,19 +51,19 @@ Next up is deciding what client(s) you want to configure. You can select multipl
 ```bash
   ✔  API key saved to /Users/jeroenbouma/.config/financetoolkit/.env
 
-╭────────────────────────────────────────────────────────────── Configure Clients ────────────────────────────────────────────────╮
-│                                                                                                                                 │
-│    1  Claude Desktop                                                                                                            │
-│    2  Claude Code                                                                                                               │
-│    3  VS Code                                                                                                                   │
-│    4  Cursor                                                                                                                    │
-│    5  Gemini                                                                                                                    │
-│    6  Windsurf                                                                                                                  │
-│                                                                                                                                 │
-│    7  Remove configuration                                                                                                      │
-│    0  Exit                                                                                                                      │
-│                                                                                                                                 │
-╰──────────────────────────────────────────────────── e.g. 23 for Claude Code + VS Code ──────────────────────────────────────────╯
+╭────────────────────────────────────────── Configure Clients ────────────────────────────╮
+│                                                                                         │
+│    1  Claude Desktop                                                                    │
+│    2  Claude Code                                                                       │
+│    3  VS Code                                                                           │
+│    4  Cursor                                                                            │
+│    5  Gemini                                                                            │
+│    6  Windsurf                                                                          │
+│                                                                                         │
+│    7  Remove configuration                                                              │
+│    0  Exit                                                                              │
+│                                                                                         │
+╰──────────────────────────────── e.g. 23 for Claude Code + VS Code ──────────────────────╯
 ```
 
 It will inform you where it saved the files and ask if you want to install the optional SKILL.md analyst instructions for each client, which provides guidance to the LLM on how to use the tools and interpret the results. This greatly enhances the quality of the responses and ensures the LLM understands the unique formatting and response style of the Finance Toolkit MCP.
