@@ -25,6 +25,8 @@ Clients are configured to launch the server on demand via [uvx](https://docs.ast
 uvx --from "financetoolkit[mcp]" financetoolkit-mcp-setup
 ```
 
+After the installation process is finished, it will automatically launch the setup wizard.
+
 > **Step 2: Configure your client(s)**
 
 The wizard asks for your FinancialModelingPrep API key which you can obtain from FinancialModelingPrep **<a href="https://www.jeroenbouma.com/fmp" target="_blank">here</a>**.
