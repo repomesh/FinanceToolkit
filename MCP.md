@@ -87,9 +87,101 @@ After the wizard completes, restart your AI client and the Finance Toolkit tools
 
 As seen above an optional SKILL.md file can be acquired, this creates a `finance-toolkit-analyst` skill in, for GitHub Copilot `.agents/skill` directory. It is possible your LLM will automatically select this skill when you ask financial questions, but if not you can explicitly invoke it by name (e.g. `/finance-toolkit-analyst What is the current P/E ratio of Apple?`).
 
-You can ask your assistant questions about stocks, ETFs, macro conditions, and more all powered by the Finance Toolkit MCP. The LLM will automatically select the right tool and metric based on your question.
+Two results of a relatively advanced model (`Claude Sonnet 4.6`) shows how powerful models can layer in very detailed qualitative analysis and narrative synthesis with the information from the Finance Toolkit MCP.
 
-A few example prompts using a simple model (`GPT-5 mini`) are shown below. The MCP server is explicitly modelled to work well with simpler models to limit costs and token usage. Feel free to try them out in your preferred environment to see the full interactivity!
+<details><summary><b>Compare Apple with Microsoft, what company is the most profitable?</b></summary>
+<hr>
+<i>
+
+Across the five-year window from 2021 to 2025, Microsoft and Apple present genuinely different profitability profiles depending on the analytical lens applied — a nuance that institutional research rarely collapses into a single verdict. The data below, derived directly from the Finance Toolkit MCP server, covers gross margin, operating margin, and net profit margin across both companies from fiscal year 2021 through fiscal year 2025.
+<br>
+
+Microsoft commands a structurally superior margin stack at every level of the income statement. Its software and cloud-heavy revenue mix consistently produces gross margins in the 68–70% range, reflecting the near-zero marginal cost of licensing and Azure compute, while Apple's hardware-weighted mix constrains gross margins to the 42–47% band despite meaningful Services segment expansion.
+
+| Metric | Company | 2021 | 2022 | 2023 | 2024 | 2025 |
+|:--|:--|--:|--:|--:|--:|--:|
+| Gross Margin | AAPL | 41.78% | 43.31% | 44.13% | 46.21% | 46.91% |
+| Gross Margin | MSFT | 68.93% | 68.40% | 68.92% | 69.76% | 68.82% |
+| Operating Margin | AAPL | 29.78% | 30.29% | 29.82% | 31.51% | 31.97% |
+| Operating Margin | MSFT | 41.59% | 42.06% | 41.77% | 44.64% | 45.62% |
+| Net Profit Margin | AAPL | 25.88% | 25.31% | 25.31% | 23.97% | 26.92% |
+| Net Profit Margin | MSFT | 36.45% | 36.69% | 34.15% | 35.96% | 36.15% |
+
+The margin story, however, is not the complete picture. When shifting from income-statement efficiency to capital deployment efficiency, Apple's financial engineering inverts the comparison dramatically. Apple carries a deliberately compressed equity base — the result of decades of aggressive share repurchases — which mechanically inflates its Return on Equity to levels that appear extraordinary, consistently exceeding 170% in recent years. The following table captures ROE, Return on Invested Capital, and Return on Assets for the same period.
+
+| Metric | Company | 2022 | 2023 | 2024 | 2025 |
+|:--|:--|--:|--:|--:|--:|
+| Return on Equity | AAPL | 175.46% | 171.95% | 157.41% | 171.42% |
+| Return on Equity | MSFT | 47.15% | 38.82% | 37.13% | 33.28% |
+| Return on Invested Capital | AAPL | 59.90% | 60.68% | 60.19% | 70.38% |
+| Return on Invested Capital | MSFT | 38.73% | 34.74% | 33.71% | 30.64% |
+| Return on Assets | AAPL | 28.36% | 27.50% | 26.13% | 30.93% |
+| Return on Assets | MSFT | 20.82% | 18.63% | 19.07% | 18.00% |
+
+The verdict depends precisely on what one means by "most profitable." On a pure income statement basis — gross, operating, and net margins — **Microsoft is unambiguously the more profitable business**, generating roughly 22 percentage points more net income per dollar of revenue than Apple in fiscal year 2025 (36.15% vs. 26.92%). This structural advantage reflects Microsoft's software and cloud economics, where incremental revenue has near-zero marginal cost.
+
+Apple, by contrast, leads on every capital efficiency metric: its ROIC of 70.38% in 2025 versus Microsoft's 30.64% indicates that Apple extracts significantly more economic value from each dollar of invested capital. Its ROA advantage (30.93% vs. 18.00%) is similarly consistent across the full sample. The ROE comparison is analytically distorted by Apple's balance sheet structure and is better set aside in favor of ROIC as the cleanest apples-to-apples measure.
+
+For a more complete picture, the analysis could be extended into DuPont decomposition to isolate whether Apple's ROIC lead is driven by asset turnover, operational leverage, or financial leverage — all of which the Finance Toolkit supports natively.
+</details>
+</i>
+
+<details><summary><b>When looking at biggest banks in Europe, which one seems to be the most solvent?</b></summary>
+<hr>
+<i>
+
+Assessing solvency across Europe's nine largest listed banking groups — HSBC, BNP Paribas (BNPQY), Deutsche Bank (DB), Banco Santander (SAN), Barclays (BCS), UniCredit (UNCRY), Société Générale (SCGLY), ING, and Intesa Sanpaolo (ISNPY) — requires examining leverage in multiple dimensions simultaneously. Because banks operate with inherently high financial leverage by design, the equity multiplier and debt-to-assets ratio are the most discriminating solvency signals, with the debt service coverage ratio providing a cash-flow-based cross-check. Taken together, the data point to **UniCredit** and **Intesa Sanpaolo** as the standout names for solvency quality within this cohort.
+
+The debt-to-equity ratio captures the proportion of debt relative to shareholders' equity. A lower reading indicates a more conservative capital structure relative to the equity cushion available to absorb losses. The six-year progression below reveals a clear dispersion across the group, with BNP Paribas and Santander consistently carrying the heaviest debt loads relative to equity, while HSBC and Intesa Sanpaolo trend toward the lower end.
+
+| Ticker | 2020 | 2021 | 2022 | 2023 | 2024 | 2025 |
+|:-------|-----:|-----:|-----:|-----:|-----:|-----:|
+| ISNPY  | 1.62 | 1.58 | 1.61 | 2.22 | 2.24 | 2.13 |
+| HSBC   | 1.85 | 1.91 | 1.10 | 2.22 | 1.26 | 2.68 |
+| UNCRY  | 2.24 | 2.01 | 1.82 | 1.91 | 1.95 | 2.57 |
+| BCS    | 2.15 | 2.38 | 2.65 | 2.46 | 2.56 | 2.81 |
+| DB     | 3.28 | 2.30 | 2.70 | 1.93 | 1.91 | 3.18 |
+| SCGLY  | 2.31 | 2.13 | 2.11 | 2.38 | 2.30 | 4.12 |
+| ING    | 1.42 | 2.12 | 2.37 | 2.87 | 3.34 | 3.32 |
+| SAN    | 3.53 | 3.45 | 4.36 | 2.98 | 4.50 | 4.40 |
+| BNPQY  | 6.40 | 6.34 | 2.56 | 5.23 | 5.43 | 6.22 |
+
+The equity multiplier — total assets divided by equity — provides a balance-sheet-wide view of financial leverage and is a core input into DuPont decomposition. A lower multiplier implies a thicker equity buffer relative to the entire asset base. The 2025 cross-section is particularly telling: UniCredit stands at just 12.6x, the lowest among all nine peers, followed closely by Intesa Sanpaolo at 14.5x and Santander at 16.8x. By contrast, BNP Paribas (20.7x), Société Générale (21.0x), Barclays (20.3x), and ING (20.3x) are meaningfully more leveraged. Importantly, UniCredit's multiplier has compressed steadily from 15.1x in 2021 to 12.6x in 2025, signalling a deliberate and sustained de-leveraging trajectory.
+
+| Ticker | 2021 | 2022 | 2023 | 2024 | 2025 |
+|:-------|-----:|-----:|-----:|-----:|-----:|
+| UNCRY  | 15.10 | 14.09 | 12.85 | 12.34 | 12.64 |
+| ISNPY  | 15.86 | 16.33 | 15.46 | 14.66 | 14.50 |
+| SAN    | 16.48 | 17.09 | 17.49 | 17.18 | 16.82 |
+| HSBC   | 14.43 | 15.11 | 15.89 | 15.73 | 16.57 |
+| DB     | 20.38 | 18.97 | 17.99 | 17.50 | 17.69 |
+| ING    | 17.11 | 18.24 | 18.94 | 19.27 | 20.31 |
+| BCS    | 19.97 | 20.74 | 21.18 | 20.75 | 20.30 |
+| BNPQY  | 23.21 | 23.24 | 21.55 | 20.14 | 20.67 |
+| SCGLY  | 21.10 | 20.46 | 20.33 | 20.08 | 20.96 |
+
+The debt-to-assets ratio corroborates this ranking. HSBC (0.153), Deutsche Bank (0.178), and Intesa Sanpaolo (0.145) hold the smallest debt loads as a share of the total balance sheet in 2025, while BNP Paribas (0.294) and Santander (0.266) are again the outliers on the high end. The debt service coverage ratio provides the critical cash-flow validation: UniCredit (0.228) and Intesa Sanpaolo (0.181) post the highest readings in 2025, meaning their operating earnings are most comfortably covering their debt obligations — a distinction that separates balance-sheet strength from earnings-backed solvency capacity.
+
+| Ticker | D/A 2025 | Equity Mult 2025 | DSCR 2025 |
+|:-------|----------:|-----------------:|----------:|
+| UNCRY  | 0.201 | 12.64 | 0.228 |
+| ISNPY  | 0.145 | 14.50 | 0.181 |
+| HSBC   | 0.153 | 16.57 | 0.120 |
+| DB     | 0.178 | 17.69 | 0.010 |
+| BCS    | 0.142 | 20.30 | 0.013 |
+| SCGLY  | 0.186 | 20.96 | 0.012 |
+| ING    | 0.161 | 20.31 | 0.011 |
+| SAN    | 0.266 | 16.82 | 0.014 |
+| BNPQY  | 0.294 | 20.67 | 0.013 |
+
+Synthesizing across all three dimensions, **UniCredit (UNCRY)** emerges as the most solvent major European bank. Its equity multiplier of 12.6x is the lowest in the peer group by a meaningful margin, its trend has been consistently improving over six years, and its debt service coverage ratio of 0.228 is the highest in the cohort — confirming that the balance-sheet strength is underpinned by genuine earnings power rather than accounting structure alone. **Intesa Sanpaolo (ISNPY)** is the clear runner-up, posting the second-best equity multiplier and second-best DSCR. At the other end of the spectrum, BNP Paribas is the most leveraged name across nearly every metric, and Société Générale's equity multiplier spiked to 21.0x in 2025, flagging elevated structural leverage risk in that institution.
+
+Logical extensions of this analysis within the Finance Toolkit ecosystem would include examining capital allocation quality via return on equity and return on invested capital for these same banks, running a rolling volatility and maximum drawdown comparison to understand how solvency strength translates into price resilience, or stress-testing via the Altman Z-Score model where data coverage permits.
+</details>
+</i>
+<br>
+
+Furthermore, I wanted the MCP model to not be only useful for expensive and detailed models. Even a Nano or Mini model can provide valuable insights. A few example prompts using a simple model (`GPT-5 mini`) are shown below.
 
 <details><summary><b>Compare the P/E ratios of Apple, Microsoft, and Google over the last 5 years.</b></summary>
 <hr>
