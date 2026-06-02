@@ -181,7 +181,6 @@ Synthesizing across all three dimensions, **UniCredit (UNCRY)** emerges as the m
 Logical extensions of this analysis within the Finance Toolkit ecosystem would include examining capital allocation quality via return on equity and return on invested capital for these same banks, running a rolling volatility and maximum drawdown comparison to understand how solvency strength translates into price resilience, or stress-testing via the Altman Z-Score model where data coverage permits.
 </details>
 </i>
-<br>
 
 Furthermore, I wanted the MCP model to not be only useful for expensive and detailed models. Even a Nano or Mini model can provide valuable insights. A few example prompts using a simple model (`GPT-5 mini`) are shown below.
 
@@ -377,8 +376,6 @@ ASML’s lead is supported by very strong component scores in 2026, which indica
 | Governance       | 92.20 |
 </details>
 </i>
-
-<br>
 
 # Advanced Usage
 
