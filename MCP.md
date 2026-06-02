@@ -19,7 +19,7 @@ The installation process is designed to be as seamless as possible, with an inte
 
 > **Step 1: Run the Setup Wizard**
 
-Clients are configured to launch the server on demand via [uvx](https://docs.astral.sh/uv/guides/tools/), so as long as [uv](https://docs.astral.sh/uv/getting-started/installation/) is installed,you can run the setup wizard directly with:
+Clients are configured to launch the server on demand via [uvx](https://docs.astral.sh/uv/guides/tools/), so as long as [uv](https://docs.astral.sh/uv/getting-started/installation/) is installed, you can run the setup wizard directly with:
 
 ```
 uvx --from "financetoolkit[mcp]" financetoolkit-mcp-setup
@@ -31,12 +31,12 @@ The wizard asks for your FinancialModelingPrep API key which you can obtain from
 
 ```bash
 (base) jeroenbouma@Jeroens-MacBook-Pro FinanceToolkit % uvx --from "financetoolkit[mcp]" financetoolkit-mcp-setup
-╭───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│                                                                                                                                               │
-│  FinanceToolkit  ·  MCP Setup Wizard                                                                                                          │
-│  Transparent and Efficient Financial Analysis                                                                                                 │
-│                                                                                                                                               │
-╰───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+╭─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│                                                                                                                                 │
+│  FinanceToolkit  ·  MCP Setup Wizard                                                                                            │
+│  Transparent and Efficient Financial Analysis                                                                                   │
+│                                                                                                                                 │
+╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
 
   ⚠  No API key found.  Get one at https://www.jeroenbouma.com/fmp  (15% discount)
   Press Enter to skip and configure via .env later.
@@ -51,19 +51,19 @@ Next up is deciding what client(s) you want to configure. You can select multipl
 ```bash
   ✔  API key saved to /Users/jeroenbouma/.config/financetoolkit/.env
 
-╭────────────────────────────────────────────────────────────── Configure Clients ──────────────────────────────────────────────────────────────╮
-│                                                                                                                                               │
-│    1  Claude Desktop                                                                                                                          │
-│    2  Claude Code                                                                                                                             │
-│    3  VS Code                                                                                                                                 │
-│    4  Cursor                                                                                                                                  │
-│    5  Gemini                                                                                                                                  │
-│    6  Windsurf                                                                                                                                │
-│                                                                                                                                               │
-│    7  Remove configuration                                                                                                                    │
-│    0  Exit                                                                                                                                    │
-│                                                                                                                                               │
-╰──────────────────────────────────────────────────── e.g. 23 for Claude Code + VS Code ────────────────────────────────────────────────────────╯
+╭────────────────────────────────────────────────────────────── Configure Clients ────────────────────────────────────────────────╮
+│                                                                                                                                 │
+│    1  Claude Desktop                                                                                                            │
+│    2  Claude Code                                                                                                               │
+│    3  VS Code                                                                                                                   │
+│    4  Cursor                                                                                                                    │
+│    5  Gemini                                                                                                                    │
+│    6  Windsurf                                                                                                                  │
+│                                                                                                                                 │
+│    7  Remove configuration                                                                                                      │
+│    0  Exit                                                                                                                      │
+│                                                                                                                                 │
+╰──────────────────────────────────────────────────── e.g. 23 for Claude Code + VS Code ──────────────────────────────────────────╯
 ```
 
 It will inform you where it saved the files and ask if you want to install the optional SKILL.md analyst instructions for each client, which provides guidance to the LLM on how to use the tools and interpret the results. This greatly enhances the quality of the responses and ensures the LLM understands the unique formatting and response style of the Finance Toolkit MCP.
@@ -85,7 +85,7 @@ After the wizard completes, restart your AI client and the Finance Toolkit tools
 
 > **Step 3: Start using the Tools!**
 
-As seen above an optional SKILL.md file can be acquired, this creates a `finance-toolkit-analyst` skill in, for GitHub CoPilot `.agents/skill` directory. It is possible your LLM will automatically select this skill when you ask financial questions, but if not you can explicitly invoke it by name (e.g. `/finance-toolkit-analyst What is the current P/E ratio of Apple?`).
+As seen above an optional SKILL.md file can be acquired, this creates a `finance-toolkit-analyst` skill in, for GitHub Copilot `.agents/skill` directory. It is possible your LLM will automatically select this skill when you ask financial questions, but if not you can explicitly invoke it by name (e.g. `/finance-toolkit-analyst What is the current P/E ratio of Apple?`).
 
 You can ask your assistant questions about stocks, ETFs, macro conditions, and more all powered by the Finance Toolkit MCP. The LLM will automatically select the right tool and metric based on your question.
 
@@ -284,7 +284,7 @@ ASML’s lead is supported by very strong component scores in 2026, which indica
 </details>
 </i>
 
-<br
+<br>
 
 # Advanced Usage
 
@@ -300,8 +300,8 @@ uvx --from "financetoolkit[mcp]" financetoolkit-mcp-setup --client claude-code -
 
 The following arguments are available:
 
-- `--client`: Install the MCP server for a specific client.
-- `--include_skills`: Whether to install the optional SKILL.md analyst instructions that guide the LLM on how to use the tools effectively.
+- `--client`: Install the MCP server for a specific client. The choices are `claude-desktop`, `claude-code`, `vscode`, `cursor`, `gemini`, and `windsurf`.
+- `--include-skills`: Whether to install the optional SKILL.md analyst instructions that guide the LLM on how to use the tools effectively.
 - `--overwrite`: Whether to overwrite existing config entries if they are already present.
 
 On purpose there exists no `--api-key` flag given that the create configuration will include a location to an `.env` file (e.g. `/Users/jeroenbouma/.config/financetoolkit/.env`) and therefore it is more secure to write the API key directly to that file instead of having it appear in the command history.
