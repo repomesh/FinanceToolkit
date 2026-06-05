@@ -168,11 +168,11 @@ def get_financial_statement(
 
     periods_to_fetch = 5  # Default limit
 
-    if start_date and end_date and user_subscription != "Free":
+    if start_date and user_subscription != "Free":
         if quarter:
             # Convert dates to period objects
             start_period = pd.Period(pd.to_datetime(start_date), freq="Q")
-            end_period = pd.Period(pd.to_datetime(end_date), freq="Q")
+            end_period = pd.Period(pd.to_datetime(datetime.today()), freq="Q")
 
             # Calculate number of quarters between dates
             periods_to_fetch = (
@@ -183,7 +183,7 @@ def get_financial_statement(
         else:
             # Calculate number of years between dates
             start_year = pd.to_datetime(start_date).year
-            end_year = pd.to_datetime(end_date).year
+            end_year = pd.to_datetime(datetime.today()).year
             periods_to_fetch = end_year - start_year + 1
 
     # Ensure we don't exceed the API's limit
@@ -194,6 +194,8 @@ def get_financial_statement(
         f"?symbol={ticker}&period={period}&apikey={api_key}&"
         f"limit={periods_to_fetch}"
     )
+
+    print(url)
     financial_statement = get_financial_data(
         url=url, sleep_timer=sleep_timer, user_subscription=user_subscription
     )
