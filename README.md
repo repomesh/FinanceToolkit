@@ -19,7 +19,7 @@ Beyond Equities, it supports Options, Currencies, Cryptocurrencies, ETFs, Mutual
 
 Complementing this is the [Finance Database 🌎](https://github.com/JerBouma/FinanceDatabase), a database featuring 300.000+ symbols containing Equities, ETFs, Funds, Indices, Currencies, Cryptocurrencies and Money Markets. By utilising both, it is possible to do a fully-fledged competitive analysis with the tickers found from the FinanceDatabase inputted into the FinanceToolkit.
 
-**Additionally, the Finance Toolkit has its own MCP Server which allows you to connect it to any LLM that supports the Model Context Protocol.** This means you can use it conversationally through an LLM interface such as ChatGPT, Claude or Gemini. **Learn more about this [here](MCP.md).**
+**Additionally, the Finance Toolkit has its own MCP Server which allows you to connect it to any LLM that supports the Model Context Protocol.** This means you can use it conversationally through an LLM interface such as ChatGPT, Claude or GitHub CoPilot. **Learn more about this [here](https://github.com/JerBouma/FinanceToolkit/blob/main/MCP.md).**
 
 
 # Table of Contents
@@ -71,7 +71,7 @@ The Finance Toolkit also contains a **MCP Server** that exposes 200+ financial m
 uvx --from "financetoolkit[mcp]" financetoolkit-mcp-setup
 ```
 
-See the [MCP Documentation](MCP.md) for the full setup guide, supported clients, available tools, and example prompts.
+See the [MCP Documentation](https://github.com/JerBouma/FinanceToolkit/blob/main/MCP.md) for the full setup guide, supported clients, available tools, and example prompts.
 
 # Basic Usage
 
