@@ -15,11 +15,11 @@ For example, Microsoft's Price-to-Earnings (PE) ratio on the 6th of May, 2023 is
 
 **This is why I designed the FinanceToolkit**, this is an open-source toolkit in which all relevant financial ratios ([150+](#core-functionality-and-metrics)), indicators and performance measurements are written down in the most simplistic way allowing for complete transparency of the method of calculation ([proof](https://github.com/JerBouma/FinanceToolkit/blob/main/financetoolkit/ratios/valuation_model.py)). This enables you to avoid dependence on metrics from other providers that do not provide their methods. With a large selection of financial statements in hand, it facilitates streamlined calculations, promoting the adoption of a consistent and universally understood methods and formulas.
 
-The Finance Toolkit not only supports Equities. Even for Options, Currencies, Cryptocurrencies, ETFs, Mutual Funds, Indices, Money Markets, Commodities, Key Economic Indicators and more, the Finance Toolkit can be used to obtain historical data as well as important performance and risk measurements such as the Sharpe Ratio and Value at Risk.
+Beyond Equities, it supports Options, Currencies, Cryptocurrencies, ETFs, Mutual Funds, Indices, Money Markets, Commodities, Key Economic Indicators and more, allowing you to obtain historical data as well as important performance and risk measurements such as the Sharpe Ratio and Value at Risk.
 
-The Finance Toolkit is complimented very well with the [Finance Database 🌎](https://github.com/JerBouma/FinanceDatabase), a database that features 300.000+ symbols containing Equities, ETFs, Funds, Indices, Currencies, Cryptocurrencies and Money Markets. By utilising both, it is possible to do a fully-fledged competitive analysis with the tickers found from the FinanceDatabase inputted into the FinanceToolkit.
+Complementing this is the [Finance Database 🌎](https://github.com/JerBouma/FinanceDatabase), a database featuring 300.000+ symbols containing Equities, ETFs, Funds, Indices, Currencies, Cryptocurrencies and Money Markets. By utilising both, it is possible to do a fully-fledged competitive analysis with the tickers found from the FinanceDatabase inputted into the FinanceToolkit.
 
-**The Finance Toolkit has its own MCP Server which allows you to connect the Finance Toolkit to any LLM that supports the Model Context Protocol.** This means that you can use the Finance Toolkit in a conversational way through an LLM interface such as ChatGPT, Claude or Gemini. **Learn more about this [here](MCP.md).**
+**Additionally, the Finance Toolkit has its own MCP Server which allows you to connect it to any LLM that supports the Model Context Protocol.** This means you can use it conversationally through an LLM interface such as ChatGPT, Claude or Gemini. **Learn more about this [here](MCP.md).**
 
 
 # Table of Contents
@@ -65,7 +65,7 @@ Through the link you are able to subscribe for the free plan and also premium pl
 
 **By default, the Finance Toolkit prioritizes Financial Modeling Prep for data retrieval. If data acquisition from Financial Modeling Prep is unsuccessful (e.g., due to plan restrictions or API key issues), the toolkit automatically switches to Yahoo Finance as a secondary source.** To disable this fallback behavior and exclusively use Financial Modeling Prep, set `enforce_source="FinancialModelingPrep"` during Toolkit initialization. This configuration ensures that an error is raised if Financial Modeling Prep data cannot be accessed. Alternatively, you can set `enforce_source="YahooFinance"` to exclusively use Yahoo Finance as the data source.
 
-The Finance Toolkit also contains a **MCP Server** that exposes 200+ financial metrics, models, and economic indicators directly to any AI assistant that supports the [Model Context Protocol](https://modelcontextprotocol.io) including Claude, GitHub Copilot, Cursor, Gemini, and Windsurf. No local installation is required; the setup wizard configures your client(s) to launch the server on demand via `uvx`:
+The Finance Toolkit also contains a **MCP Server** that exposes 200+ financial metrics, models, and economic indicators directly to any AI assistant that supports the [Model Context Protocol](https://modelcontextprotocol.io) including Claude, GitHub Copilot, Cursor and Windsurf. No local installation is required; the setup wizard configures your client(s) to launch the server on demand via `uvx`:
 
 ```
 uvx --from "financetoolkit[mcp]" financetoolkit-mcp-setup
