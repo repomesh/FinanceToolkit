@@ -195,7 +195,6 @@ def get_financial_statement(
         f"limit={periods_to_fetch}"
     )
 
-    print(url)
     financial_statement = get_financial_data(
         url=url, sleep_timer=sleep_timer, user_subscription=user_subscription
     )
