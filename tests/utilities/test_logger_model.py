@@ -120,8 +120,8 @@ def test_setup_logger_formatter_configuration():
                 assert result == mock_logger
 
 
-def test_setup_logger_stream_handler_uses_stdout():
-    """Test setup_logger uses sys.stdout for StreamHandler."""
+def test_setup_logger_stream_handler_uses_stderr():
+    """Test setup_logger uses sys.stderr for StreamHandler."""
     with patch("logging.getLogger") as mock_get_logger:
         mock_logger = MagicMock()
         mock_logger.level = 0
@@ -134,8 +134,9 @@ def test_setup_logger_stream_handler_uses_stdout():
 
             result = logger_model.setup_logger()
 
-            # Check StreamHandler was called with sys.stdout
-            mock_stream_handler.assert_called_once_with(sys.stdout)
+            # Check StreamHandler was called with sys.stderr (not stdout) so
+            # that log output never corrupts the stdio JSON-RPC pipe.
+            mock_stream_handler.assert_called_once_with(sys.stderr)
 
             assert result == mock_logger
 
@@ -186,7 +187,7 @@ def test_setup_logger_integration():
     handler = result.handlers[0]
     assert isinstance(handler, logging.StreamHandler)
     assert handler.level == logging.DEBUG
-    assert handler.stream == sys.stdout
+    assert handler.stream == sys.stderr
 
     # Check formatter
     formatter = handler.formatter
