@@ -102,11 +102,10 @@ def get_claude_config_path() -> pathlib.Path:
             / "claude_desktop_config.json"
         )
     if system == "Windows":
-        return (
-            pathlib.Path(os.environ.get("APPDATA", "~"))
-            / "Claude"
-            / "claude_desktop_config.json"
+        appdata = os.environ.get("APPDATA") or str(
+            pathlib.Path.home() / "AppData" / "Roaming"
         )
+        return pathlib.Path(appdata) / "Claude" / "claude_desktop_config.json"
     return pathlib.Path.home() / ".config" / "claude" / "claude_desktop_config.json"
 
 
@@ -240,7 +239,7 @@ def get_global_cache_db_path() -> pathlib.Path:
     return get_global_env_path().with_name("financetoolkit_cache.db")
 
 
-def write_global_env_key(api_key: str) -> None:
+def write_global_env_key(api_key: str) -> bool:
     """
     Write or update ``FINANCIAL_MODELING_PREP_API_KEY`` in the global .env file.
 
@@ -250,32 +249,44 @@ def write_global_env_key(api_key: str) -> None:
 
     Args:
         api_key (str): The API key value to write.
+
+    Returns:
+        bool: ``True`` when the key was written successfully, ``False`` when a
+            filesystem error prevented the write (e.g. permission denied).
     """
     env_path = get_global_env_path()
-    env_path.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        env_path.parent.mkdir(parents=True, exist_ok=True)
 
-    env_key = "FINANCIAL_MODELING_PREP_API_KEY"
-    env_line = f"{env_key}={api_key}\n"
+        env_key = "FINANCIAL_MODELING_PREP_API_KEY"
+        env_line = f"{env_key}={api_key}\n"
 
-    existing_lines: list[str] = []
-    existing_index: int | None = None
+        existing_lines: list[str] = []
+        existing_index: int | None = None
 
-    if env_path.exists():
-        existing_lines = env_path.read_text(encoding="utf-8").splitlines(keepends=True)
-        for idx, line in enumerate(existing_lines):
-            if line.strip().startswith(f"{env_key}="):
-                existing_index = idx
-                break
+        if env_path.exists():
+            existing_lines = env_path.read_text(encoding="utf-8").splitlines(
+                keepends=True
+            )
+            for idx, line in enumerate(existing_lines):
+                if line.strip().startswith(f"{env_key}="):
+                    existing_index = idx
+                    break
 
-    if existing_index is None:
-        if existing_lines and not existing_lines[-1].endswith("\n"):
-            existing_lines[-1] += "\n"
-        existing_lines.append(env_line)
-    else:
-        existing_lines[existing_index] = env_line
+        if existing_index is None:
+            if existing_lines and not existing_lines[-1].endswith("\n"):
+                existing_lines[-1] += "\n"
+            existing_lines.append(env_line)
+        else:
+            existing_lines[existing_index] = env_line
 
-    env_path.write_text("".join(existing_lines), encoding="utf-8")
-    ok(f"API key saved to [dim cyan]{env_path}[/]")
+        env_path.write_text("".join(existing_lines), encoding="utf-8")
+        ok(f"API key saved to [dim cyan]{env_path}[/]")
+        return True
+
+    except OSError as exc:
+        err(f"Could not write API key to [dim cyan]{env_path}[/]: {exc}")
+        return False
 
 
 _ENV_KEY = "FINANCIAL_MODELING_PREP_API_KEY"

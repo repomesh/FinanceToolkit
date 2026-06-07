@@ -241,7 +241,11 @@ def _setup_cli(client: str, include_skills: bool, overwrite: bool) -> None:
             global_values = dotenv_values(global_env) if global_env.exists() else {}
             if global_values.get("FINANCIAL_MODELING_PREP_API_KEY") != api_key:
                 setup_model.info(f"Syncing key to global config ({global_env})…")
-                setup_model.write_global_env_key(api_key)
+                if not setup_model.write_global_env_key(api_key):
+                    setup_model.warn(
+                        "Could not write the global config file — "
+                        "the API key will be embedded directly in the client config instead."
+                    )
     else:
         setup_model.warn(
             "No API key found.  "
@@ -285,8 +289,11 @@ def _setup_interactive() -> None:
             "  [bold]API Key[/]  [dim cyan]›[/] "
         ).strip()
 
-        if api_key:
-            setup_model.write_global_env_key(api_key)
+        if api_key and not setup_model.write_global_env_key(api_key):
+            setup_model.warn(
+                "Could not write the global config file — "
+                "the API key will be embedded directly in the client config instead."
+            )
 
     setup_model.console.print()
     setup_model.print_menu()
@@ -333,7 +340,11 @@ def _setup_interactive() -> None:
         global_values = dotenv_values(global_env) if global_env.exists() else {}
         if global_values.get("FINANCIAL_MODELING_PREP_API_KEY") != api_key:
             setup_model.info(f"Syncing key to global config ({global_env})…")
-            setup_model.write_global_env_key(api_key)
+            if not setup_model.write_global_env_key(api_key):
+                setup_model.warn(
+                    "Could not write the global config file — "
+                    "the API key will be embedded directly in the client config instead."
+                )
 
     setup_model.console.print()
     for char in to_process:
