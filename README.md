@@ -21,7 +21,6 @@ Complementing this is the [Finance Database 🌎](https://github.com/JerBouma/Fi
 
 **Additionally, the Finance Toolkit has its own MCP Server which allows you to connect it to any LLM that supports the Model Context Protocol.** This means you can use it conversationally through an LLM interface such as ChatGPT, Claude or GitHub CoPilot. **Learn more about this [here](https://github.com/JerBouma/FinanceToolkit/blob/main/MCP.md).**
 
-
 # Table of Contents
 
 1. [Installation](#installation)
@@ -65,7 +64,7 @@ Through the link you are able to subscribe for the free plan and also premium pl
 
 **By default, the Finance Toolkit prioritizes Financial Modeling Prep for data retrieval. If data acquisition from Financial Modeling Prep is unsuccessful (e.g., due to plan restrictions or API key issues), the toolkit automatically switches to Yahoo Finance as a secondary source.** To disable this fallback behavior and exclusively use Financial Modeling Prep, set `enforce_source="FinancialModelingPrep"` during Toolkit initialization. This configuration ensures that an error is raised if Financial Modeling Prep data cannot be accessed. Alternatively, you can set `enforce_source="YahooFinance"` to exclusively use Yahoo Finance as the data source.
 
-The Finance Toolkit also contains a **MCP Server** that exposes 200+ financial metrics, models, and economic indicators directly to any AI assistant that supports the [Model Context Protocol](https://modelcontextprotocol.io) including Claude, GitHub Copilot, Cursor and Windsurf. No local installation is required; the setup wizard configures your client(s) to launch the server on demand via `uvx`:
+The Finance Toolkit also contains a **MCP Server** that exposes 200+ financial metrics, models, and economic indicators directly to any AI assistant that supports the Model Context Protocol including Claude Desktop & Code, GitHub Copilot, Cursor and Windsurf. No local installation is required; the setup wizard configures your client(s) to launch the server on demand via `uvx`:
 
 ```
 uvx --from "financetoolkit[mcp]" financetoolkit-mcp-setup
