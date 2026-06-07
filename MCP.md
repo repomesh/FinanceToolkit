@@ -25,7 +25,168 @@ Clients are configured to launch the server on demand via [uvx](https://docs.ast
 uvx --from "financetoolkit[mcp]" financetoolkit-mcp-setup
 ```
 
-After the installation process is finished, it will automatically launch the setup wizard.
+After the installation process is finished, it will automatically launch the setup wizard. Continue to Step 2 if you've ran above command.
+
+If you prefer not to run the setup wizard, you can configure each client manually by editing its JSON configuration file. The `env` block accepts either of two environment variables — set whichever suits your workflow. When both are present the directly-set key takes priority.
+
+- **`FINANCIAL_MODELING_PREP_API_KEY`**: your API key embedded directly in the config.
+- **`FINANCETOOLKIT_ENV_FILE`**: an absolute path to a `.env` file that contains `FINANCIAL_MODELING_PREP_API_KEY=<your-key>`.
+
+The command needing to boot up the MCP server is `uvx --from "financetoolkit[mcp]" financetoolkit-mcp`, where uvx should be set as the *command* and the rest as *args* in the config entry for each client.
+
+The Claude Desktop configuration file lives at a platform-specific path:
+
+| Platform | Path |
+|:---|:---|
+| macOS | `~/Library/Application Support/Claude/claude_desktop_config.json` |
+| Windows | `%APPDATA%\Claude\claude_desktop_config.json` |
+| Linux | `~/.config/claude/claude_desktop_config.json` |
+
+Open (or create) that file and add the `finance-toolkit` entry inside `mcpServers`. To embed your API key directly:
+
+```json
+{
+  "mcpServers": {
+    "finance-toolkit": {
+      "command": "uvx",
+      "args": ["--from", "financetoolkit[mcp]", "financetoolkit-mcp"],
+      "env": {
+        "FINANCIAL_MODELING_PREP_API_KEY": "YOUR_API_KEY_HERE"
+      }
+    }
+  }
+}
+```
+
+Alternatively, if you prefer to keep the key in a `.env` file outside of the config (e.g. `~/.config/financetoolkit/.env`), replace the `env` block with:
+
+```json
+      "env": {
+        "FINANCETOOLKIT_ENV_FILE": "/Users/you/.config/financetoolkit/.env"
+      }
+```
+
+After saving, **restart Claude Desktop** and the Finance Toolkit tools will appear. For other platforms, please see below:
+
+<details>
+<summary><b>Claude Code</b></summary>
+<br>
+
+Edit `~/.claude.json` (create it if it does not exist) and add or merge the `finance-toolkit` entry inside `mcpServers`:
+
+```json
+{
+  "mcpServers": {
+    "finance-toolkit": {
+      "command": "uvx",
+      "args": ["--from", "financetoolkit[mcp]", "financetoolkit-mcp"],
+      "env": {
+        "FINANCIAL_MODELING_PREP_API_KEY": "YOUR_API_KEY_HERE"
+      }
+    }
+  }
+}
+```
+
+To use an env file instead, replace the `env` block with `"FINANCETOOLKIT_ENV_FILE": "/Users/you/.config/financetoolkit/.env"`.
+
+</details>
+
+<details>
+<summary><b>VS Code</b></summary>
+<br>
+
+Create or edit `.vscode/mcp.json` in your workspace root. VS Code uses `servers` as the top-level key (not `mcpServers`):
+
+```json
+{
+  "servers": {
+    "finance-toolkit": {
+      "command": "uvx",
+      "args": ["--from", "financetoolkit[mcp]", "financetoolkit-mcp"],
+      "env": {
+        "FINANCIAL_MODELING_PREP_API_KEY": "YOUR_API_KEY_HERE"
+      }
+    }
+  }
+}
+```
+
+To use an env file instead, replace the `env` block with `"FINANCETOOLKIT_ENV_FILE": "/Users/you/.config/financetoolkit/.env"`.
+
+</details>
+
+<details>
+<summary><b>Cursor</b></summary>
+<br>
+
+Create or edit `.cursor/mcp.json` in your workspace root:
+
+```json
+{
+  "mcpServers": {
+    "finance-toolkit": {
+      "command": "uvx",
+      "args": ["--from", "financetoolkit[mcp]", "financetoolkit-mcp"],
+      "env": {
+        "FINANCIAL_MODELING_PREP_API_KEY": "YOUR_API_KEY_HERE"
+      }
+    }
+  }
+}
+```
+
+To use an env file instead, replace the `env` block with `"FINANCETOOLKIT_ENV_FILE": "/Users/you/.config/financetoolkit/.env"`.
+
+</details>
+
+<details>
+<summary><b>Gemini CLI</b></summary>
+<br>
+
+Edit `~/.gemini/settings.json` (create it if it does not exist):
+
+```json
+{
+  "mcpServers": {
+    "finance-toolkit": {
+      "command": "uvx",
+      "args": ["--from", "financetoolkit[mcp]", "financetoolkit-mcp"],
+      "env": {
+        "FINANCIAL_MODELING_PREP_API_KEY": "YOUR_API_KEY_HERE"
+      }
+    }
+  }
+}
+```
+
+To use an env file instead, replace the `env` block with `"FINANCETOOLKIT_ENV_FILE": "/Users/you/.config/financetoolkit/.env"`.
+
+</details>
+
+<details>
+<summary><b>Windsurf</b></summary>
+<br>
+
+Edit `~/.codeium/windsurf/mcp_config.json` (create it if it does not exist):
+
+```json
+{
+  "mcpServers": {
+    "finance-toolkit": {
+      "command": "uvx",
+      "args": ["--from", "financetoolkit[mcp]", "financetoolkit-mcp"],
+      "env": {
+        "FINANCIAL_MODELING_PREP_API_KEY": "YOUR_API_KEY_HERE"
+      }
+    }
+  }
+}
+```
+
+To use an env file instead, replace the `env` block with `"FINANCETOOLKIT_ENV_FILE": "/Users/you/.config/financetoolkit/.env"`.
+
+</details>
 
 ## Step 2: Configure your client(s)
 
@@ -450,7 +611,7 @@ The following arguments are available:
 - `--include-skills`: Whether to install the optional SKILL.md analyst instructions that guide the LLM on how to use the tools effectively.
 - `--overwrite`: Whether to overwrite existing config entries if they are already present.
 
-On purpose there exists no `--api-key` flag given that the create configuration will include a location to an `.env` file (e.g. `/Users/jeroenbouma/.config/financetoolkit/.env`) and therefore it is more secure to write the API key directly to that file instead of having it appear in the command history.
+On purpose there exists no `--api-key` flag given that the configuration will include a location to an `.env` file (e.g. `/Users/jeroenbouma/.config/financetoolkit/.env`) and therefore it is more secure to write the API key directly to that file instead of having it appear in the command history.
 
 ## Inspecting the Available Tools
 
