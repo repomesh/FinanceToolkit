@@ -376,6 +376,17 @@ def get_fama_and_french_model_single(
         dict: the regression results.
         pd.Series: the residuals.
     """
+    if len(excess_returns) < 2:  # noqa
+        # Robust handling of insufficient data points for regression method
+        regression_results = {
+            "Intercept": np.nan,
+            "Slope": np.nan,
+            "R Squared": np.nan,
+            "P Value": np.nan,
+            "Standard Error": np.nan,
+        }
+        return regression_results, excess_returns * np.nan
+
     result = linregress(excess_returns, factor)
 
     regression_results = {
