@@ -635,7 +635,7 @@ def create_profit_and_loss_overview(
     # Process each ticker group independently
     transactions_overview = transactions_overview.groupby(
         ticker_column, group_keys=False, observed=True
-    ).apply(process_group)
+    ).apply(process_group, include_groups=False)
     transactions_overview["Cumulative PnL"] = transactions_overview["PnL"].cumsum()
 
     return transactions_overview[["PnL", "Cumulative PnL"]]
