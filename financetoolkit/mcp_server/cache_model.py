@@ -7,7 +7,6 @@ from __future__ import annotations
 
 import hashlib
 import json
-import logging
 import sqlite3
 import time
 from io import StringIO
@@ -17,7 +16,9 @@ from typing import Any
 
 import pandas as pd
 
-logger = logging.getLogger(__name__)
+from financetoolkit.utilities.logger_model import get_logger
+
+logger = get_logger()
 
 
 class SQLiteCache:

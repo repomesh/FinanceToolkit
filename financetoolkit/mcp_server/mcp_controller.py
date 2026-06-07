@@ -17,20 +17,41 @@ from financetoolkit.mcp_server.inspection_controller import ControllerInspector
 from financetoolkit.mcp_server.provider_model import ToolkitProvider
 from financetoolkit.mcp_server.registry_controller import ToolRegistry
 from financetoolkit.mcp_server.tools_model import UtilityToolRegistry
-from financetoolkit.utilities.logger_model import get_logger
+from financetoolkit.utilities.logger_model import get_logger, setup_logger
 
-# Resolution order at import time:
-#   1. Local cwd .env (highest priority — wins over everything)
-#   2. FINANCETOOLKIT_ENV_FILE (global path written by setup wizard)
-#   3. Global config dir fallback (~/.config/financetoolkit/.env)
-_local_env = pathlib.Path.cwd() / ".env"
-if _local_env.exists():
-    load_dotenv(_local_env, override=True)
-_env_file = os.environ.get("FINANCETOOLKIT_ENV_FILE")
-if _env_file and pathlib.Path(_env_file).exists():
-    load_dotenv(_env_file, override=False)
-else:
-    load_dotenv(override=False)
+# Attach the stderr handler immediately — before any module-level log calls
+# and before FastMCP is imported/initialised.  Mirrors the pattern used by
+# toolkit_controller.py and discovery_controller.py.
+setup_logger()
+
+
+def _load_dotenv_configuration() -> None:
+    """Load dotenv configuration only when an API key is not already present.
+
+    MCP clients can inject ``FINANCIAL_MODELING_PREP_API_KEY`` directly into
+    the server process environment (the ``env`` block in their config).  When
+    that key is present the server uses it immediately without reading any file.
+    Otherwise the server falls back to ``FINANCETOOLKIT_ENV_FILE`` (a path to a
+    ``.env`` file) and then to the global Finance Toolkit ``.env`` location.
+    """
+    if os.environ.get("FINANCIAL_MODELING_PREP_API_KEY"):
+        return
+
+    # Resolution order:
+    #   1. Local cwd .env (highest priority — wins over everything)
+    #   2. FINANCETOOLKIT_ENV_FILE (global path written by setup wizard)
+    #   3. Global config dir fallback (~/.config/financetoolkit/.env)
+    local_env = pathlib.Path.cwd() / ".env"
+    if local_env.exists():
+        load_dotenv(local_env, override=True)
+    env_file = os.environ.get("FINANCETOOLKIT_ENV_FILE")
+    if env_file and pathlib.Path(env_file).exists():
+        load_dotenv(env_file, override=False)
+    else:
+        load_dotenv(override=False)
+
+
+_load_dotenv_configuration()
 
 
 def _build_mcp_app() -> FastMCP:
@@ -47,21 +68,7 @@ def _build_mcp_app() -> FastMCP:
         FastMCP: A fully configured FastMCP instance with all toolkit and utility
             tools registered and ready to serve requests.
     """
-    # Resolution order:
-    #   1. Local cwd .env — takes precedence so developers / workspace overrides win.
-    #   2. FINANCETOOLKIT_ENV_FILE (set by MCP client configs via setup wizard).
-    #   3. Global config dir (~/.config/financetoolkit/.env) as written by setup wizard.
-    # Each subsequent source uses override=False so it never stomps a key already set.
-    local_env = pathlib.Path.cwd() / ".env"
-    if local_env.exists():
-        load_dotenv(local_env, override=True)
-    env_file = os.environ.get("FINANCETOOLKIT_ENV_FILE")
-    if env_file and pathlib.Path(env_file).exists():
-        load_dotenv(env_file, override=False)
-    else:
-        global_env = setup_model.get_global_env_path()
-        if global_env.exists():
-            load_dotenv(global_env, override=False)
+    _load_dotenv_configuration()
     logger = get_logger()
 
     configuration_path = pathlib.Path(__file__).parent / "config.yaml"
@@ -69,14 +76,21 @@ def _build_mcp_app() -> FastMCP:
     with open(configuration_path, encoding="utf-8") as _f:
         configuration: dict = yaml.safe_load(_f)
 
+    _cache_db_env = os.environ.get("FINANCE_TOOLKIT_CACHE_DB", "")
+    _cache_ttl_env = os.environ.get("FINANCE_TOOLKIT_CACHE_TTL", "")
     provider = ToolkitProvider(
         api_key=os.environ.get("FINANCIAL_MODELING_PREP_API_KEY", ""),
-        cache_ttl=configuration["cache"]["ttl_seconds"],
-        database_location=configuration["cache"]["database_location"],
+        cache_ttl=(
+            int(_cache_ttl_env)
+            if _cache_ttl_env.isdigit()
+            else configuration["cache"]["ttl_seconds"]
+        ),
+        database_location=_cache_db_env or str(setup_model.get_global_cache_db_path()),
     )
 
     mcp = FastMCP(
         name="Finance Toolkit Analyst",
+        log_level="CRITICAL",
     )
 
     controller_inspector = ControllerInspector(
@@ -211,7 +225,6 @@ def _setup_cli(client: str, include_skills: bool, overwrite: bool) -> None:
     """Non-interactive setup: write uvx-based config for *client*."""
     setup_model.print_banner()
 
-    # Ensure the API key is synced to the global env file before writing any config.
     api_key, key_source = setup_model.discover_api_key()
     global_env = setup_model.get_global_env_path()
 
@@ -222,7 +235,9 @@ def _setup_cli(client: str, include_skills: bool, overwrite: bool) -> None:
         setup_model.ok(
             f"API key found  [dim]·[/]  [dim]{key_source}[/]  [dim]·[/]  [dim cyan]{masked}[/]"
         )
-        if not global_env.exists() or key_source != "global config":
+        if client != "claude-desktop" and (
+            not global_env.exists() or key_source != "global config"
+        ):
             global_values = dotenv_values(global_env) if global_env.exists() else {}
             if global_values.get("FINANCIAL_MODELING_PREP_API_KEY") != api_key:
                 setup_model.info(f"Syncing key to global config ({global_env})…")
@@ -235,7 +250,9 @@ def _setup_cli(client: str, include_skills: bool, overwrite: bool) -> None:
         )
 
     setup_model.console.print()
-    setup_model.write_client_config_uvx(client, pathlib.Path.cwd(), overwrite)
+    setup_model.write_client_config_uvx(
+        client, pathlib.Path.cwd(), overwrite, api_key=api_key
+    )
 
     if include_skills:
         setup_model.write_skill_for_client(client, pathlib.Path.cwd(), overwrite)
@@ -258,13 +275,6 @@ def _setup_interactive() -> None:
         setup_model.ok(
             f"API key found  [dim]·[/]  [dim]{key_source}[/]  [dim]·[/]  [dim cyan]{masked_key}[/]"
         )
-        # If the key came from the local .env or the shell but the global file
-        # doesn't have it yet, sync it there now so all clients can use it.
-        if not global_env.exists() or key_source != "global config":
-            global_values = dotenv_values(global_env) if global_env.exists() else {}
-            if global_values.get("FINANCIAL_MODELING_PREP_API_KEY") != api_key:
-                setup_model.info(f"Syncing key to global config ({global_env})…")
-                setup_model.write_global_env_key(api_key)
     else:
         setup_model.warn(
             "No API key found.  Get one at [cyan]https://www.jeroenbouma.com/fmp[/]  [dim](15% discount)[/]"
@@ -313,6 +323,17 @@ def _setup_interactive() -> None:
         setup_model.console.print()
         setup_model.err("No valid options selected.")
         return
+
+    needs_global_env = any(c in to_process for c in ("2", "3", "4", "5", "6"))
+    if (
+        api_key
+        and needs_global_env
+        and (not global_env.exists() or key_source != "global config")
+    ):
+        global_values = dotenv_values(global_env) if global_env.exists() else {}
+        if global_values.get("FINANCIAL_MODELING_PREP_API_KEY") != api_key:
+            setup_model.info(f"Syncing key to global config ({global_env})…")
+            setup_model.write_global_env_key(api_key)
 
     setup_model.console.print()
     for char in to_process:

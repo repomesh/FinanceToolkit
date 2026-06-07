@@ -6,7 +6,6 @@ from __future__ import annotations
 
 import hashlib
 import inspect
-import logging
 import os
 import time
 from threading import Lock
@@ -19,8 +18,9 @@ from financetoolkit.discovery.discovery_controller import Discovery
 from financetoolkit.economics.economics_controller import Economics
 from financetoolkit.fixedincome.fixedincome_controller import FixedIncome
 from financetoolkit.mcp_server.cache_model import SQLiteCache
+from financetoolkit.utilities.logger_model import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger()
 
 # In case the user has set an API key as an environment variable,
 # this will be used as the default API key for the Toolkit.

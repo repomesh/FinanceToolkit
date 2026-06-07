@@ -20,7 +20,7 @@ from rich.panel import Panel
 from rich.prompt import Confirm
 from rich.text import Text
 
-console = Console()
+console = Console(stderr=True)
 
 
 def print_banner() -> None:
@@ -149,7 +149,7 @@ def get_windsurf_config_path() -> pathlib.Path:
     return pathlib.Path.home() / ".codeium" / "windsurf" / "mcp_config.json"
 
 
-def _uvx_server_entry() -> dict:
+def _uvx_server_entry(api_key: str | None = None) -> dict:
     """Return the MCP server config block that invokes the server via uvx.
 
     The generated entry is portable: it does not depend on any locally
@@ -157,13 +157,29 @@ def _uvx_server_entry() -> dict:
     package installed can still launch the server because uvx downloads and
     runs it on demand.
 
+    The ``env`` block uses one of two strategies, with the API key taking
+    priority when both are available:
+
+    * **Key present** — ``FINANCIAL_MODELING_PREP_API_KEY`` is embedded
+      directly in the config.  The server uses it immediately without reading
+      any file.
+    * **Key absent** — ``FINANCETOOLKIT_ENV_FILE`` points at the global
+      Finance Toolkit ``.env`` file so the server can load the key at
+      runtime without storing it in the client config.
+
     Returns:
         dict: Ready-to-serialise MCP server configuration dict.
     """
+    env = (
+        {"FINANCIAL_MODELING_PREP_API_KEY": api_key}
+        if api_key
+        else {"FINANCETOOLKIT_ENV_FILE": str(get_global_env_path())}
+    )
+
     return {
         "command": "uvx",
         "args": ["--from", "financetoolkit[mcp]", "financetoolkit-mcp"],
-        "env": {"FINANCETOOLKIT_ENV_FILE": str(get_global_env_path())},
+        "env": env,
     }
 
 
@@ -207,6 +223,21 @@ def get_global_env_path() -> pathlib.Path:
         xdg = os.environ.get("XDG_CONFIG_HOME")
         base = pathlib.Path(xdg) if xdg else pathlib.Path.home() / ".config"
     return base / "financetoolkit" / ".env"
+
+
+def get_global_cache_db_path() -> pathlib.Path:
+    """
+    Return the path to the global Finance Toolkit SQLite cache database.
+
+    The cache database lives alongside the global ``.env`` file so Claude
+    Desktop and other MCP clients can write to a user-owned configuration
+    directory instead of the current working directory.
+
+    Returns:
+        pathlib.Path: Absolute path to ``financetoolkit_cache.db`` in the
+            global Finance Toolkit config directory.
+    """
+    return get_global_env_path().with_name("financetoolkit_cache.db")
 
 
 def write_global_env_key(api_key: str) -> None:
@@ -487,11 +518,14 @@ def write_gemini_config(api_key: str) -> None:
     Patch the Gemini CLI configuration file (``~/.gemini/settings.json``) to
     add the Finance Toolkit MCP server entry.
 
-    The API key is never embedded in the JSON file. Instead, the entry points
-    the server to the global Finance Toolkit .env file via ``FINANCETOOLKIT_ENV_FILE``.
+    When *api_key* is provided it is embedded directly as
+    ``FINANCIAL_MODELING_PREP_API_KEY``; otherwise the entry uses
+    ``FINANCETOOLKIT_ENV_FILE`` pointing at the global ``.env`` file.
 
     Args:
-        api_key (str): Unused — kept for signature compatibility.
+        api_key (str): FinancialModelingPrep API key.  When non-empty the key
+            is embedded directly in the config (takes priority over the env
+            file).
     """
     config_path = get_gemini_config_path()
     config_path.parent.mkdir(parents=True, exist_ok=True)
@@ -514,7 +548,7 @@ def write_gemini_config(api_key: str) -> None:
             return
 
     existing.setdefault("mcpServers", {})
-    existing["mcpServers"]["finance-toolkit"] = _uvx_server_entry()
+    existing["mcpServers"]["finance-toolkit"] = _uvx_server_entry(api_key or None)
 
     config_path.write_text(json.dumps(existing, indent=2) + "\n", encoding="utf-8")
     ok(f"Gemini config written to [dim cyan]{config_path}[/]")
@@ -534,11 +568,14 @@ def write_windsurf_config(api_key: str) -> None:
     (``~/.codeium/windsurf/mcp_config.json``) to add the Finance Toolkit MCP
     server entry.
 
-    The API key is never embedded in the JSON file. Instead, the entry points
-    the server to the global Finance Toolkit .env file via ``FINANCETOOLKIT_ENV_FILE``.
+    When *api_key* is provided it is embedded directly as
+    ``FINANCIAL_MODELING_PREP_API_KEY``; otherwise the entry uses
+    ``FINANCETOOLKIT_ENV_FILE`` pointing at the global ``.env`` file.
 
     Args:
-        api_key (str): Unused — kept for signature compatibility.
+        api_key (str): FinancialModelingPrep API key.  When non-empty the key
+            is embedded directly in the config (takes priority over the env
+            file).
     """
     config_path = get_windsurf_config_path()
     config_path.parent.mkdir(parents=True, exist_ok=True)
@@ -561,7 +598,7 @@ def write_windsurf_config(api_key: str) -> None:
             return
 
     existing.setdefault("mcpServers", {})
-    existing["mcpServers"]["finance-toolkit"] = _uvx_server_entry()
+    existing["mcpServers"]["finance-toolkit"] = _uvx_server_entry(api_key or None)
 
     config_path.write_text(json.dumps(existing, indent=2) + "\n", encoding="utf-8")
     ok(f"Windsurf config written to [dim cyan]{config_path}[/]")
@@ -650,6 +687,7 @@ def write_client_config_uvx(
     client: str,
     target_dir: pathlib.Path,
     overwrite: bool = False,
+    api_key: str = "",
 ) -> None:
     """Write an MCP server config block that invokes the server via uvx.
 
@@ -664,6 +702,10 @@ def write_client_config_uvx(
     client (e.g. Gemini, Windsurf) cannot be determined, the raw JSON block is
     printed to the terminal as a fallback.
 
+    When *api_key* is supplied it is embedded directly in the config as
+    ``FINANCIAL_MODELING_PREP_API_KEY``; otherwise the entry uses
+    ``FINANCETOOLKIT_ENV_FILE`` pointing at the global ``.env`` file.
+
     Args:
         client: Canonical client name — one of ``"claude-desktop"``,
             ``"claude-code"``, ``"vscode"``, ``"cursor"``, ``"gemini"``,
@@ -671,8 +713,10 @@ def write_client_config_uvx(
         target_dir: Workspace root / cwd used to resolve workspace-local paths
             (``.vscode/mcp.json``, ``.cursor/mcp.json``).
         overwrite: When ``True``, silently replace an existing entry.
+        api_key: FinancialModelingPrep API key.  When non-empty the key is
+            embedded directly in the config (takes priority over the env file).
     """
-    entry = _uvx_server_entry()
+    entry = _uvx_server_entry(api_key or None)
 
     if client in ("vscode", "cursor"):
         if client == "vscode":
@@ -725,9 +769,10 @@ def write_claude_code_config(api_key: str) -> None:
     Patch the Claude Code user configuration file (``~/.claude.json``) to add
     the Finance Toolkit MCP server entry.
 
-    The API key is never embedded in the JSON file. Instead, the entry points
-    the server to the global Finance Toolkit .env file via ``FINANCETOOLKIT_ENV_FILE``
-    so that the key is loaded at runtime from a file outside version control.
+    When *api_key* is provided it is embedded directly as
+    ``FINANCIAL_MODELING_PREP_API_KEY``; otherwise the entry uses
+    ``FINANCETOOLKIT_ENV_FILE`` pointing at the global ``.env`` file so that
+    the key is loaded at runtime from a file outside version control.
 
     If the configuration file does not exist it is created from scratch. If it
     already exists and the ``finance-toolkit`` entry is present, the user is
@@ -735,9 +780,9 @@ def write_claude_code_config(api_key: str) -> None:
     existing entries are always preserved.
 
     Args:
-        api_key (str): Unused — kept for signature compatibility. The key is
-            written to the global .env file by the caller before this function
-            is invoked.
+        api_key (str): FinancialModelingPrep API key.  When non-empty the key
+            is embedded directly in the config (takes priority over the env
+            file).
     """
     config_path = get_claude_code_config_path()
     config_path.parent.mkdir(parents=True, exist_ok=True)
@@ -760,7 +805,7 @@ def write_claude_code_config(api_key: str) -> None:
             return
 
     existing.setdefault("mcpServers", {})
-    existing["mcpServers"]["finance-toolkit"] = _uvx_server_entry()
+    existing["mcpServers"]["finance-toolkit"] = _uvx_server_entry(api_key or None)
 
     config_path.write_text(json.dumps(existing, indent=2) + "\n", encoding="utf-8")
     ok(f"Claude Code config written to [dim cyan]{config_path}[/]")
@@ -819,18 +864,19 @@ def write_vscode_config(api_key: str, target_dir: pathlib.Path) -> None:
     """
     Write (or merge) a .vscode/mcp.json file in the given directory.
 
-    The API key is never embedded in the JSON file. Instead, the entry points
-    the server to the global Finance Toolkit .env file via ``FINANCETOOLKIT_ENV_FILE``
-    so that the key is loaded at runtime from a file outside version control.
+    When *api_key* is provided it is embedded directly as
+    ``FINANCIAL_MODELING_PREP_API_KEY``; otherwise the entry uses
+    ``FINANCETOOLKIT_ENV_FILE`` pointing at the global ``.env`` file so that
+    the key is loaded at runtime from a file outside version control.
 
     If the file already exists and the ``finance-toolkit`` entry is present, the
     user is shown the existing entry and asked to confirm before overwriting. All
     other existing server entries are always preserved.
 
     Args:
-        api_key (str): Unused — kept for signature compatibility. The key is
-            written to the global .env file by the caller before this function
-            is invoked.
+        api_key (str): FinancialModelingPrep API key.  When non-empty the key
+            is embedded directly in the config (takes priority over the env
+            file).
         target_dir (pathlib.Path): Directory in which .vscode/mcp.json is created.
     """
     vscode_dir = target_dir / ".vscode"
@@ -855,7 +901,7 @@ def write_vscode_config(api_key: str, target_dir: pathlib.Path) -> None:
             return
 
     existing.setdefault("servers", {})
-    existing["servers"]["finance-toolkit"] = _uvx_server_entry()
+    existing["servers"]["finance-toolkit"] = _uvx_server_entry(api_key or None)
 
     config_path.write_text(json.dumps(existing, indent=2) + "\n", encoding="utf-8")
     ok(f"VS Code config written to [dim cyan]{config_path}[/]")
@@ -865,18 +911,19 @@ def write_cursor_config(api_key: str, target_dir: pathlib.Path) -> None:
     """
     Write (or merge) a .cursor/mcp.json file in the given directory.
 
-    The API key is never embedded in the JSON file. Instead, the entry points
-    the server to the global Finance Toolkit .env file via ``FINANCETOOLKIT_ENV_FILE``
-    so that the key is loaded at runtime from a file outside version control.
+    When *api_key* is provided it is embedded directly as
+    ``FINANCIAL_MODELING_PREP_API_KEY``; otherwise the entry uses
+    ``FINANCETOOLKIT_ENV_FILE`` pointing at the global ``.env`` file so that
+    the key is loaded at runtime from a file outside version control.
 
     If the file already exists and the ``finance-toolkit`` entry is present, the
     user is shown the existing entry and asked to confirm before overwriting. All
     other existing server entries are always preserved.
 
     Args:
-        api_key (str): Unused — kept for signature compatibility. The key is
-            written to the global .env file by the caller before this function
-            is invoked.
+        api_key (str): FinancialModelingPrep API key.  When non-empty the key
+            is embedded directly in the config (takes priority over the env
+            file).
         target_dir (pathlib.Path): Directory in which .cursor/mcp.json is created.
     """
     cursor_dir = target_dir / ".cursor"
@@ -901,7 +948,7 @@ def write_cursor_config(api_key: str, target_dir: pathlib.Path) -> None:
             return
 
     existing.setdefault("mcpServers", {})
-    existing["mcpServers"]["finance-toolkit"] = _uvx_server_entry()
+    existing["mcpServers"]["finance-toolkit"] = _uvx_server_entry(api_key or None)
 
     config_path.write_text(json.dumps(existing, indent=2) + "\n", encoding="utf-8")
     ok(f"Cursor config written to [dim cyan]{config_path}[/]")
@@ -911,9 +958,9 @@ def write_claude_config(api_key: str) -> None:
     """
     Patch the Claude Desktop configuration file to add the Finance Toolkit server.
 
-    The API key is never embedded in the JSON file. Instead, the entry points
-    the server to the global Finance Toolkit .env file via ``FINANCETOOLKIT_ENV_FILE``
-    so that the key is loaded at runtime from a file outside version control.
+    For Claude Desktop, the API key is embedded directly in the MCP server
+    environment as ``FINANCIAL_MODELING_PREP_API_KEY`` so Claude does not need
+    to point at a separate .env file.
 
     If the configuration file does not exist it is created from scratch, including
     any missing parent directories. If it already exists and the ``finance-toolkit``
@@ -921,9 +968,9 @@ def write_claude_config(api_key: str) -> None:
     before overwriting. All other existing server entries are always preserved.
 
     Args:
-        api_key (str): Unused — kept for signature compatibility. The key is
-            written to the global .env file by the caller before this function
-            is invoked.
+        api_key (str): FinancialModelingPrep API key.  When non-empty the key
+            is embedded directly in the config; otherwise the entry uses
+            ``FINANCETOOLKIT_ENV_FILE`` pointing at the global ``.env`` file.
     """
     config_path = get_claude_config_path()
     config_path.parent.mkdir(parents=True, exist_ok=True)
@@ -946,7 +993,7 @@ def write_claude_config(api_key: str) -> None:
             return
 
     existing.setdefault("mcpServers", {})
-    existing["mcpServers"]["finance-toolkit"] = _uvx_server_entry()
+    existing["mcpServers"]["finance-toolkit"] = _uvx_server_entry(api_key)
 
     config_path.write_text(json.dumps(existing, indent=2) + "\n", encoding="utf-8")
     ok(f"Claude Desktop config written to [dim cyan]{config_path}[/]")

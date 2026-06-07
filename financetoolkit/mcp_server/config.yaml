@@ -26,12 +26,15 @@ categories:
 
 # ──────────────────────────────────────────────────────────────────────────────
 # SQLite result-cache defaults
-# Both values can be overridden at runtime via environment variables:
-#   FINANCE_TOOLKIT_CACHE_DB   — path to the SQLite file
+# The database is always stored next to the global Finance Toolkit .env file:
+#   macOS / Linux  — $XDG_CONFIG_HOME/financetoolkit/financetoolkit_cache.db
+#                    (falls back to ~/.config/financetoolkit/financetoolkit_cache.db)
+#   Windows        — %APPDATA%\financetoolkit\financetoolkit_cache.db
+# The path can be overridden at runtime with:
+#   FINANCE_TOOLKIT_CACHE_DB   — absolute path to the SQLite file
 #   FINANCE_TOOLKIT_CACHE_TTL  — TTL in seconds (integer)
 # ──────────────────────────────────────────────────────────────────────────────
 cache:
-  database_location: "cached/financetoolkit_cache.db"
   ttl_seconds: 600
 
 # ──────────────────────────────────────────────────────────────────────────────
