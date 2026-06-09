@@ -3099,8 +3099,8 @@ Once configured, you can ask your AI assistant questions like:
 
 If you prefer not to run the setup wizard, you can configure each client manually by editing its JSON configuration file. The `env` block accepts either of two environment variables — set whichever suits your workflow. When both are present the directly-set key takes priority.
 
-- **`FINANCIAL_MODELING_PREP_API_KEY`**: your API key embedded directly in the config.
-- **`FINANCETOOLKIT_ENV_FILE`**: an absolute path to a `.env` file that contains `FINANCIAL_MODELING_PREP_API_KEY=<your-key>`.
+- `FINANCIAL_MODELING_PREP_API_KEY`: your API key embedded directly in the config.
+- `FINANCETOOLKIT_ENV_FILE`: an absolute path to a `.env` file that contains `FINANCIAL_MODELING_PREP_API_KEY=<your-key>`.
 
 The command needing to boot up the MCP server is `uvx --from "financetoolkit[mcp]" financetoolkit-mcp`, where uvx should be set as the *command* and the rest as *args* in the config entry for each client.
 
