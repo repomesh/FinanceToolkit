@@ -16,6 +16,7 @@ repos:
         entry: black
         language: python
         types: [python]
+        args: ["--config", "pyproject.toml"]
   - repo: local
     hooks:
       - id: ruff
