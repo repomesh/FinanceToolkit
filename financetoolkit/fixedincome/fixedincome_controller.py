@@ -317,7 +317,9 @@ class FixedIncome:
             pandas.DataFrame: A DataFrame containing the bond prices for different coupon rates and years to maturity.
         """
         coupon_rate = (
-            np.arange(max(0.05 - 0.005 * 20, 0.005), 0.05 + 0.005 * 20, 0.005)
+            np.round(
+                np.arange(max(0.05 - 0.005 * 20, 0.005), 0.05 + 0.005 * 20, 0.005), 10
+            )
             if coupon_rate is None
             else coupon_rate
         )
@@ -412,7 +414,9 @@ class FixedIncome:
         duration_type_lower = duration_type.lower()
 
         coupon_rate = (
-            np.arange(max(0.05 - 0.005 * 20, 0.005), 0.05 + 0.005 * 20, 0.005)
+            np.round(
+                np.arange(max(0.05 - 0.005 * 20, 0.005), 0.05 + 0.005 * 20, 0.005), 10
+            )
             if coupon_rate is None
             else coupon_rate
         )
@@ -703,17 +707,24 @@ class FixedIncome:
         model_lower = model.lower()
 
         strike_rate = (
-            np.arange(
-                max(
+            np.round(
+                np.arange(
+                    max(
+                        (
+                            forward_rate - 0.005 * 20
+                            if not is_receiver
+                            else forward_rate - 0.005 * 5
+                        ),
+                        0.005,
+                    ),
                     (
-                        forward_rate - 0.005 * 20
-                        if not is_receiver
-                        else forward_rate - 0.005 * 5
+                        forward_rate + 0.005 * 20
+                        if is_receiver
+                        else forward_rate + 0.005 * 5
                     ),
                     0.005,
                 ),
-                forward_rate + 0.005 * 20 if is_receiver else forward_rate + 0.005 * 5,
-                0.005,
+                10,
             )
             if strike_rate is None
             else strike_rate

@@ -1,6 +1,8 @@
 """Performance Controller Tests""" ""
 # pylint: disable=missing-function-docstring
 
+import pytest
+
 
 def test_get_beta(recorder, performance_module):
     recorder.capture(performance_module.get_beta())
@@ -16,7 +18,9 @@ def test_get_capital_asset_pricing_model(recorder, performance_module):
     )
 
 
-def test_get_factor_asset_correlations(recorder, performance_module):
+def test_get_factor_asset_correlations(recorder, performance_module, live_mode):
+    if not live_mode:
+        pytest.skip("Downloads Fama-French data from the internet")
     recorder.capture(
         performance_module.get_factor_asset_correlations().round(1).iloc[:10]
     )
@@ -34,7 +38,9 @@ def test_get_factor_asset_correlations(recorder, performance_module):
     )
 
 
-def test_get_factor_correlations(recorder, performance_module):
+def test_get_factor_correlations(recorder, performance_module, live_mode):
+    if not live_mode:
+        pytest.skip("Downloads Fama-French data from the internet")
     recorder.capture(performance_module.get_factor_correlations().round(1))
     recorder.capture(
         performance_module.get_factor_correlations(period="monthly").round(1)
@@ -53,7 +59,9 @@ def test_get_factor_correlations(recorder, performance_module):
     )
 
 
-def test_get_fama_and_french_model(recorder, performance_module):
+def test_get_fama_and_french_model(recorder, performance_module, live_mode):
+    if not live_mode:
+        pytest.skip("Downloads Fama-French data from the internet")
     recorder.capture(
         performance_module.get_fama_and_french_model().round(2).sort_index(axis=1)
     )
