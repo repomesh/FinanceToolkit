@@ -23,6 +23,18 @@ This is a modified version of the original code snippet
 to fit the needs of the financetoolkit.
 """
 
+
+class LiveRecorder:
+    """Captures function results in live mode without comparing to stored files."""
+
+    def capture(self, captured: Any, strip: bool = False, **kwargs) -> None:
+        assert captured is not None
+
+    def capture_list(self, captured_list: list[Any], strip: bool = False) -> None:
+        for captured in captured_list:
+            self.capture(captured)
+
+
 DISPLAY_LIMIT: int = 500
 EXTENSIONS_ALLOWED: list[str] = ["csv", "json", "txt"]
 EXTENSIONS_MATCHING: dict[str, list[type]] = {
@@ -383,12 +395,24 @@ def pytest_addoption(parser: Parser):
         default=False,
         help="run auto documentation tests",
     )
+    parser.addoption(
+        "--live",
+        action="store_true",
+        default=False,
+        help="Run tests using live data from APIs instead of pickle files.",
+    )
 
 
 @pytest.fixture(scope="session")  # type: ignore
 def rewrite_expected(request: SubRequest) -> bool:
     """Force rewriting of all expected data by : `record_stdout` and `recorder`."""
     return request.config.getoption("--rewrite-expected")
+
+
+@pytest.fixture(scope="session")
+def live_mode(request: SubRequest) -> bool:
+    """Run tests with live API data instead of pickle files."""
+    return request.config.getoption("--live")
 
 
 @pytest.fixture
@@ -421,10 +445,11 @@ def record_stdout(
     record_stdout_markers: list[Mark],
     record_mode: str,
     request: SubRequest,
+    live_mode: bool,
 ):
     marker = request.node.get_closest_marker("record_stdout")
 
-    if disable_recording:
+    if disable_recording or live_mode:
         yield None
     elif marker:
         # SETUP TEST DETAILS
@@ -489,7 +514,11 @@ def recorder(
     rewrite_expected: bool,
     record_mode: str,
     request: SubRequest,
+    live_mode: bool,
 ):
+    if live_mode:
+        yield LiveRecorder()
+        return
     marker_record_stdout = request.node.get_closest_marker("record_stdout")
     module_dir = request.node.fspath.dirname
     module_name = request.node.fspath.purebasename
@@ -510,3 +539,95 @@ def recorder(
         yield recorder
         recorder.persist()
         recorder.assert_equal()
+
+
+@pytest.fixture(scope="session")
+def test_toolkit(live_mode: bool):
+    """Provides a Toolkit instance with either live API data or pickle data."""
+    if live_mode:
+        import os
+
+        from financetoolkit import Toolkit
+
+        return Toolkit(
+            tickers=["AAPL", "MSFT"],
+            api_key=os.environ.get("FINANCIAL_MODELING_PREP_API_KEY", ""),
+            start_date="2024-01-01",
+            end_date="2024-12-31",
+            fred_api_key=os.environ.get("FRED_API_KEY", ""),
+        )
+
+    from financetoolkit import Toolkit
+
+    balance_dataset = pd.read_pickle("tests/datasets/balance_dataset.pickle")
+    income_dataset = pd.read_pickle("tests/datasets/income_dataset.pickle")
+    cash_dataset = pd.read_pickle("tests/datasets/cash_dataset.pickle")
+    historical = pd.read_pickle("tests/datasets/historical_dataset.pickle")
+    risk_free_rate = pd.read_pickle("tests/datasets/risk_free_rate.pickle")
+    treasury_data = pd.read_pickle("tests/datasets/treasury_data.pickle")
+
+    toolkit = Toolkit(
+        tickers=["AAPL", "MSFT"],
+        historical=historical,
+        balance=balance_dataset,
+        income=income_dataset,
+        cash=cash_dataset,
+        convert_currency=False,
+        start_date="2019-12-31",
+        end_date="2023-01-01",
+        sleep_timer=False,
+    )
+    toolkit._daily_risk_free_rate = risk_free_rate
+    toolkit._daily_treasury_data = treasury_data
+    return toolkit
+
+
+@pytest.fixture(scope="session")
+def performance_module(test_toolkit):
+    return test_toolkit.performance
+
+
+@pytest.fixture(scope="session")
+def risk_module(test_toolkit):
+    return test_toolkit.risk
+
+
+@pytest.fixture(scope="session")
+def ratios_module(test_toolkit):
+    return test_toolkit.ratios
+
+
+@pytest.fixture(scope="session")
+def technical_module(test_toolkit):
+    return test_toolkit.technicals
+
+
+@pytest.fixture(scope="session")
+def models_module(test_toolkit):
+    return test_toolkit.models
+
+
+@pytest.fixture(scope="session")
+def options_module(test_toolkit):
+    return test_toolkit.options
+
+
+@pytest.fixture(scope="session")
+def fixedincome_module():
+    from financetoolkit.fixedincome import fixedincome_controller
+
+    return fixedincome_controller.FixedIncome(
+        start_date="2020-01-01",
+        end_date="2023-12-31",
+    )
+
+
+@pytest.fixture(scope="session")
+def economics_module():
+    from financetoolkit.economics import economics_controller
+
+    return economics_controller.Economics(
+        start_date="2020-01-01",
+        end_date="2023-12-31",
+        gmdb_source=True,
+    )
