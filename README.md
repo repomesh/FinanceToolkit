@@ -315,7 +315,7 @@ In which the weights and returns can be depicted as follows:
 
 # Core Functionality and Metrics
 
-The Finance Toolkit has the ability to collect 30+ years of financial statements and calculate 150+ financial metrics. The following list shows all of the available functionality and metrics.
+The Finance Toolkit has the ability to collect 30+ years of financial statements and calculate 200+ financial metrics. The following list shows all of the available functionality and metrics.
 
 ___ 
 
