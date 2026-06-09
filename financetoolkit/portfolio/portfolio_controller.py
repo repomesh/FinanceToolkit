@@ -361,8 +361,8 @@ class Portfolio:
                 If None, defaults to the configuration setting.
             date_column (list[str] | None): List of column names for date information.
                 Defaults to configuration settings.
-            date_format (str | None): The format for date columns, specified as a string.
-                Defaults to configuration.
+            date_format_options (list[str] | None): List of date format strings to attempt when parsing
+                date columns (e.g. ['%Y-%m-%d', '%d/%m/%Y']). Defaults to configuration.
             name_columns (list[str] | None): List of column names for transaction descriptions.
                 Defaults to configuration.
             ticker_columns (list[str] | None): List of column names for asset tickers.

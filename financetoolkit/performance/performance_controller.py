@@ -63,6 +63,9 @@ class Performance:
             rounding (int | None, optional): The number of decimals to round the results to. Defaults to 4.
             start_date (str | None, optional): The start date to use for the calculations. Defaults to None.
             end_date (str | None, optional): The end date to use for the calculations. Defaults to None.
+            intraday_period (str | None, optional): The intraday period used for within-period calculations.
+                Defaults to None.
+            progress_bar (bool, optional): Whether to show a progress bar. Defaults to True.
 
         As an example:
 
@@ -1128,7 +1131,7 @@ class Performance:
 
         The formula is as follows:
 
-        - - Treynor Ratio = (Portfolio's Return — Risk-Free Rate) / Portfolio Beta
+        - Treynor Ratio = (Portfolio's Return — Risk-Free Rate) / Portfolio Beta
 
         See definition: https://en.wikipedia.org/wiki/Treynor_ratio
 

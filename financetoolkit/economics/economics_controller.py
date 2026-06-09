@@ -2953,7 +2953,6 @@ class Economics:
         Args:
             countries (list[str] | str | None, optional): The countries to include in the data. Defaults to None.
             quarterly (bool | None, optional): Whether to return the quarterly data or the annual data.
-            inflation_adjusted (bool, optional): Whether to return the inflation adjusted data or the nominal data.
             growth (bool, optional): Whether to return the growth data or the actual data.
             lag (int, optional): The number of periods to lag the data by.
             rounding (int | None, optional): The number of decimals to round the results to. Defaults to None.

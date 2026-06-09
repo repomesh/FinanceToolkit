@@ -1215,7 +1215,7 @@ class Ratios:
 
         The formula is as follows:
 
-        - Cash Conversion Cycle = Days of Sales in Inventory + Days of Sales Outstanding - Days of Accounts Payable
+        - Cash Conversion Cycle = Days of Sales in Inventory + Days of Sales Outstanding — Days of Accounts Payable
             Outstanding
 
         Also known as: CCC.
@@ -4965,7 +4965,7 @@ class Ratios:
 
         The formula is as follows:
 
-        - Earnings per Share (EPS) = (Net Income - Preferred Dividends Paid) / Weighted Average Shares
+        - Earnings per Share (EPS) = (Net Income — Preferred Dividends Paid) / Weighted Average Shares
 
         Also known as: EPS, net income per share.
 

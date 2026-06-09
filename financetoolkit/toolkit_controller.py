@@ -1549,12 +1549,11 @@ class Toolkit:
         Also known as: earnings estimates, revenue estimates, analyst consensus.
 
         Args:
-            limit (int): Defines the maximum years or quarters to obtain.
-            overwrite (bool): Defines whether to overwrite the existing data.
-            rounding (int): Defines the number of decimal places to round the data to.
-            growth (bool): Defines whether to return the growth of the data.
-            lag (int | str): Defines the number of periods to lag the growth data by.
-            trailing (int): Defines whether to select a trailing period. E.g. when selecting 4 with quarterly data, the TTM is calculated.
+            overwrite (bool, optional): Defines whether to overwrite the existing data. Defaults to False.
+            rounding (int | None, optional): Defines the number of decimal places to round the data to. Defaults to None.
+            growth (bool, optional): Defines whether to return the growth of the data. Defaults to False.
+            lag (int | list[int], optional): Defines the number of periods to lag the growth data by. Defaults to 1.
+            progress_bar (bool | None, optional): Whether to show a progress bar. Defaults to None.
 
         Returns:
             pandas.DataFrame: The analyst estimates for the specified tickers.
@@ -2240,17 +2239,12 @@ class Toolkit:
         Also known as: tick data, minute data, intraday price history.
 
         Args:
-            start (str): The start date for the historical data. Defaults to None.
-            end (str): The end date for the historical data. Defaults to None.
-            period (str): The interval at which the historical data should be
-            returned - daily, weekly, monthly, quarterly, or yearly.
-            Defaults to "daily".
-            return_column (str): The column to use for the return calculation. Defaults to "Close".
-            fill_nan (bool): Defines whether to forward fill NaN values. This defaults
-            to True to prevent holes in the dataset. This is especially relevant for
-            technical indicators.
-            rounding (int): Defines the number of decimal places to round the data to.
-            progress_bar (bool, optional): Whether to show a progress bar. Defaults to None.
+            period (str, optional): The intraday interval to fetch (e.g. "1min", "5min", "1hour").
+                Defaults to "1hour".
+            return_column (str, optional): The column to use for the return calculation. Defaults to "Close".
+            fill_nan (bool, optional): Defines whether to forward fill NaN values. Defaults to True.
+            rounding (int | None, optional): Defines the number of decimal places to round the data to. Defaults to None.
+            progress_bar (bool | None, optional): Whether to show a progress bar. Defaults to None.
 
         Returns:
             pandas.DataFrame: The intraday data for the specified tickers.

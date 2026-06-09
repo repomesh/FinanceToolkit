@@ -117,6 +117,8 @@ class Discovery:
 
         Args:
             query (str): A query to search for, e.g. 'META'.
+            search_method (str, optional): The field to search against. Valid options are 'symbol', 'name',
+                'cik', 'cusip', and 'isin'. Defaults to 'name'.
 
         Returns:
             pd.DataFrame: A dataframe with all the symbols that match the query.

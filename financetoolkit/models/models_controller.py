@@ -46,9 +46,8 @@ class Models:
 
         Args:
             tickers (str | list[str]): The ticker(s) to use for the models.
-            daily_historical (pd.DataFrame): The daily historical data.
-            period_historical (pd.DataFrame): The period historical data.
-            risk_free_rate (pd.DataFrame): The risk free rate data.
+            historical_data (pd.DataFrame): The historical data containing all periods.
+            risk_free_rate_data (pd.DataFrame): The risk free rate data.
             balance (pd.DataFrame): The balance sheet data.
             income (pd.DataFrame): The income statement data.
             cash (pd.DataFrame): The cash flow statement data.
@@ -1085,10 +1084,6 @@ class Models:
         3, 1999, pp. 1-41.
 
         Also known as: Piotroski F-score, financial strength, quality score.
-
-        Args:
-            growth (bool, optional): Whether to calculate the growth of the values. Defaults to False.
-            lag (int | list[int], optional): The lag to use for the growth calculation. Defaults to 1.
 
         Returns:
             pd.DataFrame: DataFrame containing the Piotroski F-Score and its components.

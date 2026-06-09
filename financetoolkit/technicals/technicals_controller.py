@@ -39,24 +39,10 @@ class Technicals:
 
         Args:
             tickers (str | list[str]): The tickers to use for the calculation.
-            intraday_historical (pd.DataFrame, optional): The intraday historical data to use for the calculation.
-                Defaults to pd.DataFrame().
-            daily_historical (pd.DataFrame, optional): The daily historical data to use for the calculation.
-                Defaults to pd.DataFrame().
-            weekly_historical (pd.DataFrame, optional): The weekly historical data to use for the calculation.
-                Defaults to pd.DataFrame().
-            monthly_historical (pd.DataFrame, optional): The monthly historical data to use for the calculation.
-                Defaults to pd.DataFrame().
-            quarterly_historical (pd.DataFrame, optional): The quarterly historical data to use for the calculation.
-                Defaults to pd.DataFrame().
-            yearly_historical (pd.DataFrame, optional): The yearly historical data to use for the calculation.
-                Defaults to pd.DataFrame().
-            rounding (int | None, optional): The number of decimals to round the results to.
-                Defaults to 4.
-            start_date (str | None, optional): The start date to use for the calculation.
-                Defaults to None.
-            end_date (str | None, optional): The end date to use for the calculation.
-                Defaults to None.
+            historical_data (pd.DataFrame): The historical data containing all periods.
+            rounding (int | None, optional): The number of decimals to round the results to. Defaults to 4.
+            start_date (str | None, optional): The start date to use for the calculation. Defaults to None.
+            end_date (str | None, optional): The end date to use for the calculation. Defaults to None.
 
         As an example:
 
@@ -957,7 +943,7 @@ class Technicals:
 
         The formula is a follows:
 
-        - MFI = 100 - (100 / (1 + (positive_money_flow / negative_money_flow)))
+        - MFI = 100 — (100 / (1 + (positive_money_flow / negative_money_flow)))
 
         Also known as: MFI, volume-weighted RSI.
 
@@ -1736,7 +1722,7 @@ class Technicals:
 
         The formula is a follows:
 
-        - DPO = Close - SMA(Close, (Number of Periods / 2) + 1)
+        - DPO = Close — SMA(Close, (Number of Periods / 2) + 1)
 
         Also known as: DPO, detrended price oscillator.
 
@@ -3570,7 +3556,7 @@ class Technicals:
         Formula:
         The Average True Range (ATR) is calculated using the following steps:
         1. Calculate the True Range (TR) for each period:
-            - True Range (TR) = max(high - low, abs(high - previous_close), abs(low - previous_close))
+            - True Range (TR) = max(high — low, abs(high — previous_close), abs(low — previous_close))
         2. Calculate the Average True Range (ATR) over the specified window:
             - ATR = EMA(TR, window), where EMA is the Exponential Moving Average.
 
@@ -3648,7 +3634,7 @@ class Technicals:
         The Keltner Channels consist of three lines:
         - Upper Channel Line = Exponential Moving Average (EMA) of High Prices + ATR * ATR Multiplier
         - Middle Channel Line = Exponential Moving Average (EMA) of Closing Prices
-        - Lower Channel Line = Exponential Moving Average (EMA) of Low Prices - ATR * ATR Multiplier
+        - Lower Channel Line = Exponential Moving Average (EMA) of Low Prices — ATR * ATR Multiplier
 
         The formula is a follows:
 
