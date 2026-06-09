@@ -46,7 +46,7 @@ Run the setup wizard with:
 uvx --from "financetoolkit[mcp]" financetoolkit-mcp-setup
 ```
 
-After running this command the wizard will launch and walk you through the rest of the setup interactively. **If you ran the command above, skip ahead to [Step 2](#step-2-enter-your-api-key).**
+After running this command the wizard will launch and walk you through the rest of the setup interactively.
 
 <details>
 <summary><b>Manual setup (skip if you used the wizard above)</b></summary>
