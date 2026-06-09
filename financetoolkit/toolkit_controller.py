@@ -70,6 +70,7 @@ except ImportError:
 # In case the user has set an API key as an environment variable,
 # this will be used as the default API key for the Toolkit.
 API_KEY: str = os.environ.get("FINANCIAL_MODELING_PREP_API_KEY", "")
+FRED_API_KEY: str = os.environ.get("FRED_API_KEY", "")
 
 
 class Toolkit:
@@ -106,6 +107,7 @@ class Toolkit:
         remove_invalid_tickers: bool = False,
         sleep_timer: bool | None = None,
         progress_bar: bool = True,
+        fred_api_key: str = FRED_API_KEY,
     ):
         """
         Initializes a Toolkit object with a ticker or a list of tickers. The way the Toolkit is initialized
@@ -160,6 +162,10 @@ class Toolkit:
             sleep_timer (bool | None): Enable sleep timer on FMP rate limit (requires Premium).
             Defaults to None (determined by FMP plan: True for Premium, False for Free).
             progress_bar (bool): Show progress bar for operations involving multiple tickers. Defaults to True.
+            fred_api_key (str): A FRED API key used to retrieve ICE BofA bond index data via the fixedincome module
+            (option-adjusted spread, effective yield, total return, yield to worst). Obtain a free key at
+            https://fred.stlouisfed.org/docs/api/api_key.html. Can also be set via the FRED_API_KEY environment
+            variable. Defaults to the value of FRED_API_KEY if set, otherwise an empty string.
 
         As an example:
 
@@ -207,6 +213,7 @@ class Toolkit:
         ```
         """
         self._api_key = api_key
+        self._fred_api_key = fred_api_key
         self._risk_free_rate = risk_free_rate
         self._rounding = rounding
         self._remove_invalid_tickers = remove_invalid_tickers
@@ -1218,6 +1225,7 @@ class Toolkit:
             end_date=self._end_date,
             quarterly=self._quarterly,
             rounding=self._rounding,
+            fred_api_key=self._fred_api_key,
         )
 
     @property
