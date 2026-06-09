@@ -727,7 +727,6 @@ These tools help you navigate the available functionality before making any data
 | `search_instruments` | Look up ticker symbols by company name, ISIN, CIK, CUSIP, or symbol |
 
 </details>
-<br>
 
 # How the MCP Server is Built
 
