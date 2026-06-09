@@ -3100,7 +3100,9 @@ Once configured, you can ask your AI assistant questions like:
 See an example of the Finance Toolkit MCP server in action in Claude Desktop below:
 
 <p align="center">
-    <video src="examples/Finance Toolkit - MCP Demo.mp4" alt="Finance Toolkit MCP Demo" width="100%" controls onerror="this.style.display = 'none'"/>
+  <video src="examples/Finance Toolkit - MCP Demo.mp4" width="100%" controls>
+    Your browser does not support the video tag.
+  </video>
 </p>
 
 If you prefer not to run the setup wizard, you can configure each client manually by editing its JSON configuration file. The `env` block accepts either of two environment variables — set whichever suits your workflow. When both are present the directly-set key takes priority.
