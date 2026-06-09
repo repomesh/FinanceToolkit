@@ -46,8 +46,8 @@ After the installation process is finished, it will automatically launch the set
 
 If you prefer not to run the setup wizard, you can configure each client manually by editing its JSON configuration file. The `env` block accepts either of two environment variables — set whichever suits your workflow. When both are present the directly-set key takes priority.
 
-- **`FINANCIAL_MODELING_PREP_API_KEY`**: your API key embedded directly in the config.
-- **`FINANCETOOLKIT_ENV_FILE`**: an absolute path to a `.env` file that contains `FINANCIAL_MODELING_PREP_API_KEY=<your-key>`.
+- `FINANCIAL_MODELING_PREP_API_KEY`: your API key embedded directly in the config.
+- `FINANCETOOLKIT_ENV_FILE`: an absolute path to a `.env` file that contains `FINANCIAL_MODELING_PREP_API_KEY=<your-key>`.
 
 The command needing to boot up the MCP server is `uvx --from "financetoolkit[mcp]" financetoolkit-mcp`, where uvx should be set as the *command* and the rest as *args* in the config entry for each client.
 
@@ -780,11 +780,11 @@ Every tool group has a `category` that controls how `ToolkitProvider` routes the
 
 `UtilityToolRegistry` registers four tools that operate on the tool index rather than routing to a controller:
 
-- **`get_analyst_guidelines`** — returns the full analyst SKILL.md instructions so the LLM always has the response style guide available.
-- **`list_categories`** — returns a Markdown table of all registered categories and tool counts.
-- **`list_metrics_by_category`** — lists every indicator within a given category.
-- **`search_metrics`** — token-based fuzzy search across all tool names and descriptions, with typo tolerance via `difflib.get_close_matches`.
-- **`search_instruments`** — proxies a live `Discovery.search_instruments()` call for ticker/ISIN/name lookups.
+- `get_analyst_guidelines` — returns the full analyst SKILL.md instructions so the LLM always has the response style guide available.
+- `list_categories`* — returns a Markdown table of all registered categories and tool counts.
+- `list_metrics_by_category` — lists every indicator within a given category.
+- `search_metrics` — token-based fuzzy search across all tool names and descriptions, with typo tolerance via `difflib.get_close_matches`.
+- `search_instruments` — proxies a live `Discovery.search_instruments()` call for ticker/ISIN/name lookups.
 
 ## Setup Wizard
 
