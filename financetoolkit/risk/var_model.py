@@ -72,7 +72,7 @@ def get_var_gaussian(
     Args:
         returns (pd.Series | pd.DataFrame): A Series or Dataframe of returns.
         alpha (float): The confidence level (e.g., 0.05 for 95% confidence).
-        cornish_fisher (bool): Whether to adjust the distriution for the skew and kurtosis of the returns
+        cornish_fisher (bool): Whether to adjust the distribution for the skew and kurtosis of the returns
         based on the Cornish-Fischer quantile expansion. Defaults to False.
 
     Returns:
