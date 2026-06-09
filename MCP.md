@@ -13,6 +13,23 @@ The Finance Toolkit MCP Server exposes 200+ pre-computed financial metrics, mode
 
 The server consolidates the entire Finance Toolkit surface into a small number of categorical master tools (e.g. `get_valuation_ratios`, `get_profitability_ratios`, `get_momentum_indicators`) so that the AI can discover and call the right metric without being overwhelmed by hundreds of individual function signatures.
 
+## Table of Contents
+
+- [Installation](#installation)
+  - [Step 1: Run the Setup Wizard](#step-1-run-the-setup-wizard)
+  - [Step 2: Configure your client(s)](#step-2-configure-your-clients)
+  - [Step 3: Start using the Tools!](#step-3-start-using-the-tools)
+- [Advanced Usage](#advanced-usage)
+  - [Automating the MCP Server Setup](#automating-the-mcp-server-setup)
+  - [Inspecting the Available Tools](#inspecting-the-available-tools)
+- [How the MCP Server is Built](#how-the-mcp-server-is-built)
+  - [Module Overview](#module-overview)
+  - [Startup Sequence](#startup-sequence)
+  - [The Router Pattern](#the-router-pattern)
+  - [Dispatch Categories](#dispatch-categories)
+  - [Utility Tools](#utility-tools)
+  - [Setup Wizard](#setup-wizard)
+
 # Installation
 
 The installation process is designed to be as seamless as possible, with an interactive setup wizard that configures your clients and securely stores your API key. The server itself runs on demand via `uvx`, so no local installation is required for the clients.
