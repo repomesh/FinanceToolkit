@@ -18,6 +18,7 @@ from tqdm import tqdm
 from urllib3.exceptions import MaxRetryError
 
 from financetoolkit import helpers
+from financetoolkit.helpers import get_request
 from financetoolkit.utilities import error_model, logger_model
 
 logger = logger_model.get_logger()
@@ -62,7 +63,7 @@ def get_financial_data(
 
     while True:
         try:
-            response = requests.get(url, timeout=60)
+            response = get_request(url, timeout=60)
             response.raise_for_status()
 
             if raw:
@@ -74,8 +75,13 @@ def get_financial_data(
 
             return financial_data
 
-        except (requests.exceptions.HTTPError, ValueError):
-            error_message = response.text
+        except (requests.exceptions.HTTPError, ValueError) as e:
+            error_message = (
+                e.response.text
+                if isinstance(e, requests.exceptions.HTTPError)
+                and e.response is not None
+                else ""
+            )
 
             if "Premium Query Parameter" in error_message:
                 return pd.DataFrame(columns=["PREMIUM QUERY PARAMETER"])
@@ -123,7 +129,6 @@ def get_financial_statement(
     api_key: str = "",
     quarter: bool = False,
     start_date: str | None = None,
-    end_date: str | None = None,
     sleep_timer: bool = True,
     user_subscription: str = "Free",
 ) -> pd.DataFrame:
@@ -136,7 +141,6 @@ def get_financial_statement(
         api_key (str): API key for the financial data provider.
         quarter (bool): Whether to retrieve quarterly data. Defaults to False (annual data).
         start_date (str | None): The start date to filter data with. Defaults to None.
-        end_date (str | None): The end date to filter data with. Defaults to None.
         sleep_timer (bool): Whether to set a sleep timer when the rate limit is reached. Note that this only works
             if you have a Premium subscription (Starter or higher) from FinancialModelingPrep. Defaults to True.
         user_subscription (str): The subscription type of the user. Defaults to "Free".
