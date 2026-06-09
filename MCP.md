@@ -13,7 +13,7 @@ The Finance Toolkit MCP Server exposes 200+ pre-computed financial metrics, mode
 
 The server consolidates the entire Finance Toolkit surface into a small number of categorical master tools (e.g. `get_valuation_ratios`, `get_profitability_ratios`, `get_momentum_indicators`) so that the AI can discover and call the right metric without being overwhelmed by hundreds of individual function signatures.
 
-## Table of Contents
+# Table of Contents
 
 - [Installation](#installation)
   - [Step 1: Run the Setup Wizard](#step-1-run-the-setup-wizard)
@@ -42,7 +42,7 @@ Clients are configured to launch the server on demand via [uvx](https://docs.ast
 uvx --from "financetoolkit[mcp]" financetoolkit-mcp-setup
 ```
 
-After the installation process is finished, it will automatically launch the setup wizard. Continue to Step 2 if you've ran above command.
+After the installation process is finished, it will automatically launch the setup wizard. **Continue to Step 2 if you've ran above command.**
 
 If you prefer not to run the setup wizard, you can configure each client manually by editing its JSON configuration file. The `env` block accepts either of two environment variables — set whichever suits your workflow. When both are present the directly-set key takes priority.
 
