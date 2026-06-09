@@ -51,7 +51,7 @@ from financetoolkit import Toolkit
 
 companies = Toolkit(
     tickers=['GOOGL', 'MSFT', 'AMZN'],
-    api_key="FINANCIAL_MODELING_PREP_KEY",
+    api_key="FINANCIAL_MODELING_PREP_KEY",  # replace with your actual API key
 )
 ```
 To be able to get started, you need to obtain an API Key from FinancialModelingPrep. This is used to gain access to 30+ years of financial statement both annually and quarterly. Note that the Free plan is limited to 250 requests each day, 5 years of data and only features companies listed on US exchanges.

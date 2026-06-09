@@ -9,7 +9,9 @@
 [![PYPI Version](https://img.shields.io/pypi/v/FinanceToolkit)](https://pypi.org/project/FinanceToolkit/)
 [![PYPI Downloads](https://static.pepy.tech/badge/financetoolkit/month)](https://pepy.tech/project/financetoolkit)
 
-The Finance Toolkit MCP Server exposes 200+ pre-computed financial metrics, models, and economic indicators directly to any AI assistant that supports the [Model Context Protocol](https://modelcontextprotocol.io). This means you can ask Claude, Copilot, Cursor, or any other MCP-compatible assistant to analyse equities, benchmark performance, inspect macro conditions, and run technical indicators — all backed by the transparent, open-source calculation methods of the Finance Toolkit.
+The Finance Toolkit MCP Server exposes 200+ pre-computed financial metrics, models, and economic indicators directly to any AI assistant that supports the [Model Context Protocol](https://modelcontextprotocol.io) (MCP). MCP is an open standard that lets AI assistants call external tools and data sources directly from the chat interface; no copy-pasting, no switching between apps. Once the server is configured, you simply ask questions in plain English and the AI fetches live financial data on your behalf.
+
+This means you can ask Claude, Copilot, Cursor, or any other MCP-compatible assistant to analyse equities, benchmark performance, inspect macro conditions, and run technical indicators — all backed by the transparent, open-source calculation methods of the Finance Toolkit.
 
 The server consolidates the entire Finance Toolkit surface into a small number of categorical master tools (e.g. `get_valuation_ratios`, `get_profitability_ratios`, `get_momentum_indicators`) so that the AI can discover and call the right metric without being overwhelmed by hundreds of individual function signatures.
 
@@ -17,7 +19,7 @@ The server consolidates the entire Finance Toolkit surface into a small number o
 
 - [Installation](#installation)
   - [Step 1: Run the Setup Wizard](#step-1-run-the-setup-wizard)
-  - [Step 2: Configure your client(s)](#step-2-configure-your-clients)
+  - [Step 2: Enter your API Key](#step-2-enter-your-api-key)
   - [Step 3: Start using the Tools!](#step-3-start-using-the-tools)
 - [Advanced Usage](#advanced-usage)
   - [Automating the MCP Server Setup](#automating-the-mcp-server-setup)
@@ -32,22 +34,28 @@ The server consolidates the entire Finance Toolkit surface into a small number o
 
 # Installation
 
-The installation process is designed to be as seamless as possible, with an interactive setup wizard that configures your clients and securely stores your API key. The server itself runs on demand via `uvx`, so no local installation is required for the clients.
+The installation process is designed to be as seamless as possible, with an interactive setup wizard that configures your clients and securely stores your API key. The server itself runs on demand — no permanent background process, no local Python environment required.
 
 ## Step 1: Run the Setup Wizard
 
-Clients are configured to launch the server on demand via [uvx](https://docs.astral.sh/uv/guides/tools/), so as long as [uv](https://docs.astral.sh/uv/getting-started/installation/) is installed, you can run the setup wizard directly with:
+The setup wizard uses [uv](https://docs.astral.sh/uv/getting-started/installation/), a fast Python package manager. If you don't have it yet, install it first (takes about 30 seconds — follow the link for your platform). Once installed, `uvx` (a command bundled with `uv`) can run any Python tool directly without a manual install step.
+
+Run the setup wizard with:
 
 ```
 uvx --from "financetoolkit[mcp]" financetoolkit-mcp-setup
 ```
 
-After the installation process is finished, it will automatically launch the setup wizard. **Continue to Step 2 if you've ran above command.**
+After running this command the wizard will launch and walk you through the rest of the setup interactively. **If you ran the command above, skip ahead to [Step 2](#step-2-enter-your-api-key).**
 
-If you prefer not to run the setup wizard, you can configure each client manually by editing its JSON configuration file. The `env` block accepts either of two environment variables — set whichever suits your workflow. When both are present the directly-set key takes priority.
+<details>
+<summary><b>Manual setup (skip if you used the wizard above)</b></summary>
+<br>
+
+If you prefer to configure each client by hand, edit its JSON configuration file directly. The `env` block accepts either of two environment variables — set whichever suits your workflow. When both are present the directly-set key takes priority.
 
 - `FINANCIAL_MODELING_PREP_API_KEY`: your API key embedded directly in the config.
-- `FINANCETOOLKIT_ENV_FILE`: an absolute path to a `.env` file that contains `FINANCIAL_MODELING_PREP_API_KEY=<your-key>`.
+- `FINANCETOOLKIT_ENV_FILE`: path to a plain-text `.env` file that contains the line `FINANCIAL_MODELING_PREP_API_KEY=your_key_here` (a `.env` file is just a text file where each line sets one variable — you can create it with any text editor).
 
 The command needing to boot up the MCP server is `uvx --from "financetoolkit[mcp]" financetoolkit-mcp`, where uvx should be set as the *command* and the rest as *args* in the config entry for each client.
 
@@ -83,7 +91,7 @@ Alternatively, if you prefer to keep the key in a `.env` file outside of the con
       }
 ```
 
-After saving, **restart Claude Desktop** and the Finance Toolkit tools will appear. For other platforms, please see below:
+After saving, **restart Claude Desktop** and the Finance Toolkit tools will appear. For other platforms, see the sections below:
 
 <details>
 <summary><b>Claude Code</b></summary>
@@ -205,9 +213,11 @@ To use an env file instead, replace the `env` block with `"FINANCETOOLKIT_ENV_FI
 
 </details>
 
-## Step 2: Configure your client(s)
+</details>
 
-The wizard asks for your FinancialModelingPrep API key which you can obtain from FinancialModelingPrep **<a href="https://www.jeroenbouma.com/fmp" target="_blank">here</a>**.
+## Step 2: Enter your API Key
+
+The wizard first asks for your FinancialModelingPrep (FMP) API key. FMP is the data provider that powers the Finance Toolkit — it gives you access to 30+ years of financial statements, prices, and fundamentals. You can obtain a free API key **<a href="https://www.jeroenbouma.com/fmp" target="_blank">here</a>** (the free plan is sufficient to get started).
 
 ```bash
 (base) jeroenbouma@Jeroens-MacBook-Pro FinanceToolkit % uvx --from "financetoolkit[mcp]" financetoolkit-mcp-setup
@@ -265,7 +275,9 @@ After the wizard completes, restart your AI client and the Finance Toolkit tools
 
 ## Step 3: Start using the Tools!
 
-As seen above an optional SKILL.md file can be acquired, this creates a `finance-toolkit-analyst` skill in, for GitHub Copilot `.agents/skill` directory. It is possible your LLM will automatically select this skill when you ask financial questions, but if not you can explicitly invoke it by name (e.g. `/finance-toolkit-analyst What is the current P/E ratio of Apple?`).
+During setup the wizard offers to install an optional SKILL.md file — a plain-text instruction file that tells your AI assistant how to interpret Finance Toolkit results and respond in a consistent, analyst-style format. You don't need to open or edit this file; it just sits in your project directory and the AI picks it up automatically.
+
+For clients that support named skills (e.g. GitHub Copilot in VS Code), this creates a `finance-toolkit-analyst` skill in the `.agents/skills/` directory. Your AI may select it automatically when you ask financial questions; if not, you can invoke it explicitly by name (e.g. `/finance-toolkit-analyst What is the current P/E ratio of Apple?`).
 
 Two results of a relatively advanced model (`Claude Sonnet 4.6`) shows how powerful models can layer in very detailed qualitative analysis and narrative synthesis with the information from the Finance Toolkit MCP.
 
@@ -718,6 +730,8 @@ These tools help you navigate the available functionality before making any data
 <br>
 
 # How the MCP Server is Built
+
+> **This section is for developers** who want to understand the internals, extend the server, or contribute to the project. If you just want to use the Finance Toolkit through your AI assistant, you can stop at Step 3 above — everything below is implementation detail.
 
 The MCP server lives entirely inside `financetoolkit/mcp_server/` and is structured around a **router pattern**: rather than exposing every one of the 200+ Finance Toolkit methods as a separate MCP tool (which would overwhelm an LLM's tool list), the server groups them into ~21 categorical master tools. Each master tool accepts an `indicator` parameter that selects the exact metric at call time.
 
