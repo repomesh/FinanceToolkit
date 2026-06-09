@@ -3,6 +3,7 @@
 __docformat__ = "google"
 
 
+import os
 import re
 from datetime import datetime, timedelta
 
@@ -28,6 +29,8 @@ logger = logger_model.get_logger()
 # pylint: disable=too-many-locals,line-too-long,too-many-public-methods
 # ruff: noqa: E501
 
+FRED_API_KEY: str = os.environ.get("FRED_API_KEY", "")
+
 
 class FixedIncome:
     """
@@ -41,6 +44,7 @@ class FixedIncome:
         end_date: str | None = None,
         quarterly: bool = True,
         rounding: int | None = 4,
+        fred_api_key: str = FRED_API_KEY,
     ):
         """
         Initializes the Fixed Income Controller Class.
@@ -50,6 +54,10 @@ class FixedIncome:
             end_date (str | None, optional): The end date to retrieve data from. Defaults to None.
             quarterly (bool, optional): Whether to return the data quarterly. Defaults to True.
             rounding (int | None, optional): The number of decimals to round the results to. Defaults to None.
+            fred_api_key (str, optional): A FRED API key used to retrieve ICE BofA bond index data
+                (option-adjusted spread, effective yield, total return, yield to worst). Obtain a free key at
+                https://fred.stlouisfed.org/docs/api/api_key.html. Can also be set via the FRED_API_KEY
+                environment variable. Defaults to the value of FRED_API_KEY if set, otherwise an empty string.
 
         As an example:
 
@@ -59,6 +67,7 @@ class FixedIncome:
         fixedincome = FixedIncome(
             start_date='2024-01-01',
             end_date='2024-01-15',
+            fred_api_key='your_fred_api_key',
         )
 
         fixedincome.get_ice_bofa_effective_yield(maturity=False)
@@ -101,6 +110,7 @@ class FixedIncome:
         self._end_date = end_date if end_date else datetime.now().strftime("%Y-%m-%d")
         self._quarterly = quarterly
         self._rounding: int | None = rounding
+        self._fred_api_key = fred_api_key
 
     def collect_bond_statistics(
         self,
@@ -880,9 +890,6 @@ class FixedIncome:
                 period=period,
             )
 
-        if government_bond_yield.empty:
-            raise ValueError("No data available for the selected period ")
-
         if growth:
             government_bond_yield = calculate_growth(
                 government_bond_yield,
@@ -954,15 +961,22 @@ class FixedIncome:
         | 2024-01-12 |          74 |          94 |       107   |          128 |         126   |         112 |
         | 2024-01-15 |          74 |          94 |       107   |          128 |         125   |         111 |
         """
-        option_adjusted_spread = (
-            fred_model.get_maturity_option_adjusted_spread()
-            if maturity
-            else fred_model.get_rating_option_adjusted_spread()
-        )
+        if not self._fred_api_key:
+            raise ValueError(
+                "A FRED API key is required to retrieve ICE BofA data. Obtain a free key at "
+                "https://fred.stlouisfed.org/docs/api/api_key.html and pass it via the "
+                "fred_api_key argument or set the FRED_API_KEY environment variable."
+            )
 
-        option_adjusted_spread = option_adjusted_spread.loc[
-            self._start_date : self._end_date
-        ]
+        option_adjusted_spread = (
+            fred_model.get_maturity_option_adjusted_spread(
+                self._start_date, self._end_date, self._fred_api_key
+            )
+            if maturity
+            else fred_model.get_rating_option_adjusted_spread(
+                self._start_date, self._end_date, self._fred_api_key
+            )
+        )
 
         option_adjusted_spread = option_adjusted_spread.round(
             rounding if rounding else self._rounding
@@ -1028,13 +1042,22 @@ class FixedIncome:
         | 2024-01-12 | 0.0451 | 0.0467 | 0.0502 | 0.0534 | 0.0613 | 0.0753 | 0.1338 |
         | 2024-01-15 | 0.0451 | 0.0467 | 0.0501 | 0.0533 | 0.0611 | 0.0751 | 0.1328 |
         """
-        effective_yield = (
-            fred_model.get_maturity_effective_yield()
-            if maturity
-            else fred_model.get_rating_effective_yield()
-        )
+        if not self._fred_api_key:
+            raise ValueError(
+                "A FRED API key is required to retrieve ICE BofA data. Obtain a free key at "
+                "https://fred.stlouisfed.org/docs/api/api_key.html and pass it via the "
+                "fred_api_key argument or set the FRED_API_KEY environment variable."
+            )
 
-        effective_yield = effective_yield.loc[self._start_date : self._end_date]
+        effective_yield = (
+            fred_model.get_maturity_effective_yield(
+                self._start_date, self._end_date, self._fred_api_key
+            )
+            if maturity
+            else fred_model.get_rating_effective_yield(
+                self._start_date, self._end_date, self._fred_api_key
+            )
+        )
 
         effective_yield = effective_yield.round(
             rounding if rounding else self._rounding
@@ -1096,13 +1119,22 @@ class FixedIncome:
         | 2024-01-12 |     1922.1  |     2498.89 |      812.41 |      585.2   |       4213.47 |     4338.43 |
         | 2024-01-15 |     1922.67 |     2499.76 |      812.67 |      585.41  |       4215.34 |     4340.24 |
         """
-        total_return = (
-            fred_model.get_maturity_total_return()
-            if maturity
-            else fred_model.get_rating_total_return()
-        )
+        if not self._fred_api_key:
+            raise ValueError(
+                "A FRED API key is required to retrieve ICE BofA data. Obtain a free key at "
+                "https://fred.stlouisfed.org/docs/api/api_key.html and pass it via the "
+                "fred_api_key argument or set the FRED_API_KEY environment variable."
+            )
 
-        total_return = total_return.loc[self._start_date : self._end_date]
+        total_return = (
+            fred_model.get_maturity_total_return(
+                self._start_date, self._end_date, self._fred_api_key
+            )
+            if maturity
+            else fred_model.get_rating_total_return(
+                self._start_date, self._end_date, self._fred_api_key
+            )
+        )
 
         total_return = total_return.round(rounding if rounding else self._rounding)
 
@@ -1163,13 +1195,22 @@ class FixedIncome:
         | 2024-01-12 | 0.0453 | 0.0468 | 0.0499 | 0.0537 | 0.0642 | 0.0786 | 0.1335 |
         | 2024-01-15 | 0.0452 | 0.0468 | 0.0498 | 0.0537 | 0.064  | 0.0784 | 0.1325 |
         """
-        yield_to_worst = (
-            fred_model.get_maturity_yield_to_worst()
-            if maturity
-            else fred_model.get_rating_yield_to_worst()
-        )
+        if not self._fred_api_key:
+            raise ValueError(
+                "A FRED API key is required to retrieve ICE BofA data. Obtain a free key at "
+                "https://fred.stlouisfed.org/docs/api/api_key.html and pass it via the "
+                "fred_api_key argument or set the FRED_API_KEY environment variable."
+            )
 
-        yield_to_worst = yield_to_worst.loc[self._start_date : self._end_date]
+        yield_to_worst = (
+            fred_model.get_maturity_yield_to_worst(
+                self._start_date, self._end_date, self._fred_api_key
+            )
+            if maturity
+            else fred_model.get_rating_yield_to_worst(
+                self._start_date, self._end_date, self._fred_api_key
+            )
+        )
 
         yield_to_worst = yield_to_worst.round(rounding if rounding else self._rounding)
 
