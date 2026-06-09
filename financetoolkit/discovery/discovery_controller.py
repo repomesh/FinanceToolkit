@@ -2,6 +2,8 @@
 
 __docformat__ = "google"
 
+import os
+
 import pandas as pd
 
 from financetoolkit import fmp_model
@@ -19,6 +21,10 @@ from financetoolkit.utilities.error_model import handle_errors
 logger_model.setup_logger()
 logger = logger_model.get_logger()
 
+# In case the user has set an API key as an environment variable,
+# this will be used as the default API key for the Toolkit.
+API_KEY: str = os.environ.get("FINANCIAL_MODELING_PREP_API_KEY", None)
+
 
 class Discovery:
     """
@@ -30,7 +36,7 @@ class Discovery:
 
     def __init__(
         self,
-        api_key: str | None = None,
+        api_key: str | None = API_KEY,
     ):
         """
         Initializes the Discovery Controller Class.
@@ -107,8 +113,12 @@ class Discovery:
         The search instruments function allows you to search for a company or financial instrument
         by name. It returns a dataframe with all the symbols that match the query.
 
+        Also known as: find companies, lookup stocks, ticker search, instrument search.
+
         Args:
             query (str): A query to search for, e.g. 'META'.
+            search_method (str, optional): The field to search against. Valid options are 'symbol', 'name',
+                'cik', 'cusip', and 'isin'. Defaults to 'name'.
 
         Returns:
             pd.DataFrame: A dataframe with all the symbols that match the query.
@@ -186,6 +196,8 @@ class Discovery:
         to narrow down your search to prevent companies from being excluded simply because
         of this limit.
 
+        Also known as: filter stocks, financial criteria screener.
+
         Args:
             market_cap_higher (int): The minimum market capitalization of the stock.
             market_cap_lower (int): The maximum market capitalization of the stock.
@@ -254,7 +266,7 @@ class Discovery:
     def get_stock_list(self) -> pd.DataFrame:
         """
         The stock list function returns a complete list of all the symbols that can be used
-        in the FinanceToolkit. These are over 60.000 symbols.
+        in the Finance Toolkit. These are over 60.000 symbols.
 
         Returns:
             pd.DataFrame: A dataframe with all the symbols in the toolkit.
@@ -543,7 +555,7 @@ class Discovery:
     def get_crypto_list(self) -> pd.DataFrame:
         """
         The crypto list function returns a complete list of all crypto symbols that can be
-        used in the FinanceToolkit. These are over 4.000 symbols.
+        used in the Finance Toolkit. These are over 4.000 symbols.
 
         Returns:
             pd.DataFrame: A dataframe with all the symbols in the toolkit.
@@ -584,7 +596,7 @@ class Discovery:
     def get_forex_list(self) -> pd.DataFrame:
         """
         The forex list function returns a complete list of all forex symbols that can be
-        used in the FinanceToolkit. These are over 1.000 symbols.
+        used in the Finance Toolkit. These are over 1.000 symbols.
 
         Returns:
             pd.DataFrame: A dataframe with the forex symbols.
@@ -625,7 +637,7 @@ class Discovery:
     def get_commodity_list(self) -> pd.DataFrame:
         """
         The commodity list function returns a complete list of all commodity symbols that can be
-        used in the FinanceToolkit.
+        used in the Finance Toolkit.
 
         Returns:
             pd.DataFrame: A dataframe with all the commodities available.
@@ -666,7 +678,7 @@ class Discovery:
     def get_etf_list(self) -> pd.DataFrame:
         """
         The etf list function returns a complete list of all etf symbols that can be
-        used in the FinanceToolkit.
+        used in the Finance Toolkit.
 
         Returns:
             pd.DataFrame: A dataframe with all the etf symbols.
@@ -708,7 +720,7 @@ class Discovery:
     def get_index_list(self) -> pd.DataFrame:
         """
         The index list function returns a complete list of all etf symbols that can be
-        used in the FinanceToolkit.
+        used in the Finance Toolkit.
 
         Returns:
             pd.DataFrame: A dataframe with all the index symbols.

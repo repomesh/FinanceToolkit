@@ -2,7 +2,11 @@
 
 __docformat__ = "google"
 
+import io
+
 import pandas as pd
+
+from financetoolkit.helpers import get_request
 
 BASE_URL = "https://data-api.ecb.europa.eu/service/data/"
 EXTENSIONS = "?format=csvdata"
@@ -21,7 +25,9 @@ def collect_ecb_data(
     Returns:
        pd.DataFrame: A DataFrame containing the data from the ECB API.
     """
-    ecb_data = pd.read_csv(f"{BASE_URL}{dataset}/{ecb_data_string}{EXTENSIONS}")
+    url = f"{BASE_URL}{dataset}/{ecb_data_string}{EXTENSIONS}"
+    response = get_request(url)
+    ecb_data = pd.read_csv(io.StringIO(response.text))
 
     ecb_data = ecb_data.set_index("TIME_PERIOD")
 

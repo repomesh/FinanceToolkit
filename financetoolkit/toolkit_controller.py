@@ -3,6 +3,7 @@
 __docformat__ = "google"
 
 
+import os
 import re
 import warnings
 from collections import Counter
@@ -66,11 +67,16 @@ try:
 except ImportError:
     ENABLE_TQDM = False
 
+# In case the user has set an API key as an environment variable,
+# this will be used as the default API key for the Toolkit.
+API_KEY: str = os.environ.get("FINANCIAL_MODELING_PREP_API_KEY", "")
+FRED_API_KEY: str = os.environ.get("FRED_API_KEY", "")
+
 
 class Toolkit:
     """
     The Finance Toolkit is an open-source toolkit in which
-    all 150+ financial ratios, indicators and performance measurements
+    all 200+ financial ratios, indicators and performance measurements
     are written down in the most simplistic way allowing for complete transparency
     of the calculation method. This allows you to not have to rely on metrics
     from other providers and, given a financial statement, allow for efficient manual
@@ -81,7 +87,7 @@ class Toolkit:
     def __init__(
         self,
         tickers: list | str | None = None,
-        api_key: str = "",
+        api_key: str = API_KEY,
         start_date: str | None = None,
         end_date: str | None = None,
         quarterly: bool = False,
@@ -101,6 +107,7 @@ class Toolkit:
         remove_invalid_tickers: bool = False,
         sleep_timer: bool | None = None,
         progress_bar: bool = True,
+        fred_api_key: str = FRED_API_KEY,
     ):
         """
         Initializes a Toolkit object with a ticker or a list of tickers. The way the Toolkit is initialized
@@ -121,7 +128,8 @@ class Toolkit:
         Args:
             tickers (list | str | None): A string or a list of strings containing the company ticker(s). E.g. 'TSLA' or 'MSFT'.
             Find tickers on various websites or via the FinanceDatabase: https://github.com/JerBouma/financedatabase. Defaults to None.
-            api_key (str): An API key from FinancialModelingPrep. Obtain one here: https://www.jeroenbouma.com/fmp. Defaults to "".
+            api_key (str): An API key from FinancialModelingPrep. Obtain one here: https://www.jeroenbouma.com/fmp. Defaults to
+            the value of the FINANCIAL_MODELING_PREP_API_KEY environment variable if set, otherwise an empty string.
             start_date (str | None): A string containing the start date of the data. Needs to be formatted as YYYY-MM-DD.
             Defaults to 5 years/quarters back from today depending on the 'quarterly' flag.
             end_date (str | None): A string containing the end date of the data. Needs to be formatted as YYYY-MM-DD.
@@ -154,6 +162,10 @@ class Toolkit:
             sleep_timer (bool | None): Enable sleep timer on FMP rate limit (requires Premium).
             Defaults to None (determined by FMP plan: True for Premium, False for Free).
             progress_bar (bool): Show progress bar for operations involving multiple tickers. Defaults to True.
+            fred_api_key (str): A FRED API key used to retrieve ICE BofA bond index data via the fixedincome module
+            (option-adjusted spread, effective yield, total return, yield to worst). Obtain a free key at
+            https://fred.stlouisfed.org/docs/api/api_key.html. Can also be set via the FRED_API_KEY environment
+            variable. Defaults to the value of FRED_API_KEY if set, otherwise an empty string.
 
         As an example:
 
@@ -201,6 +213,7 @@ class Toolkit:
         ```
         """
         self._api_key = api_key
+        self._fred_api_key = fred_api_key
         self._risk_free_rate = risk_free_rate
         self._rounding = rounding
         self._remove_invalid_tickers = remove_invalid_tickers
@@ -1212,6 +1225,7 @@ class Toolkit:
             end_date=self._end_date,
             quarterly=self._quarterly,
             rounding=self._rounding,
+            fred_api_key=self._fred_api_key,
         )
 
     @property
@@ -1265,6 +1279,8 @@ class Toolkit:
         Obtain the profile of the specified tickers. These include important metrics
         such as the beta, market capitalization, currency, isin, industry, and ipo date
         that give an overall understanding about the company.
+
+        Also known as: company description, sector, industry, CEO, employee count.
 
         Args:
             progress_bar (bool, optional): Whether to show a progress bar. Defaults to None.
@@ -1359,6 +1375,8 @@ class Toolkit:
         outstanding and timestamp that give an overall understanding about the
         company.
 
+        Also known as: real-time price, current stock price, live quote.
+
         Args:
             progress_bar (bool, optional): Whether to show a progress bar. Defaults to None.
 
@@ -1444,6 +1462,8 @@ class Toolkit:
         - Price Earnings (PE)
         - Price to Book (PB)
 
+        Also known as: analyst consensus, buy sell hold recommendation.
+
         Args:
             progress_bar (bool, optional): Whether to show a progress bar. Defaults to None.
 
@@ -1526,13 +1546,14 @@ class Toolkit:
 
         Note that this information requires a Premium FMP subscription.
 
+        Also known as: earnings estimates, revenue estimates, analyst consensus.
+
         Args:
-            limit (int): Defines the maximum years or quarters to obtain.
-            overwrite (bool): Defines whether to overwrite the existing data.
-            rounding (int): Defines the number of decimal places to round the data to.
-            growth (bool): Defines whether to return the growth of the data.
-            lag (int | str): Defines the number of periods to lag the growth data by.
-            trailing (int): Defines whether to select a trailing period. E.g. when selecting 4 with quarterly data, the TTM is calculated.
+            overwrite (bool, optional): Defines whether to overwrite the existing data. Defaults to False.
+            rounding (int | None, optional): Defines the number of decimal places to round the data to. Defaults to None.
+            growth (bool, optional): Defines whether to return the growth of the data. Defaults to False.
+            lag (int | list[int], optional): Defines the number of periods to lag the growth data by. Defaults to 1.
+            progress_bar (bool | None, optional): Whether to show a progress bar. Defaults to None.
 
         Returns:
             pandas.DataFrame: The analyst estimates for the specified tickers.
@@ -1644,6 +1665,8 @@ class Toolkit:
 
         Note that this information requires a Premium FMP subscription.
 
+        Also known as: earnings dates, earnings schedule, reporting date.
+
         Args:
             actual_dates (bool): Defines whether to return the actual dates or the corresponding quarters.
             overwrite (bool): Defines whether to overwrite the existing data.
@@ -1739,6 +1762,8 @@ class Toolkit:
 
         Note that this information requires a Premium FMP subscription.
 
+        Also known as: revenue by region, geographic revenue breakdown.
+
         Args:
             overwrite (bool): Defines whether to overwrite the existing data.
             progress_bar (bool, optional): Whether to show a progress bar. Defaults to None.
@@ -1824,6 +1849,8 @@ class Toolkit:
         Obtain revenue by product segmentation (e.g. iPad, Advertisement, Windows).
 
         Note that this information requires a Premium FMP subscription.
+
+        Also known as: revenue by product, product segment revenue.
 
         Args:
             overwrite (bool): Defines whether to overwrite the existing data.
@@ -1944,6 +1971,8 @@ class Toolkit:
         collection defaults to FinancialModelingPrep which is a more stable source and utilises your subscription.
         However, if this is undesired, it can be disabled by setting enforce_source to "YahooFinance". If
         data collection fails from FinancialModelingPrep it automatically reverts back to YahooFinance.
+
+        Also known as: OHLCV, price history, open high low close volume.
 
         Args:
             enforce_source (str, optional): A string containing the historical source you wish to enforce.
@@ -2207,18 +2236,15 @@ class Toolkit:
         Please note that this functionality is only available through Financial Modeling Prep. Therefore, an
         api_key is required to use this functionality.
 
+        Also known as: tick data, minute data, intraday price history.
+
         Args:
-            start (str): The start date for the historical data. Defaults to None.
-            end (str): The end date for the historical data. Defaults to None.
-            period (str): The interval at which the historical data should be
-            returned - daily, weekly, monthly, quarterly, or yearly.
-            Defaults to "daily".
-            return_column (str): The column to use for the return calculation. Defaults to "Close".
-            fill_nan (bool): Defines whether to forward fill NaN values. This defaults
-            to True to prevent holes in the dataset. This is especially relevant for
-            technical indicators.
-            rounding (int): Defines the number of decimal places to round the data to.
-            progress_bar (bool, optional): Whether to show a progress bar. Defaults to None.
+            period (str, optional): The intraday interval to fetch (e.g. "1min", "5min", "1hour").
+                Defaults to "1hour".
+            return_column (str, optional): The column to use for the return calculation. Defaults to "Close".
+            fill_nan (bool, optional): Defines whether to forward fill NaN values. Defaults to True.
+            rounding (int | None, optional): Defines the number of decimal places to round the data to. Defaults to None.
+            progress_bar (bool | None, optional): Whether to show a progress bar. Defaults to None.
 
         Returns:
             pandas.DataFrame: The intraday data for the specified tickers.
@@ -2348,6 +2374,8 @@ class Toolkit:
 
         If a company does not pay any dividend, the function will mention that it was not able
         to find any dividend data for that company.
+
+        Also known as: dividend dates, ex-dividend date, dividend history.
 
         Args:
             overwrite (bool): Defines whether to overwrite the existing data.
@@ -2481,6 +2509,8 @@ class Toolkit:
         their ESG scores, not only for ethical reasons but also to attract investors who value
         sustainable and responsible business practices.
 
+        Also known as: environmental social governance, sustainability, ESG rating.
+
         Args:
             overwrite (bool): Defines whether to overwrite the existing data.
             rounding (int): Defines the number of decimal places to round the data to.
@@ -2567,6 +2597,8 @@ class Toolkit:
             - Timezone: The timezone the instrument is traded in.
             - Exchange Timezone Name: The name of the timezone the instrument is traded in.
 
+        Also known as: key statistics over time, historical key metrics.
+
         Args:
             progress_bar (bool): Defines whether to show a progress bar. Defaults to None.
 
@@ -2626,6 +2658,8 @@ class Toolkit:
         Retrieve daily, weekly, monthly, quarterly or yearly treasury data. This can be from FinancialModelingPrep
         or from YahooFinance. FinancialModelingPrep is by far a more extensive dataset containing daily data from
         1 month to 30 years. YahooFinance only contains daily data for 5, 10 and 30 years but is a free alternative.
+
+        Also known as: US Treasury yields, yield curve, treasury rates.
 
         Args:
             period (str): The interval at which the treasury data should be returned - daily, weekly, monthly, quarterly, or yearly.
@@ -2844,6 +2878,8 @@ class Toolkit:
         collection defaults to FinancialModelingPrep which is a more stable source and utilises your subscription.
         However, if this is undesired, it can be disabled by setting enforce_source to "YahooFinance". If
         data collection fails from FinancialModelingPrep it automatically reverts back to YahooFinance.
+
+        Also known as: currency exchange, FX rates, foreign exchange rates.
 
         Args:
             start (str): The start date for the exchange data. Defaults to None.
@@ -3103,6 +3139,8 @@ class Toolkit:
         company's financial position at a specific point in time. Therefore, trailing results are not
         available for this statement.
 
+        Also known as: assets, liabilities, shareholders equity, financial position.
+
         Args:
             enforce_source (bool): Defines whether to enforce the source of the data. This can be
                 either "FinancialModelingPrep" or "YahooFinance". Defaults to None.
@@ -3311,6 +3349,8 @@ class Toolkit:
 
         The income statement is a financial statement that shows a company's revenues and expenses over a specific
         period. Therefore, trailing results are available for this statement.
+
+        Also known as: profit and loss, revenue, net income, earnings, P&L statement.
 
         Args:
             enforce_source (bool): Defines whether to enforce the source of the data. This can be
@@ -3530,6 +3570,8 @@ class Toolkit:
         The cash flow statement is a financial statement that shows how changes in balance sheet accounts and income
         affect cash and cash equivalents. Therefore, trailing results are available for this statement.
 
+        Also known as: operating cash flow, investing activities, financing activities.
+
         Args:
             enforce_source (bool): Defines whether to enforce the source of the data. This can be
             overwrite (bool): Defines whether to overwrite the existing data.
@@ -3719,6 +3761,8 @@ class Toolkit:
 
         Note that this also obtains the balance sheet statement at the same time given that it's the same
         API call. This is done to reduce the number of API calls to FinancialModelingPrep.
+
+        Also known as: key stats, shares outstanding, float data.
 
         Args:
             enforce_source (bool): Defines whether to enforce the source of the data. This can be

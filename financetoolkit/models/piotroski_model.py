@@ -408,87 +408,33 @@ def get_piotroski_score(
     - Piotroski, Joseph D. "Value Investing: The Use of Historical Financial Statement Information to
     Separate Winners from Losers." Journal of Accounting Research, Vol. 38, No. 3, 1999, pp. 1-41.
     """
-    if isinstance(
-        return_on_assets_criteria,
-        (
-            pd.Series,
-            pd.DataFrame,
-        ),
-    ):
+    if isinstance(return_on_assets_criteria, pd.Series | pd.DataFrame):
         return_on_assets_criteria = return_on_assets_criteria.astype(int)
 
-    if isinstance(
-        operating_cashflow_criteria,
-        (
-            pd.Series,
-            pd.DataFrame,
-        ),
-    ):
+    if isinstance(operating_cashflow_criteria, pd.Series | pd.DataFrame):
         operating_cashflow_criteria = operating_cashflow_criteria.astype(int)
 
-    if isinstance(
-        change_in_return_on_asset_criteria,
-        (
-            pd.Series,
-            pd.DataFrame,
-        ),
-    ):
+    if isinstance(change_in_return_on_asset_criteria, pd.Series | pd.DataFrame):
         change_in_return_on_asset_criteria = change_in_return_on_asset_criteria.astype(
             int
         )
 
-    if isinstance(
-        accruals_criteria,
-        (
-            pd.Series,
-            pd.DataFrame,
-        ),
-    ):
+    if isinstance(accruals_criteria, pd.Series | pd.DataFrame):
         accruals_criteria = accruals_criteria.astype(int)
 
-    if isinstance(
-        change_in_leverage_criteria,
-        (
-            pd.Series,
-            pd.DataFrame,
-        ),
-    ):
+    if isinstance(change_in_leverage_criteria, pd.Series | pd.DataFrame):
         change_in_leverage_criteria = change_in_leverage_criteria.astype(int)
 
-    if isinstance(
-        change_in_current_ratio_criteria,
-        (
-            pd.Series,
-            pd.DataFrame,
-        ),
-    ):
+    if isinstance(change_in_current_ratio_criteria, pd.Series | pd.DataFrame):
         change_in_current_ratio_criteria = change_in_current_ratio_criteria.astype(int)
 
-    if isinstance(
-        number_of_shares_criteria,
-        (
-            pd.Series,
-            pd.DataFrame,
-        ),
-    ):
+    if isinstance(number_of_shares_criteria, pd.Series | pd.DataFrame):
         number_of_shares_criteria = number_of_shares_criteria.astype(int)
 
-    if isinstance(
-        gross_margin_criteria,
-        (
-            pd.Series,
-            pd.DataFrame,
-        ),
-    ):
+    if isinstance(gross_margin_criteria, pd.Series | pd.DataFrame):
         gross_margin_criteria = gross_margin_criteria.astype(int)
 
-    if isinstance(
-        asset_turnover_ratio_criteria,
-        (
-            pd.Series,
-            pd.DataFrame,
-        ),
-    ):
+    if isinstance(asset_turnover_ratio_criteria, pd.Series | pd.DataFrame):
         asset_turnover_ratio_criteria = asset_turnover_ratio_criteria.astype(int)
 
     piotroski_score = (

@@ -2,7 +2,11 @@
 
 __docformat__ = "google"
 
+import io
+
 import pandas as pd
+
+from financetoolkit.helpers import get_request
 
 BASE_URL = "https://markets.newyorkfed.org/read"
 EXTENSIONS_1 = "?startDt=2000-12-01&eventCodes="
@@ -39,7 +43,9 @@ def collect_fed_data(fed_code: str) -> pd.DataFrame:
        pd.DataFrame: A DataFrame containing the data from the Federal
        Reserve Bank of New York.
     """
-    fed_data = pd.read_csv(f"{BASE_URL}{EXTENSIONS_1}{fed_code}{EXTENSIONS_2}")
+    url = f"{BASE_URL}{EXTENSIONS_1}{fed_code}{EXTENSIONS_2}"
+    response = get_request(url)
+    fed_data = pd.read_csv(io.StringIO(response.text))
 
     fed_data = fed_data.set_index("Effective Date")
 

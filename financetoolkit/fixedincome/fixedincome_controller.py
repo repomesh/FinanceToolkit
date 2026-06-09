@@ -3,6 +3,7 @@
 __docformat__ = "google"
 
 
+import os
 import re
 from datetime import datetime, timedelta
 
@@ -28,6 +29,8 @@ logger = logger_model.get_logger()
 # pylint: disable=too-many-locals,line-too-long,too-many-public-methods
 # ruff: noqa: E501
 
+FRED_API_KEY: str = os.environ.get("FRED_API_KEY", "")
+
 
 class FixedIncome:
     """
@@ -41,6 +44,7 @@ class FixedIncome:
         end_date: str | None = None,
         quarterly: bool = True,
         rounding: int | None = 4,
+        fred_api_key: str = FRED_API_KEY,
     ):
         """
         Initializes the Fixed Income Controller Class.
@@ -50,6 +54,10 @@ class FixedIncome:
             end_date (str | None, optional): The end date to retrieve data from. Defaults to None.
             quarterly (bool, optional): Whether to return the data quarterly. Defaults to True.
             rounding (int | None, optional): The number of decimals to round the results to. Defaults to None.
+            fred_api_key (str, optional): A FRED API key used to retrieve ICE BofA bond index data
+                (option-adjusted spread, effective yield, total return, yield to worst). Obtain a free key at
+                https://fred.stlouisfed.org/docs/api/api_key.html. Can also be set via the FRED_API_KEY
+                environment variable. Defaults to the value of FRED_API_KEY if set, otherwise an empty string.
 
         As an example:
 
@@ -59,6 +67,7 @@ class FixedIncome:
         fixedincome = FixedIncome(
             start_date='2024-01-01',
             end_date='2024-01-15',
+            fred_api_key='your_fred_api_key',
         )
 
         fixedincome.get_ice_bofa_effective_yield(maturity=False)
@@ -101,6 +110,7 @@ class FixedIncome:
         self._end_date = end_date if end_date else datetime.now().strftime("%Y-%m-%d")
         self._quarterly = quarterly
         self._rounding: int | None = rounding
+        self._fred_api_key = fred_api_key
 
     def collect_bond_statistics(
         self,
@@ -130,6 +140,8 @@ class FixedIncome:
 
         These statistics can be used to evaluate the bond's performance as opposed to other bonds or to estimate the bond's
         sensitivity to changes in interest rates to be able to apply a hedging strategy.
+
+        Also known as: bond data, fixed income statistics.
 
         Args:
             par_value (float): The face value of the bond. Defaults to 100.
@@ -291,6 +303,8 @@ class FixedIncome:
         The bond price is used to determine the fair value of the bond and to compare the bond's price to its market price to determine
         if the bond is overvalued or undervalued.
 
+        Also known as: PV, bond pricing, discounted cash flows.
+
         Args:
             par_value (float): The par value (face value) of the bond.
             coupon_rate (float, optional): The coupon rate of the bond. If not provided, a range of coupon rates will be used.
@@ -303,7 +317,9 @@ class FixedIncome:
             pandas.DataFrame: A DataFrame containing the bond prices for different coupon rates and years to maturity.
         """
         coupon_rate = (
-            np.arange(max(0.05 - 0.005 * 20, 0.005), 0.05 + 0.005 * 20, 0.005)
+            np.round(
+                np.arange(max(0.05 - 0.005 * 20, 0.005), 0.05 + 0.005 * 20, 0.005), 10
+            )
             if coupon_rate is None
             else coupon_rate
         )
@@ -320,9 +336,9 @@ class FixedIncome:
             range(1, 11) if years_to_maturity is None else years_to_maturity
         )
 
-        if isinstance(coupon_rate, (int, float)):
+        if isinstance(coupon_rate, int | float):
             coupon_rate = [coupon_rate]
-        if isinstance(years_to_maturity, (int, float)):
+        if isinstance(years_to_maturity, int | float):
             years_to_maturity = [years_to_maturity]
 
         bond_prices: dict[int, dict[float, dict[float, float]]] = {}
@@ -330,7 +346,7 @@ class FixedIncome:
         for coupon in coupon_rate:
             bond_prices[coupon] = {}
             for maturity in years_to_maturity:
-                (bond_prices[coupon][maturity]) = bond_model.get_bond_price(
+                bond_prices[coupon][maturity] = bond_model.get_bond_price(
                     par_value=par_value,
                     coupon_rate=float(coupon),
                     years_to_maturity=maturity,
@@ -377,6 +393,8 @@ class FixedIncome:
         in the bond price for a 1% change in the yield to maturity. This is also known as the bond's price value of a basis point (PVBP),
         or the bond's dollar duration (DD) or dollar value of a .01% change (DV01).
 
+        Also known as: Macaulay duration, modified duration, bond price sensitivity.
+
         Args:
             duration_type (str, optional): The type of duration to calculate. Defaults to 'modified' but can also
                 be 'macaulay', 'effective' or 'dollar'.
@@ -396,7 +414,9 @@ class FixedIncome:
         duration_type_lower = duration_type.lower()
 
         coupon_rate = (
-            np.arange(max(0.05 - 0.005 * 20, 0.005), 0.05 + 0.005 * 20, 0.005)
+            np.round(
+                np.arange(max(0.05 - 0.005 * 20, 0.005), 0.05 + 0.005 * 20, 0.005), 10
+            )
             if coupon_rate is None
             else coupon_rate
         )
@@ -413,9 +433,9 @@ class FixedIncome:
             range(1, 11) if years_to_maturity is None else years_to_maturity
         )
 
-        if isinstance(coupon_rate, (int, float)):
+        if isinstance(coupon_rate, int | float):
             coupon_rate = [coupon_rate]
-        if isinstance(years_to_maturity, (int, float)):
+        if isinstance(years_to_maturity, int | float):
             years_to_maturity = [years_to_maturity]
 
         bond_prices: dict[str, dict[float, dict[float, float]]] = {}
@@ -507,6 +527,8 @@ class FixedIncome:
         The goal is to find the yield to maturity that satisfies the equation above. This is done using the Newton-Raphson method
         which is an iterative method that converges to the root of a function.
 
+        Also known as: YTM, bond return to maturity.
+
         Args:
             par_value (float): The par value (face value) of the bond. This is the original price when it was issued by the issuer.
             coupon_rate (float, optional): The coupon rate of the bond. Defaults to None.
@@ -549,9 +571,9 @@ class FixedIncome:
             range(1, 11) if years_to_maturity is None else years_to_maturity
         )
 
-        if isinstance(bond_price, (int, float)):
+        if isinstance(bond_price, int | float):
             bond_price = [bond_price]
-        if isinstance(years_to_maturity, (int, float)):
+        if isinstance(years_to_maturity, int | float):
             years_to_maturity = [years_to_maturity]
 
         yield_to_maturities: dict[int, dict[float, dict[float, float]]] = {}
@@ -559,17 +581,15 @@ class FixedIncome:
         for price in bond_price:
             yield_to_maturities[price] = {}
             for maturity in years_to_maturity:
-                (yield_to_maturities[price][maturity]) = (
-                    bond_model.get_yield_to_maturity(
-                        par_value=par_value,
-                        coupon_rate=coupon_rate,
-                        years_to_maturity=maturity,
-                        bond_price=price,
-                        frequency=frequency,
-                        guess=guess,
-                        tolerance=tolerance,
-                        max_iterations=max_iterations,
-                    )
+                yield_to_maturities[price][maturity] = bond_model.get_yield_to_maturity(
+                    par_value=par_value,
+                    coupon_rate=coupon_rate,
+                    years_to_maturity=maturity,
+                    bond_price=price,
+                    frequency=frequency,
+                    guess=guess,
+                    tolerance=tolerance,
+                    max_iterations=max_iterations,
                 )
 
         yield_to_maturities_df = pd.DataFrame.from_dict(
@@ -619,6 +639,8 @@ class FixedIncome:
         risk-free rate, notional amount, and whether the holder is the receiver or payer of the derivative. Next to that, you can
         provide lists of values for the fixed rate, strike rate, volatility, and years to maturity to calculate the derivative price
         for multiple scenarios outside of the standard sample.
+
+        Also known as: bond derivative pricing, fixed income derivative.
 
         Args:
             model (str, optional): The type of model to use for calculating the derivative price. Defaults to "black".
@@ -685,17 +707,24 @@ class FixedIncome:
         model_lower = model.lower()
 
         strike_rate = (
-            np.arange(
-                max(
+            np.round(
+                np.arange(
+                    max(
+                        (
+                            forward_rate - 0.005 * 20
+                            if not is_receiver
+                            else forward_rate - 0.005 * 5
+                        ),
+                        0.005,
+                    ),
                     (
-                        forward_rate - 0.005 * 20
-                        if not is_receiver
-                        else forward_rate - 0.005 * 5
+                        forward_rate + 0.005 * 20
+                        if is_receiver
+                        else forward_rate + 0.005 * 5
                     ),
                     0.005,
                 ),
-                forward_rate + 0.005 * 20 if is_receiver else forward_rate + 0.005 * 5,
-                0.005,
+                10,
             )
             if strike_rate is None
             else strike_rate
@@ -705,9 +734,9 @@ class FixedIncome:
             range(1, 11) if years_to_maturity is None else years_to_maturity
         )
 
-        if isinstance(years_to_maturity, (int, float)):
+        if isinstance(years_to_maturity, int | float):
             years_to_maturity = [years_to_maturity]
-        if isinstance(strike_rate, (int, float)):
+        if isinstance(strike_rate, int | float):
             strike_rate = [strike_rate]
 
         years_to_maturity_dates = [
@@ -820,6 +849,8 @@ class FixedIncome:
 
         See definition: https://data.oecd.org/interest/short-term-interest-rates.htm
 
+        Also known as: treasury yield, bond yield by maturity.
+
         Args:
             short_term (bool, optional): Whether to return the short-term interest rate. Defaults to False.
                 This means that the long-term interest rate will be returned.
@@ -869,9 +900,6 @@ class FixedIncome:
             government_bond_yield = oecd_model.get_long_term_interest_rate(
                 period=period,
             )
-
-        if government_bond_yield.empty:
-            raise ValueError("No data available for the selected period ")
 
         if growth:
             government_bond_yield = calculate_growth(
@@ -944,15 +972,22 @@ class FixedIncome:
         | 2024-01-12 |          74 |          94 |       107   |          128 |         126   |         112 |
         | 2024-01-15 |          74 |          94 |       107   |          128 |         125   |         111 |
         """
-        option_adjusted_spread = (
-            fred_model.get_maturity_option_adjusted_spread()
-            if maturity
-            else fred_model.get_rating_option_adjusted_spread()
-        )
+        if not self._fred_api_key:
+            raise ValueError(
+                "A FRED API key is required to retrieve ICE BofA data. Obtain a free key at "
+                "https://fred.stlouisfed.org/docs/api/api_key.html and pass it via the "
+                "fred_api_key argument or set the FRED_API_KEY environment variable."
+            )
 
-        option_adjusted_spread = option_adjusted_spread.loc[
-            self._start_date : self._end_date
-        ]
+        option_adjusted_spread = (
+            fred_model.get_maturity_option_adjusted_spread(
+                self._start_date, self._end_date, self._fred_api_key
+            )
+            if maturity
+            else fred_model.get_rating_option_adjusted_spread(
+                self._start_date, self._end_date, self._fred_api_key
+            )
+        )
 
         option_adjusted_spread = option_adjusted_spread.round(
             rounding if rounding else self._rounding
@@ -979,6 +1014,8 @@ class FixedIncome:
 
         - Ratings: https://fred.stlouisfed.org/series/BAMLC0A4CBBBEY
         - Maturity: https://fred.stlouisfed.org/series/BAMLC1A0C13YEY
+
+        Also known as: ICE BofA corporate bond yield, credit yield.
 
         Args:
             maturity (bool, optional): Whether to return the maturity effective yield or the rating effective yield.
@@ -1016,13 +1053,22 @@ class FixedIncome:
         | 2024-01-12 | 0.0451 | 0.0467 | 0.0502 | 0.0534 | 0.0613 | 0.0753 | 0.1338 |
         | 2024-01-15 | 0.0451 | 0.0467 | 0.0501 | 0.0533 | 0.0611 | 0.0751 | 0.1328 |
         """
-        effective_yield = (
-            fred_model.get_maturity_effective_yield()
-            if maturity
-            else fred_model.get_rating_effective_yield()
-        )
+        if not self._fred_api_key:
+            raise ValueError(
+                "A FRED API key is required to retrieve ICE BofA data. Obtain a free key at "
+                "https://fred.stlouisfed.org/docs/api/api_key.html and pass it via the "
+                "fred_api_key argument or set the FRED_API_KEY environment variable."
+            )
 
-        effective_yield = effective_yield.loc[self._start_date : self._end_date]
+        effective_yield = (
+            fred_model.get_maturity_effective_yield(
+                self._start_date, self._end_date, self._fred_api_key
+            )
+            if maturity
+            else fred_model.get_rating_effective_yield(
+                self._start_date, self._end_date, self._fred_api_key
+            )
+        )
 
         effective_yield = effective_yield.round(
             rounding if rounding else self._rounding
@@ -1084,13 +1130,22 @@ class FixedIncome:
         | 2024-01-12 |     1922.1  |     2498.89 |      812.41 |      585.2   |       4213.47 |     4338.43 |
         | 2024-01-15 |     1922.67 |     2499.76 |      812.67 |      585.41  |       4215.34 |     4340.24 |
         """
-        total_return = (
-            fred_model.get_maturity_total_return()
-            if maturity
-            else fred_model.get_rating_total_return()
-        )
+        if not self._fred_api_key:
+            raise ValueError(
+                "A FRED API key is required to retrieve ICE BofA data. Obtain a free key at "
+                "https://fred.stlouisfed.org/docs/api/api_key.html and pass it via the "
+                "fred_api_key argument or set the FRED_API_KEY environment variable."
+            )
 
-        total_return = total_return.loc[self._start_date : self._end_date]
+        total_return = (
+            fred_model.get_maturity_total_return(
+                self._start_date, self._end_date, self._fred_api_key
+            )
+            if maturity
+            else fred_model.get_rating_total_return(
+                self._start_date, self._end_date, self._fred_api_key
+            )
+        )
 
         total_return = total_return.round(rounding if rounding else self._rounding)
 
@@ -1151,13 +1206,22 @@ class FixedIncome:
         | 2024-01-12 | 0.0453 | 0.0468 | 0.0499 | 0.0537 | 0.0642 | 0.0786 | 0.1335 |
         | 2024-01-15 | 0.0452 | 0.0468 | 0.0498 | 0.0537 | 0.064  | 0.0784 | 0.1325 |
         """
-        yield_to_worst = (
-            fred_model.get_maturity_yield_to_worst()
-            if maturity
-            else fred_model.get_rating_yield_to_worst()
-        )
+        if not self._fred_api_key:
+            raise ValueError(
+                "A FRED API key is required to retrieve ICE BofA data. Obtain a free key at "
+                "https://fred.stlouisfed.org/docs/api/api_key.html and pass it via the "
+                "fred_api_key argument or set the FRED_API_KEY environment variable."
+            )
 
-        yield_to_worst = yield_to_worst.loc[self._start_date : self._end_date]
+        yield_to_worst = (
+            fred_model.get_maturity_yield_to_worst(
+                self._start_date, self._end_date, self._fred_api_key
+            )
+            if maturity
+            else fred_model.get_rating_yield_to_worst(
+                self._start_date, self._end_date, self._fred_api_key
+            )
+        )
 
         yield_to_worst = yield_to_worst.round(rounding if rounding else self._rounding)
 
@@ -1182,6 +1246,8 @@ class FixedIncome:
         interest rates due to increased uncertainty and risk over longer time horizons.
 
         For more information, see for example: https://data.ecb.europa.eu/data/datasets/FM/FM.M.U2.EUR.RT.MM.EURIBOR6MD_.HSTA
+
+        Also known as: euro interbank offered rate, eurozone money market.
 
         Args:
             maturities (str | list | None, optional): Maturities for which to retrieve rates. Defaults to None.
@@ -1275,6 +1341,8 @@ class FixedIncome:
 
         See source: https://data.ecb.europa.eu/main-figures/
 
+        Also known as: ECB rates, deposit facility rate.
+
         Args:
             rate (str, optional): The rate to return. Defaults to None, which returns all rates.
                 Choose between 'refinancing', 'lending' or 'deposit'.
@@ -1366,18 +1434,20 @@ class FixedIncome:
         The BGCR is calculated as a volume-weighted median of transaction-level
         tri-party repo data collected from the Bank of New York Mellon as well
         as GCF Repo transaction data obtained from the U.S. Department of the
-        Treasury’s Office of Financial Research (OFR).
+        Treasury's Office of Financial Research (OFR).
 
         The SOFR is calculated as a volume-weighted median of transaction-level
         tri-party repo data collected from the Bank of New York Mellon as well as
         GCF Repo transaction data and data on bilateral Treasury repo transactions
         cleared through FICC's DVP service, which are obtained from the U.S.
-        Department of the Treasury’s Office of Financial Research (OFR).
+        Department of the Treasury's Office of Financial Research (OFR).
 
         The New York Fed publishes the rates for the prior business day on the New
-        York Fed’s website between 8:00 and 9:00 a.m.
+        York Fed's website between 8:00 and 9:00 a.m.
 
         See source: https://www.newyorkfed.org/markets/reference-rates/
+
+        Also known as: Fed rates, federal funds rate, FOMC rate.
 
         Args:
             rate (str): The rate to return. Defaults to 'EFFR' (Effective Federal Funds Rate).

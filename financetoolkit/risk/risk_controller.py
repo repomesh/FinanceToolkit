@@ -46,16 +46,10 @@ class Risk:
 
         Args:
             tickers (str | list[str]): The tickers to use for the Toolkit instance.
-            daily_historical (pd.DataFrame, optional): The daily historical data for the tickers.
-            Defaults to pd.DataFrame().
-            weekly_historical (pd.DataFrame, optional): The weekly historical data for the tickers.
-            Defaults to pd.DataFrame().
-            monthly_historical (pd.DataFrame, optional): The monthly historical data for the tickers.
-            Defaults to pd.DataFrame().
-            quarterly_historical (pd.DataFrame, optional): The quarterly historical data for the tickers.
-            Defaults to pd.DataFrame().
-            yearly_historical (pd.DataFrame, optional): The yearly historical data for the tickers.
-            Defaults to pd.DataFrame().
+            historical_data (pd.DataFrame, optional): The historical data containing all periods.
+                Defaults to pd.DataFrame().
+            intraday_period (str | None, optional): The intraday period used for within-period calculations.
+                Defaults to None.
             quarterly (bool, optional): Whether to use quarterly data. Defaults to False.
             rounding (int | None, optional): The number of decimals to round the results to. Defaults to 4.
 
@@ -216,6 +210,8 @@ class Risk:
         The VaR is calculated as the quantile of the return distribution, representing the loss threshold
         that is not expected to be exceeded with a given confidence level (e.g., 5% for alpha=0.05).
 
+        Also known as: VaR, maximum expected loss, portfolio loss risk.
+
         Args:
             period (str, optional): The data frequency for returns (daily, weekly, quarterly, or yearly).
             Defaults to "yearly".
@@ -323,6 +319,8 @@ class Risk:
 
         The CVaR is calculated as the expected loss given that the loss threshold (VaR) with a given confidence
         level (e.g., 5% for alpha=0.05) is excceeded.
+
+        Also known as: CVaR, expected shortfall, ES, tail risk.
 
         Args:
             period (str, optional): The data frequency for returns (daily, weekly, quarterly, or yearly).
@@ -435,6 +433,8 @@ class Risk:
         The EVaR is calculated as the upper bound of VaR and CVaR with a given confidence level (e.g., 5% for
         alpha=0.05).
 
+        Also known as: EVaR.
+
         Args:
             period (str, optional): The data frequency for returns (daily, weekly, quarterly, or yearly).
             Defaults to "yearly".
@@ -526,6 +526,8 @@ class Risk:
         n investment portfolio or asset experienced over a specified time horizon. It provides insights into
         the downside risk associated with an investment and helps investors make informed decisions about
         risk tolerance.
+
+        Also known as: max drawdown, peak-to-trough decline.
 
         Args:
             period (str, optional): The data frequency for returns (daily, weekly, quarterly, or yearly).
@@ -624,6 +626,8 @@ class Risk:
 
         Ulcer Index = SQRT(SUM[(Pn / Highest High)^2] / n)
 
+        Also known as: UI, drawdown risk.
+
         Args:
             period (str, optional): The data frequency for returns (daily, weekly, quarterly, or yearly).
             Defaults to "yearly".
@@ -708,6 +712,8 @@ class Risk:
         GARCH (Generalized autoregressive conditional heteroskedasticity) is stochastic model for time series, which is
         for instance used to model volatility clusters, stock return and inflation. It is a generalisation of the ARCH
         models.
+
+        Also known as: GARCH, volatility clustering, conditional heteroscedasticity.
 
         Args:
             period (str, optional): The data frequency for returns (daily, weekly, quarterly, or yearly).
@@ -815,6 +821,8 @@ class Risk:
         For more information about the method, see the following book:
 
         - Finance Compact Plus Band 1, by Yvonne Seler Zimmerman and Heinz Zimmerman; ISBN: 978-3-907291-31-1
+
+        Also known as: volatility forecast, predicted volatility.
 
         Args:
             period (str, optional): The data frequency for returns (daily, weekly, quarterly, or yearly).
@@ -933,6 +941,8 @@ class Risk:
         of the distribution's tails and potential outliers. It provides a means to gauge the level of
         skew in returns, enabling more informed investment decisions and risk management strategies.
 
+        Also known as: return distribution asymmetry, tail skew.
+
         Args:
             period (str, optional): The data frequency for returns (daily, weekly, quarterly, or yearly).
             Defaults to "yearly".
@@ -1024,6 +1034,8 @@ class Risk:
         more informed decisions regarding risk tolerance. In essence, kurtosis serves as a valuable
         tool for comprehending the distribution characteristics of returns, offering insights
         into the potential for rare but significant events in the financial markets.
+
+        Also known as: tail heaviness, fat tails, leptokurtosis.
 
         Args:
             period (str, optional): The data frequency for returns (daily, weekly, quarterly, or yearly).

@@ -1,6 +1,6 @@
 [project]
 name = "financetoolkit"
-version = "2.0.7"
+version = "2.1.0"
 description = "Transparent and Efficient Financial Analysis"
 license = {text = "MIT"}
 authors = [
@@ -19,6 +19,8 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: 3.15",
 ]
 keywords = [
     "Finance",
@@ -39,7 +41,7 @@ keywords = [
     "Commodities",
     "Options"
 ]
-requires-python = ">=3.10, <3.14"
+requires-python = ">=3.10, <3.16"
 dependencies = [
     "pandas>=2.2",
     "scikit-learn>=1.6",
@@ -49,21 +51,33 @@ dependencies = [
     "tqdm>=4.67",
 ]
 
+[project.optional-dependencies]
+mcp = [
+    "mcp[cli]>=1.27.0",
+    "tabulate>=0.9.0",
+    "python-dotenv>=1.0",
+    "pyyaml>=6.0",
+    "rich>=13.0",
+]
+
+[project.scripts]
+financetoolkit-mcp = "financetoolkit.mcp_server.mcp_controller:main"
+financetoolkit-mcp-inspector = "financetoolkit.mcp_server.mcp_controller:inspector"
+financetoolkit-mcp-setup = "financetoolkit.mcp_server.mcp_controller:setup"
+
 [dependency-groups]
 dev = [
     "pytest>=8.3",
     "ipykernel>=6.29",
-    "pylint>=3.3",
+    "black[jupyter]>=26.3.1",
     "codespell>=2.4",
-    "black[jupyter]>=25.1",
     "pytest-mock>=3.14",
     "pytest-recording>=0.13",
     "pytest-cov>=6.1",
     "pytest-timeout>=2.3",
-    "ruff>=0.11",
-    "mypy>=1.15",
     "types-pyyaml>=6.0",
     "types-requests>=2.32",
+    "ruff>=0.13.2",
 ]
 
 [tool.uv]
@@ -81,27 +95,45 @@ include = [
     "financetoolkit/**",
 ]
 
+[tool.black]
+# Current formatting set to Python 3.13
+target-version = ["py313"]
+
 [tool.ruff]
 line-length = 122
-lint.select = ["E", "W", "F", "Q", "W", "S", "UP", "I", "PD", "SIM", "PLC", "PLE", "PLR", "PLW"]
-lint.ignore = ["S105", "S106", "S107", "PLR0913", "PLR0912", "PLR0911", "PLR0915", "PD010", "PD013", "S310", "S301", "S101"]
-exclude = ["conftest.py"]
+lint.select = [
+    "E",   # E: pycodestyle error checks (style errors)
+    "W",   # W: pycodestyle warning checks (style warnings)
+    "F",   # F: pyflakes checks (possible logic errors, undefined names)
+    "Q",   # Q: quote-related checks (enforce consistent quoting rules)
+    "W",   # W: duplicate W entry preserved from original configuration
+    "S",   # S: security-related checks (bandit-style security rules)
+    "UP",  # UP: pyupgrade / modernization fixers and related rules
+    "I",   # I: import-related checks (ordering, unused imports)
+    "PD",  # PD: plugin-specific or project-defined diagnostics
+    "SIM", # SIM: similarity/simplification suggestions (refactoring hints)
+    "PLC", # PLC: complexity-related checks (long/complex functions)
+    "PLE", # PLE: plugin linting errors (external plugin category)
+    "PLR", # PLR: plugin linting rules (external plugin category)
+    "PLW", # PLW: plugin linting warnings (external plugin category)
+]
 
-[tool.pylint]
-max-line-length = 122
-disable = [
-    "R0913", # too-many-arguments
-    "W1514", # using-import-outside-toplevel
-    "R0911", # too-many-return-statements
-    "R0912", # too-many-branches
-    "R0915", # too-many-statements
-    "R0801", # duplicate-code
-    "W0221", # arguments-differ
-    "C0103", # invalid-name
-    "E1131", # unsupported-binary-operation
-    "R0917", # too-many-positional-arguments
-    "W0212", # protected-access
-    ]
+lint.ignore = [
+    "S105",  # Bandit: possible hardcoded credential/secret
+    "S106",  # Bandit: insecure usage pattern (e.g., weak crypto or risky API)
+    "S107",  # Bandit: use of eval/exec or other code-injection risk
+    "PLR0913",  # Pylint-refactor: too many arguments in function/method
+    "PLR0912",  # Pylint-refactor: too many branches in function/method
+    "PLR0911",  # Pylint-refactor: too many return statements in function/method
+    "PLR0915",  # Pylint-refactor: function/method too many statements (too complex)
+    "PD010",  # Docstring/plugin: docstring-related diagnostic (see plugin docs)
+    "PD013",  # Docstring/plugin: docstring style/content diagnostic (see plugin docs)
+    "S310",  # Bandit: insecure deserialization or risky module usage
+    "S301",  # Bandit: insecure crypto/hash or deprecated API usage
+    "S101",  # Bandit: use of assert (assert removed in optimized runs)
+]
+
+exclude = ["conftest.py"]
 
 [tool.ruff.lint.isort]
 combine-as-imports = true
@@ -114,11 +146,8 @@ skip_gitignore = true
 combine_as_imports = true
 
 [tool.codespell]
-ignore-words-list = 'te,hsi,amplitud,nam,tha,plaform'
+ignore-words-list = 'te,hsi,amplitud,nam,tha,plaform,ine'
 skip = '*.json,./.git,pyproject.toml,poetry.lock,examples'
-
-[tool.mypy]
-disable_error_code = "misc, valid-type, attr-defined, index"
 
 [tool.pytest.ini_options]
 filterwarnings = [

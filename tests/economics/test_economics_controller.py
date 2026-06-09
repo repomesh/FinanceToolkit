@@ -1,0 +1,237 @@
+"""Economics Controller Tests"""
+
+# pylint: disable=missing-function-docstring
+
+
+def test_get_gross_domestic_product(recorder, economics_module):
+    recorder.capture(economics_module.get_gross_domestic_product())
+    recorder.capture(economics_module.get_gross_domestic_product(growth=True))
+    recorder.capture(
+        economics_module.get_gross_domestic_product(growth=True, lag=[1, 2, 3])
+    )
+
+
+def test_get_gross_domestic_product_deflator(recorder, economics_module):
+    recorder.capture(economics_module.get_gross_domestic_product_deflator())
+    recorder.capture(economics_module.get_gross_domestic_product_deflator(growth=True))
+
+
+def test_get_total_consumption(recorder, economics_module):
+    recorder.capture(economics_module.get_total_consumption())
+    recorder.capture(economics_module.get_total_consumption(growth=True))
+
+
+def test_get_total_consumption_to_gdp_ratio(recorder, economics_module):
+    recorder.capture(economics_module.get_total_consumption_to_gdp_ratio())
+    recorder.capture(economics_module.get_total_consumption_to_gdp_ratio(growth=True))
+
+
+def test_get_investment(recorder, economics_module):
+    recorder.capture(economics_module.get_investment())
+    recorder.capture(economics_module.get_investment(growth=True))
+
+
+def test_get_investment_to_gdp_ratio(recorder, economics_module):
+    recorder.capture(economics_module.get_investment_to_gdp_ratio())
+    recorder.capture(economics_module.get_investment_to_gdp_ratio(growth=True))
+
+
+def test_get_fixed_investment(recorder, economics_module):
+    recorder.capture(economics_module.get_fixed_investment())
+    recorder.capture(economics_module.get_fixed_investment(growth=True))
+
+
+def test_get_fixed_investment_to_gdp_ratio(recorder, economics_module):
+    recorder.capture(economics_module.get_fixed_investment_to_gdp_ratio())
+    recorder.capture(economics_module.get_fixed_investment_to_gdp_ratio(growth=True))
+
+
+def test_get_exports(recorder, economics_module):
+    recorder.capture(economics_module.get_exports())
+    recorder.capture(economics_module.get_exports(growth=True))
+
+
+def test_get_exports_to_gdp_ratio(recorder, economics_module):
+    recorder.capture(economics_module.get_exports_to_gdp_ratio())
+    recorder.capture(economics_module.get_exports_to_gdp_ratio(growth=True))
+
+
+def test_get_imports(recorder, economics_module):
+    recorder.capture(economics_module.get_imports())
+    recorder.capture(economics_module.get_imports(growth=True))
+
+
+def test_get_imports_to_gdp_ratio(recorder, economics_module):
+    recorder.capture(economics_module.get_imports_to_gdp_ratio())
+    recorder.capture(economics_module.get_imports_to_gdp_ratio(growth=True))
+
+
+def test_get_current_account_balance(recorder, economics_module):
+    recorder.capture(economics_module.get_current_account_balance())
+    recorder.capture(economics_module.get_current_account_balance(growth=True))
+
+
+def test_get_current_account_balance_to_gdp_ratio(recorder, economics_module):
+    recorder.capture(economics_module.get_current_account_balance_to_gdp_ratio())
+    recorder.capture(
+        economics_module.get_current_account_balance_to_gdp_ratio(growth=True)
+    )
+
+
+def test_get_government_debt(recorder, economics_module):
+    recorder.capture(economics_module.get_government_debt())
+    recorder.capture(economics_module.get_government_debt(growth=True))
+
+
+def test_get_government_debt_to_gdp_ratio(recorder, economics_module):
+    recorder.capture(economics_module.get_government_debt_to_gdp_ratio())
+    recorder.capture(economics_module.get_government_debt_to_gdp_ratio(growth=True))
+
+
+def test_get_government_revenue(recorder, economics_module):
+    recorder.capture(economics_module.get_government_revenue())
+    recorder.capture(economics_module.get_government_revenue(growth=True))
+
+
+def test_get_government_revenue_to_gdp_ratio(recorder, economics_module):
+    recorder.capture(economics_module.get_government_revenue_to_gdp_ratio())
+    recorder.capture(economics_module.get_government_revenue_to_gdp_ratio(growth=True))
+
+
+def test_get_government_tax_revenue(recorder, economics_module):
+    recorder.capture(economics_module.get_government_tax_revenue())
+    recorder.capture(economics_module.get_government_tax_revenue(growth=True))
+
+
+def test_get_government_tax_revenue_to_gdp_ratio(recorder, economics_module):
+    recorder.capture(economics_module.get_government_tax_revenue_to_gdp_ratio())
+    recorder.capture(
+        economics_module.get_government_tax_revenue_to_gdp_ratio(growth=True)
+    )
+
+
+def test_get_government_expenditure(recorder, economics_module):
+    recorder.capture(economics_module.get_government_expenditure())
+    recorder.capture(economics_module.get_government_expenditure(growth=True))
+
+
+def test_get_government_expenditure_to_gdp_ratio(recorder, economics_module):
+    recorder.capture(economics_module.get_government_expenditure_to_gdp_ratio())
+    recorder.capture(
+        economics_module.get_government_expenditure_to_gdp_ratio(growth=True)
+    )
+
+
+def test_get_government_deficit(recorder, economics_module):
+    recorder.capture(economics_module.get_government_deficit())
+    recorder.capture(economics_module.get_government_deficit(growth=True))
+
+
+def test_get_government_deficit_to_gdp_ratio(recorder, economics_module):
+    recorder.capture(economics_module.get_government_deficit_to_gdp_ratio())
+    recorder.capture(economics_module.get_government_deficit_to_gdp_ratio(growth=True))
+
+
+def test_get_trust_in_government(recorder, economics_module):
+    recorder.capture(economics_module.get_trust_in_government())
+    recorder.capture(economics_module.get_trust_in_government(growth=True))
+
+
+def test_get_consumer_price_index(recorder, economics_module):
+    recorder.capture(economics_module.get_consumer_price_index())
+    recorder.capture(economics_module.get_consumer_price_index(growth=True))
+
+
+def test_get_inflation_rate(recorder, economics_module):
+    recorder.capture(economics_module.get_inflation_rate())
+    recorder.capture(economics_module.get_inflation_rate(growth=True))
+
+
+def test_get_consumer_confidence_index(recorder, economics_module):
+    recorder.capture(economics_module.get_consumer_confidence_index())
+    recorder.capture(economics_module.get_consumer_confidence_index(growth=True))
+
+
+def test_get_business_confidence_index(recorder, economics_module):
+    recorder.capture(economics_module.get_business_confidence_index())
+    recorder.capture(economics_module.get_business_confidence_index(growth=True))
+
+
+def test_get_composite_leading_indicator(recorder, economics_module):
+    recorder.capture(economics_module.get_composite_leading_indicator())
+    recorder.capture(economics_module.get_composite_leading_indicator(growth=True))
+
+
+def test_get_house_prices(recorder, economics_module):
+    recorder.capture(economics_module.get_house_prices())
+    recorder.capture(economics_module.get_house_prices(growth=True))
+
+
+def test_get_rent_prices(recorder, economics_module):
+    recorder.capture(economics_module.get_rent_prices())
+    recorder.capture(economics_module.get_rent_prices(growth=True))
+
+
+def test_get_share_prices(recorder, economics_module):
+    recorder.capture(economics_module.get_share_prices())
+    recorder.capture(economics_module.get_share_prices(growth=True))
+
+
+def test_get_exchange_rates(recorder, economics_module):
+    recorder.capture(economics_module.get_exchange_rates())
+    recorder.capture(economics_module.get_exchange_rates(growth=True))
+
+
+def test_get_money_supply(recorder, economics_module):
+    recorder.capture(economics_module.get_money_supply())
+    recorder.capture(economics_module.get_money_supply(growth=True))
+
+
+def test_get_central_bank_policy_rate(recorder, economics_module):
+    recorder.capture(economics_module.get_central_bank_policy_rate())
+    recorder.capture(economics_module.get_central_bank_policy_rate(growth=True))
+
+
+def test_get_short_term_interest_rate(recorder, economics_module):
+    recorder.capture(economics_module.get_short_term_interest_rate())
+    recorder.capture(economics_module.get_short_term_interest_rate(growth=True))
+
+
+def test_get_long_term_interest_rate(recorder, economics_module):
+    recorder.capture(economics_module.get_long_term_interest_rate())
+    recorder.capture(economics_module.get_long_term_interest_rate(growth=True))
+
+
+def test_get_renewable_energy(recorder, economics_module):
+    recorder.capture(economics_module.get_renewable_energy())
+    recorder.capture(economics_module.get_renewable_energy(growth=True))
+
+
+def test_get_carbon_footprint(recorder, economics_module):
+    recorder.capture(economics_module.get_carbon_footprint())
+    recorder.capture(economics_module.get_carbon_footprint(growth=True))
+
+
+def test_get_unemployment_rate(recorder, economics_module):
+    recorder.capture(economics_module.get_unemployment_rate())
+    recorder.capture(economics_module.get_unemployment_rate(growth=True))
+
+
+def test_get_labour_productivity(recorder, economics_module):
+    recorder.capture(economics_module.get_labour_productivity())
+    recorder.capture(economics_module.get_labour_productivity(growth=True))
+
+
+def test_get_income_inequality(recorder, economics_module):
+    recorder.capture(economics_module.get_income_inequality())
+    recorder.capture(economics_module.get_income_inequality(growth=True))
+
+
+def test_get_population_statistics(recorder, economics_module):
+    recorder.capture(economics_module.get_population_statistics())
+    recorder.capture(economics_module.get_population_statistics(growth=True))
+
+
+def test_get_poverty_rate(recorder, economics_module):
+    recorder.capture(economics_module.get_poverty_rate())
+    recorder.capture(economics_module.get_poverty_rate(growth=True))

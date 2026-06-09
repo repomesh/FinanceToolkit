@@ -2,7 +2,6 @@
 
 """Normalization Model Tests"""
 
-
 import pandas as pd
 
 from financetoolkit import normalization_model

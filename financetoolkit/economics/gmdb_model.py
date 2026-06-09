@@ -1,6 +1,10 @@
 """GMBD Model"""
 
+import io
+
 import pandas as pd
+
+from financetoolkit.helpers import get_request
 
 GMD_LOCATION = "https://github.com/KMueller-Lab/Global-Macro-Database/blob/main/data/final/data_final.dta?raw=True"
 
@@ -19,7 +23,10 @@ def collect_global_macro_database_dataset(
     Returns:
         pd.DataFrame: A transformed DataFrame indexed by 'year' with country-wise columns.
     """
-    gmd_dataset = pd.read_stata(filepath_or_buffer=gmd_location)
+    response = get_request(gmd_location, timeout=30)
+    response.raise_for_status()
+
+    gmd_dataset = pd.read_stata(filepath_or_buffer=io.BytesIO(response.content))
     gmd_dataset["year"] = pd.PeriodIndex(gmd_dataset["year"].astype(int), freq="Y")
     gmd_dataset = gmd_dataset.set_index(["year", "countryname"])
     gmd_dataset.index.names = [None] * gmd_dataset.index.nlevels

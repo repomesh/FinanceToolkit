@@ -88,7 +88,6 @@ def collect_financial_statements(
                 api_key=api_key,
                 quarter=quarter,
                 start_date=start_date,
-                end_date=end_date,
                 sleep_timer=sleep_timer,
                 user_subscription=user_subscription,
             )

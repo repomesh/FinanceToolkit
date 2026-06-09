@@ -3,6 +3,7 @@
 [![GitHub Sponsors](https://img.shields.io/badge/Sponsor_this_Project-grey?logo=github)](https://github.com/sponsors/JerBouma)
 [![Buy Me a Coffee](https://img.shields.io/badge/Buy_Me_a_Coffee-grey?logo=buymeacoffee)](https://www.buymeacoffee.com/jerbouma)
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-grey?logo=Linkedin&logoColor=white)](https://www.linkedin.com/in/boumajeroen/)
+[![MCP Server](https://img.shields.io/badge/MCP_Server-grey?logo=modelcontextprotocol)](https://github.com/JerBouma/FinanceToolkit/blob/main/MCP.md)
 [![Documentation](https://img.shields.io/badge/Documentation-grey?logo=readme)](https://www.jeroenbouma.com/projects/financetoolkit/docs)
 [![Supported Python Versions](https://img.shields.io/pypi/pyversions/financetoolkit)](https://pypi.org/project/FinanceToolkit/)
 [![PYPI Version](https://img.shields.io/pypi/v/FinanceToolkit)](https://pypi.org/project/FinanceToolkit/)
@@ -12,21 +13,24 @@ While browsing a variety of websites, I repeatedly observed significant fluctuat
 
 For example, Microsoft's Price-to-Earnings (PE) ratio on the 6th of May, 2023 is reported to be 28.93 (Stockopedia), 32.05 (Morningstar), 32.66 (Macrotrends), 33.09 (Finance Charts), 33.66 (Y Charts), 33.67 (Wall Street Journal), 33.80 (Yahoo Finance) and 34.4 (Companies Market Cap). All of these calculations are correct, however the method of calculation varies leading to different results. Therefore, collecting data from multiple sources can lead to wrong interpretation of the results given that one source could apply a different definition than another. And that is, if that definition is even available as often the underlying methods are hidden behind a paid subscription.
 
-**This is why I designed the FinanceToolkit**, this is an open-source toolkit in which all relevant financial ratios ([150+](#core-functionality-and-metrics)), indicators and performance measurements are written down in the most simplistic way allowing for complete transparency of the method of calculation ([proof](https://github.com/JerBouma/FinanceToolkit/blob/main/financetoolkit/ratios/valuation_model.py)). This enables you to avoid dependence on metrics from other providers that do not provide their methods. With a large selection of financial statements in hand, it facilitates streamlined calculations, promoting the adoption of a consistent and universally understood methods and formulas.
+**This is why I designed the FinanceToolkit**, this is an open-source toolkit in which all relevant financial ratios ([200+](#core-functionality-and-metrics)), indicators and performance measurements are written down in the most simplistic way allowing for complete transparency of the method of calculation ([proof](https://github.com/JerBouma/FinanceToolkit/blob/main/financetoolkit/ratios/valuation_model.py)). This enables you to avoid dependence on metrics from other providers that do not provide their methods. With a large selection of financial statements in hand, it facilitates streamlined calculations, promoting the adoption of a consistent and universally understood methods and formulas.
 
-The Finance Toolkit not only supports Equities. Even for Options, Currencies, Cryptocurrencies, ETFs, Mutual Funds, Indices, Money Markets, Commodities, Key Economic Indicators and more, the Finance Toolkit can be used to obtain historical data as well as important performance and risk measurements such as the Sharpe Ratio and Value at Risk.
+Beyond Equities, it supports Options, Currencies, Cryptocurrencies, ETFs, Mutual Funds, Indices, Money Markets, Commodities, Key Economic Indicators and more, allowing you to obtain historical data as well as important performance and risk measurements such as the Sharpe Ratio and Value at Risk.
 
-The Finance Toolkit is complimented very well with the [Finance Database 🌎](https://github.com/JerBouma/FinanceDatabase), a database that features 300.000+ symbols containing Equities, ETFs, Funds, Indices, Currencies, Cryptocurrencies and Money Markets. By utilising both, it is possible to do a fully-fledged competitive analysis with the tickers found from the FinanceDatabase inputted into the FinanceToolkit.
+Complementing this is the [Finance Database 🌎](https://github.com/JerBouma/FinanceDatabase), a database featuring 300.000+ symbols containing Equities, ETFs, Funds, Indices, Currencies, Cryptocurrencies and Money Markets. By utilising both, it is possible to do a fully-fledged competitive analysis with the tickers found from the FinanceDatabase inputted into the FinanceToolkit.
+
+**The Finance Toolkit is also available as an [MCP Server](https://github.com/JerBouma/FinanceToolkit/blob/main/MCP.md)**, connect it to any AI assistant that supports the Model Context Protocol (Claude, GitHub Copilot, Cursor, Windsurf, and more) and query 200+ financial metrics conversationally. **No Python installation required**, a single command configures your AI client automatically.
 
 # Table of Contents
 
 1. [Installation](#installation)
 2. [Basic Usage](#basic-usage)
 3. [Functionality and Metrics](#core-functionality-and-metrics)
-4. [Questions & Answers](#questions--answers)
-5. [Contributing](#contributing)
-6. [Mentions](#mentions)
-7. [Contact](#contact)
+4. [MCP Server](#mcp-server)
+5. [Questions & Answers](#questions--answers)
+6. [Contributing](#contributing)
+7. [Mentions](#mentions)
+8. [Contact](#contact)
 
 # Installation
 
@@ -34,7 +38,7 @@ Before installation, consider starring the project on GitHub which helps others 
 
 <a href="https://github.com/JerBouma/FinanceToolkit" target="_blank"><img width="1415" alt="image" src="https://github.com/JerBouma/FinanceToolkit/assets/46355364/014109fe-0c68-47d4-99bd-217c69dcea8d"></a>
 
-To install the FinanceToolkit it simply requires the following:
+To install the Finance Toolkit it simply requires the following:
 
 ```
 pip install financetoolkit -U
@@ -47,7 +51,7 @@ from financetoolkit import Toolkit
 
 companies = Toolkit(
     tickers=['GOOGL', 'MSFT', 'AMZN'],
-    api_key="FINANCIAL_MODELING_PREP_KEY",
+    api_key="FINANCIAL_MODELING_PREP_KEY",  # replace with your actual API key
 )
 ```
 To be able to get started, you need to obtain an API Key from FinancialModelingPrep. This is used to gain access to 30+ years of financial statement both annually and quarterly. Note that the Free plan is limited to 250 requests each day, 5 years of data and only features companies listed on US exchanges.
@@ -60,6 +64,14 @@ ___
 Through the link you are able to subscribe for the free plan and also premium plans at a **15% discount**. This is an affiliate link and thus supports the project at the same time. I have chosen FinancialModelingPrep as a source as I find it to be the most transparent, reliable and at an affordable price. I have yet to find a platform offering such low prices for the amount of data offered. When you notice that the data is inaccurate or have any other issue related to the data, note that I simply provide the means to access this data and I am not responsible for the accuracy of the data itself. For this, use [their contact form](https://site.financialmodelingprep.com/contact) or provide the data yourself.
 
 **By default, the Finance Toolkit prioritizes Financial Modeling Prep for data retrieval. If data acquisition from Financial Modeling Prep is unsuccessful (e.g., due to plan restrictions or API key issues), the toolkit automatically switches to Yahoo Finance as a secondary source.** To disable this fallback behavior and exclusively use Financial Modeling Prep, set `enforce_source="FinancialModelingPrep"` during Toolkit initialization. This configuration ensures that an error is raised if Financial Modeling Prep data cannot be accessed. Alternatively, you can set `enforce_source="YahooFinance"` to exclusively use Yahoo Finance as the data source.
+
+Prefer a conversational interface over writing Python? Run the one-line setup wizard and it will configure your AI client automatically, **no local installation or Python knowledge required**:
+
+```
+uvx --from "financetoolkit[mcp]" financetoolkit-mcp-setup
+```
+
+Supports Claude Desktop, Claude Code, GitHub Copilot (VS Code), Cursor, Windsurf, and Gemini. See the full MCP documentation [here](https://github.com/JerBouma/FinanceToolkit/blob/main/MCP.md).
 
 # Basic Usage
 
@@ -303,11 +315,11 @@ In which the weights and returns can be depicted as follows:
 
 # Core Functionality and Metrics
 
-The Finance Toolkit has the ability to collect 30+ years of financial statements and calculate 150+ financial metrics. The following list shows all of the available functionality and metrics.
+The Finance Toolkit has the ability to collect 30+ years of financial statements and calculate 200+ financial metrics. The following list shows all of the available functionality and metrics.
 
 ___ 
 
-<b><div align="center">Find a variety of How-To Guides including Code Documentation for the FinanceToolkit <a href="https://www.jeroenbouma.com/projects/financetoolkit">here</a>.</div></b>
+<b><div align="center">Find a variety of How-To Guides including Code Documentation for the Finance Toolkit <a href="https://www.jeroenbouma.com/projects/financetoolkit">here</a>.</div></b>
 ___
 
 Each ratio and indicator has a corresponding function that can be called directly for example `ratios.get_return_on_equity` or `technicals.get_relative_strength_index`. However, there are also functions that collect multiple ratios or indicators at once such as `ratios.collect_profitability_ratios`. These functions are useful when you want to collect a large amount of ratios or indicators at once.
@@ -932,7 +944,7 @@ Which returns:
 
 > **Company List**
 
-The stock list function returns a complete list of all the symbols that can be used in the FinanceToolkit. These are over 60.000 symbols. Find the documentation [here](https://www.jeroenbouma.com/projects/financetoolkit/docs/discovery#get_stock_list).
+The stock list function returns a complete list of all the symbols that can be used in the Finance Toolkit. These are over 60.000 symbols. Find the documentation [here](https://www.jeroenbouma.com/projects/financetoolkit/docs/discovery#get_stock_list).
 
 As an example:
 
@@ -1152,7 +1164,7 @@ Obtain cryptocurrency lists and cryptocurrency quotes that can be used in the Fi
 
 > **Cryptocurrency List**
 
-The crypto list function returns a complete list of all crypto symbols that can be used in the FinanceToolkit. These are over 4.000 symbols. Find the documentation [here](https://www.jeroenbouma.com/projects/financetoolkit/docs/discovery#get_crypto_list).
+The crypto list function returns a complete list of all crypto symbols that can be used in the Finance Toolkit. These are over 4.000 symbols. Find the documentation [here](https://www.jeroenbouma.com/projects/financetoolkit/docs/discovery#get_crypto_list).
 
 As an example:
 
@@ -1190,7 +1202,7 @@ Obtain forex lists and forex quotes that can be used in the Finance Toolkit.
 
 > **Forex List**
 
-The forex list function returns a complete list of all forex symbols that can be used in the FinanceToolkit. These are over 1.000 symbols. Find the documentation [here](https://www.jeroenbouma.com/projects/financetoolkit/docs/discovery#get_forex_list).
+The forex list function returns a complete list of all forex symbols that can be used in the Finance Toolkit. These are over 1.000 symbols. Find the documentation [here](https://www.jeroenbouma.com/projects/financetoolkit/docs/discovery#get_forex_list).
 
 As an example:
 
@@ -1228,7 +1240,7 @@ Obtain commodity lists and company quotes that can be used in the Finance Toolki
 
 > **Commodity List**
 
-The commodity list function returns a complete list of all commodity symbols that can be used in the FinanceToolkit. These are over 1.000 symbols. Find the documentation [here](https://www.jeroenbouma.com/projects/financetoolkit/docs/discovery#get_commodity_list).
+The commodity list function returns a complete list of all commodity symbols that can be used in the Finance Toolkit. These are over 1.000 symbols. Find the documentation [here](https://www.jeroenbouma.com/projects/financetoolkit/docs/discovery#get_commodity_list).
 
 As an example:
 
@@ -1266,7 +1278,7 @@ Obtain ETF and Index lists and quotes that can be used in the Finance Toolkit.
 
 > **ETF List**
 
-The etf list function returns a complete list of all etf symbols that can be used in the FinanceToolkit. Find the documentation [here](https://www.jeroenbouma.com/projects/financetoolkit/docs/discovery#get_etf_list).
+The etf list function returns a complete list of all etf symbols that can be used in the Finance Toolkit. Find the documentation [here](https://www.jeroenbouma.com/projects/financetoolkit/docs/discovery#get_etf_list).
 
 As an example:
 
@@ -1297,7 +1309,7 @@ Which returns:
 
 > **Index List**
 
-The index list function returns a complete list of all etf symbols that can be used in the FinanceToolkit. Find the documentation [here](https://www.jeroenbouma.com/projects/financetoolkit/docs/discovery#get_index_list).
+The index list function returns a complete list of all etf symbols that can be used in the Finance Toolkit. Find the documentation [here](https://www.jeroenbouma.com/projects/financetoolkit/docs/discovery#get_index_list).
 
 As an example:
 
@@ -3067,6 +3079,57 @@ This returns a rather large DataFrame so to keep it concise, only the first 5 ti
 
 </details>
 
+# MCP Server
+
+The Finance Toolkit contains a **MCP Server** that exposes 200+ financial metrics, models, and economic indicators directly to any AI assistant that supports the Model Context Protocol including Claude Desktop & Code, GitHub Copilot, Cursor and Windsurf. No local installation is required; the setup wizard configures your client(s) to launch the server on demand via `uvx`:
+
+```
+uvx --from "financetoolkit[mcp]" financetoolkit-mcp-setup
+```
+
+After the installation process is finished, it will automatically launch the setup wizard. For more information about the setup wizard, see the [MCP Documentation](https://github.com/JerBouma/FinanceToolkit/blob/main/MCP.md) which also contains example prompts to get you started with using the Finance Toolkit MCP server in your AI assistant.
+
+Once configured, you can ask your AI assistant questions like:
+
+> *"Compare Apple with Microsoft, what company is the most profitable?"*
+
+> *"When looking at biggest banks in Europe, which one seems to be the most solvent?"*
+
+> *"Tell me something about the Semiconductor industry, is it overbought?"*
+
+If you prefer not to run the setup wizard, you can configure each client manually by editing its JSON configuration file. The `env` block accepts either of two environment variables — set whichever suits your workflow. When both are present the directly-set key takes priority.
+
+- `FINANCIAL_MODELING_PREP_API_KEY`: your API key embedded directly in the config.
+- `FINANCETOOLKIT_ENV_FILE`: an absolute path to a `.env` file that contains `FINANCIAL_MODELING_PREP_API_KEY=<your-key>`.
+
+The command needing to boot up the MCP server is `uvx --from "financetoolkit[mcp]" financetoolkit-mcp`, where uvx should be set as the *command* and the rest as *args* in the config entry for each client.
+
+As an example, the Claude Desktop configuration file lives at a platform-specific path (see other client documentation [here](https://github.com/JerBouma/FinanceToolkit/blob/main/MCP.md)):
+
+| Platform | Path |
+|:---|:---|
+| macOS | `~/Library/Application Support/Claude/claude_desktop_config.json` |
+| Windows | `%APPDATA%\Claude\claude_desktop_config.json` |
+| Linux | `~/.config/claude/claude_desktop_config.json` |
+
+Open (or create) that file and add the `finance-toolkit` entry inside `mcpServers`. To embed your API key directly:
+
+```json
+{
+  "mcpServers": {
+    "finance-toolkit": {
+      "command": "uvx",
+      "args": ["--from", "financetoolkit[mcp]", "financetoolkit-mcp"],
+      "env": {
+        "FINANCIAL_MODELING_PREP_API_KEY": "YOUR_API_KEY_HERE"
+      }
+    }
+  }
+}
+```
+
+After saving, **restart Claude Desktop** and the Finance Toolkit tools will appear. Find other client configuration instructions in the [MCP Documentation](https://github.com/JerBouma/FinanceToolkit/blob/main/MCP.md).
+
 # Questions & Answers
 
 This section includes frequently asked questions and is meant to clear up confusion about certain results and/or deviations from other sources. If you have any questions that are not answered here, feel free to reach out to me via the contact details below.
@@ -3127,10 +3190,10 @@ The goal of the Finance Toolkit is to make any type of financial calculation as 
 
 # Mentions
 
-The FinanceToolkit has been mentioned in various blogposts, research papers, newsletters and social media. Below is a list of some of the mentions that I am aware of. **If you have any other mentions, feel free to reach out to me so I can add them to this list.**
+The Finance Toolkit has been mentioned in various blogposts, research papers, newsletters and social media. Below is a list of some of the mentions that I am aware of. **If you have any other mentions, feel free to reach out to me so I can add them to this list.**
 
 **Blogposts**
-- [A Deep Dive into EOY Financial Performance & Risk Measures of Big Five using the FinanceToolkit in Python](https://wire.insiderfinance.io/a-deep-dive-into-eoy-financial-performance-risk-measures-of-big-five-using-the-financetoolkit-in-ef93fddd11db)
+- [A Deep Dive into EOY Financial Performance & Risk Measures of Big Five using the Finance Toolkit in Python](https://wire.insiderfinance.io/a-deep-dive-into-eoy-financial-performance-risk-measures-of-big-five-using-the-financetoolkit-in-ef93fddd11db)
 - [Discovering the Best Integrated Platforms for Big Tech Quantitative Finance — 1. Finance Toolkit](https://wire.insiderfinance.io/discovering-the-best-integrated-platforms-for-big-tech-quantitative-finance-1-finance-toolkit-2e29b67eb4ea)
 - [Investment Analysis — Finance Database](https://alpha2phi.medium.com/investment-analysis-finance-database-61f47ecfe7ca)
 - [Unlocking Financial Clarity: Introducing the Open-Source Finance Toolkit Powered by FMP](https://site.financialmodelingprep.com/education/ESG/unlocking-financial-clarity-introducing-the-open-source-finance-toolkit-powered-by-fmp)
@@ -3147,7 +3210,7 @@ The FinanceToolkit has been mentioned in various blogposts, research papers, new
 - [Quant Science](https://www.threads.com/@quantscience_/post/DH1FDTGI7oi/the-project-is-finance-toolkit-its-available-on-github-here-httpsgithubcomjerbou?hl=zh-hk)
 
 # Contact
-If you have any questions about the FinanceToolkit or would like to share with me what you have been working on, feel free to reach out to me via:
+If you have any questions about the Finance Toolkit or would like to share with me what you have been working on, feel free to reach out to me via:
 
 - **Website**: https://jeroenbouma.com/
 - **LinkedIn:** https://www.linkedin.com/in/boumajeroen/

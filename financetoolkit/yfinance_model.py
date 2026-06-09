@@ -9,10 +9,10 @@ from urllib.error import HTTPError, URLError
 
 import numpy as np
 import pandas as pd
-import requests
 import yfinance as yf
 
 from financetoolkit import helpers
+from financetoolkit.helpers import get_request
 from financetoolkit.utilities import logger_model
 
 logger = logger_model.get_logger()
@@ -267,13 +267,9 @@ def get_historical_statistics(ticker: str) -> pd.Series:
     Returns:
         pd.Series: A Sries containing the statistics for the given ticker.
     """
-    response = requests.get(
+    response = get_request(
         f"https://query1.finance.yahoo.com/v8/finance/chart/{ticker}?interval=1d&range=None",
         timeout=60,
-        headers={
-            "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit"
-            "/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36"
-        },
     )
 
     if response.status_code == 200:  # noqa

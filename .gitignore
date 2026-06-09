@@ -5,8 +5,6 @@
 *.ipynb
 cached/
 debugging.py
-.vscode/
-*.sh
 
 # Finance Toolkit Example Datasets
 !examples/*.ipynb
@@ -20,6 +18,12 @@ debugging.py
 !tests/datasets/*.xlsx
 !tests/*/csv/*/*.csv
 !tests/csv/*/*.csv
+
+# VS Code
+.agents
+.vscode/
+.claude/
+*.sh
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -1,30 +1,10 @@
 """Options Controller Tests""" ""
-import pandas as pd
-
-from financetoolkit import Toolkit
-
-historical = pd.read_pickle("tests/datasets/historical_dataset.pickle")
-risk_free_rate = pd.read_pickle("tests/datasets/risk_free_rate.pickle")
-treasury_data = pd.read_pickle("tests/datasets/treasury_data.pickle")
-
-toolkit = Toolkit(
-    tickers=["AAPL", "MSFT"],
-    historical=historical,
-    convert_currency=False,
-    start_date="2019-12-31",
-    end_date="2023-01-01",
-    sleep_timer=False,
-)
-
-toolkit._daily_risk_free_rate = risk_free_rate
-toolkit._daily_treasury_data = treasury_data
-
-options_module = toolkit.options
+import pytest
 
 # pylint: disable=missing-function-docstring
 
 
-def test_get_binomial_model(recorder):
+def test_get_binomial_model(recorder, options_module):
     recorder.capture(options_module.get_binomial_model())
     recorder.capture(options_module.get_binomial_model(put_option=True))
     recorder.capture(options_module.get_binomial_model(american_option=True))
@@ -40,7 +20,7 @@ def test_get_binomial_model(recorder):
     )
 
 
-def test_get_black_scholes_model(recorder):
+def test_get_black_scholes_model(recorder, options_module):
     recorder.capture(options_module.get_black_scholes_model())
     recorder.capture(options_module.get_black_scholes_model(put_option=True))
     recorder.capture(
@@ -54,7 +34,26 @@ def test_get_black_scholes_model(recorder):
     )
 
 
-def test_collect_all_greeks(recorder):
+def test_get_stock_price_simulation(recorder, options_module):
+    recorder.capture(options_module.get_stock_price_simulation())
+    recorder.capture(options_module.get_stock_price_simulation(timesteps=5))
+
+
+def test_get_implied_volatility(recorder, options_module, live_mode):
+    if not live_mode:
+        pytest.skip("Requires --live flag for live option chain data")
+    recorder.capture(options_module.get_implied_volatility())
+    recorder.capture(options_module.get_implied_volatility(put_option=True))
+
+
+def test_get_option_chains(recorder, options_module, live_mode):
+    if not live_mode:
+        pytest.skip("Requires --live flag for live option chain data")
+    recorder.capture(options_module.get_option_chains())
+    recorder.capture(options_module.get_option_chains(put_option=True))
+
+
+def test_collect_all_greeks(recorder, options_module):
     recorder.capture(options_module.collect_all_greeks())
     recorder.capture(options_module.collect_all_greeks(put_option=True))
     recorder.capture(
@@ -68,7 +67,7 @@ def test_collect_all_greeks(recorder):
     )
 
 
-def test_collect_first_order_greeks(recorder):
+def test_collect_first_order_greeks(recorder, options_module):
     recorder.capture(options_module.collect_first_order_greeks())
     recorder.capture(options_module.collect_first_order_greeks(put_option=True))
     recorder.capture(
@@ -82,7 +81,7 @@ def test_collect_first_order_greeks(recorder):
     )
 
 
-def test_get_delta(recorder):
+def test_get_delta(recorder, options_module):
     recorder.capture(options_module.get_delta())
     recorder.capture(options_module.get_delta(put_option=True))
     recorder.capture(
@@ -96,7 +95,7 @@ def test_get_delta(recorder):
     )
 
 
-def test_get_dual_delta(recorder):
+def test_get_dual_delta(recorder, options_module):
     recorder.capture(options_module.get_dual_delta())
     recorder.capture(options_module.get_dual_delta(put_option=True))
     recorder.capture(
@@ -110,7 +109,7 @@ def test_get_dual_delta(recorder):
     )
 
 
-def test_get_vega(recorder):
+def test_get_vega(recorder, options_module):
     recorder.capture(options_module.get_vega())
     recorder.capture(
         options_module.get_vega(
@@ -123,7 +122,7 @@ def test_get_vega(recorder):
     )
 
 
-def test_get_theta(recorder):
+def test_get_theta(recorder, options_module):
     recorder.capture(options_module.get_theta())
     recorder.capture(options_module.get_theta(put_option=True))
     recorder.capture(
@@ -137,7 +136,7 @@ def test_get_theta(recorder):
     )
 
 
-def test_get_rho(recorder):
+def test_get_rho(recorder, options_module):
     recorder.capture(options_module.get_rho())
     recorder.capture(options_module.get_rho(put_option=True))
     recorder.capture(
@@ -151,7 +150,7 @@ def test_get_rho(recorder):
     )
 
 
-def test_get_epsilon(recorder):
+def test_get_epsilon(recorder, options_module):
     recorder.capture(options_module.get_epsilon())
     recorder.capture(options_module.get_epsilon(put_option=True))
     recorder.capture(
@@ -166,7 +165,7 @@ def test_get_epsilon(recorder):
     )
 
 
-def test_get_lambda(recorder):
+def test_get_lambda(recorder, options_module):
     recorder.capture(options_module.get_lambda())
     recorder.capture(options_module.get_lambda(put_option=True))
     recorder.capture(
@@ -181,7 +180,7 @@ def test_get_lambda(recorder):
     )
 
 
-def test_collect_second_order_greeks(recorder):
+def test_collect_second_order_greeks(recorder, options_module):
     recorder.capture(options_module.collect_second_order_greeks())
     recorder.capture(options_module.collect_second_order_greeks(put_option=True))
     recorder.capture(
@@ -194,7 +193,7 @@ def test_collect_second_order_greeks(recorder):
     )
 
 
-def test_get_gamma(recorder):
+def test_get_gamma(recorder, options_module):
     recorder.capture(options_module.get_gamma())
     recorder.capture(
         options_module.get_gamma(
@@ -208,7 +207,7 @@ def test_get_gamma(recorder):
     )
 
 
-def test_get_dual_gamma(recorder):
+def test_get_dual_gamma(recorder, options_module):
     recorder.capture(options_module.get_dual_gamma())
     recorder.capture(
         options_module.get_dual_gamma(
@@ -222,7 +221,7 @@ def test_get_dual_gamma(recorder):
     )
 
 
-def test_get_vanna(recorder):
+def test_get_vanna(recorder, options_module):
     recorder.capture(options_module.get_vanna())
     recorder.capture(
         options_module.get_vanna(
@@ -236,7 +235,7 @@ def test_get_vanna(recorder):
     )
 
 
-def test_get_charm(recorder):
+def test_get_charm(recorder, options_module):
     recorder.capture(options_module.get_charm())
     recorder.capture(options_module.get_charm(put_option=True))
     recorder.capture(
@@ -251,7 +250,7 @@ def test_get_charm(recorder):
     )
 
 
-def test_get_vomma(recorder):
+def test_get_vomma(recorder, options_module):
     recorder.capture(options_module.get_vomma())
     recorder.capture(
         options_module.get_vomma(
@@ -265,7 +264,7 @@ def test_get_vomma(recorder):
     )
 
 
-def test_get_vera(recorder):
+def test_get_vera(recorder, options_module):
     recorder.capture(options_module.get_vera())
     recorder.capture(
         options_module.get_vera(
@@ -279,7 +278,7 @@ def test_get_vera(recorder):
     )
 
 
-def test_get_veta(recorder):
+def test_get_veta(recorder, options_module):
     recorder.capture(options_module.get_veta())
     recorder.capture(
         options_module.get_veta(
@@ -292,7 +291,7 @@ def test_get_veta(recorder):
     )
 
 
-def test_get_partial_derivative(recorder):
+def test_get_partial_derivative(recorder, options_module):
     recorder.capture(options_module.get_partial_derivative())
     recorder.capture(
         options_module.get_partial_derivative(
@@ -304,7 +303,7 @@ def test_get_partial_derivative(recorder):
     )
 
 
-def test_collect_third_order_greeks(recorder):
+def test_collect_third_order_greeks(recorder, options_module):
     recorder.capture(options_module.collect_third_order_greeks())
     recorder.capture(
         options_module.collect_third_order_greeks(
@@ -316,7 +315,7 @@ def test_collect_third_order_greeks(recorder):
     )
 
 
-def test_get_speed(recorder):
+def test_get_speed(recorder, options_module):
     recorder.capture(options_module.get_speed())
     recorder.capture(
         options_module.get_speed(
@@ -329,7 +328,7 @@ def test_get_speed(recorder):
     )
 
 
-def test_get_zomma(recorder):
+def test_get_zomma(recorder, options_module):
     recorder.capture(options_module.get_zomma())
     recorder.capture(
         options_module.get_zomma(
@@ -342,7 +341,7 @@ def test_get_zomma(recorder):
     )
 
 
-def test_get_color(recorder):
+def test_get_color(recorder, options_module):
     recorder.capture(options_module.get_color())
     recorder.capture(
         options_module.get_color(
@@ -355,7 +354,7 @@ def test_get_color(recorder):
     )
 
 
-def test_get_ultima(recorder):
+def test_get_ultima(recorder, options_module):
     recorder.capture(options_module.get_ultima())
     recorder.capture(
         options_module.get_ultima(

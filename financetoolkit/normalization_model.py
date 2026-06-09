@@ -361,6 +361,8 @@ def copy_normalization_files(
         "to match up the rows in your dataframe with the normalization format.",
         save_location,
     )
+    save_location = Path(save_location)
+
     for statement in ["balance", "income", "cash", "statistics"]:
         if format_location:
             file_location = f"{format_location}/{statement}.csv"
@@ -369,4 +371,14 @@ def copy_normalization_files(
                 f"normalization/{statement}.csv"
             )
 
-        shutil.copyfile(file_location, Path(save_location, f"{statement}.csv"))
+        destination = save_location / f"{statement}.csv"
+        try:
+            shutil.copyfile(file_location, destination)
+        except PermissionError:
+            fallback = Path.cwd() / f"{statement}.csv"
+            logger.warning(
+                "Cannot write to %s (permission denied). Saving to %s instead.",
+                destination,
+                fallback,
+            )
+            shutil.copyfile(file_location, fallback)

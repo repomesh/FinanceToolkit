@@ -46,9 +46,8 @@ class Models:
 
         Args:
             tickers (str | list[str]): The ticker(s) to use for the models.
-            daily_historical (pd.DataFrame): The daily historical data.
-            period_historical (pd.DataFrame): The period historical data.
-            risk_free_rate (pd.DataFrame): The risk free rate data.
+            historical_data (pd.DataFrame): The historical data containing all periods.
+            risk_free_rate_data (pd.DataFrame): The risk free rate data.
             balance (pd.DataFrame): The balance sheet data.
             income (pd.DataFrame): The income statement data.
             cash (pd.DataFrame): The cash flow statement data.
@@ -134,6 +133,8 @@ class Models:
             - Asset Turnover = Revenue / Average Total Assets
             - Financial Leverage = Average Total Assets / Average Total Equity
             - ROE = Profit Margin * Asset Turnover * Financial Leverage
+
+        Also known as: DuPont, ROE decomposition, three-factor DuPont.
 
         Args:
             rounding (int, optional): The number of decimals to round the results to. Defaults to 4.
@@ -239,6 +240,8 @@ class Models:
             - ROA = Net Income / Average Total Assets
             - Total Asset Turnover = Revenue / Average Total Assets
             - ROE = Profit Margin * Asset Turnover * Financial Leverage * ROA * Total Asset Turnover
+
+        Also known as: extended DuPont, five-factor DuPont, ROE breakdown.
 
         Args:
             rounding (int, optional): The number of decimals to round the results to. Defaults to 4.
@@ -361,6 +364,8 @@ class Models:
         Minority Interest, minus Cash and Cash Equivalents.
 
         This breakdown is displayed in a DataFrame for each company and includes the option to show growth values as well.
+
+        Also known as: EV breakdown, enterprise value components, EV bridge.
 
         Args:
             diluted (bool, optional): Whether to use diluted shares in the calculation. Defaults to True.
@@ -493,6 +498,8 @@ class Models:
         Total Market Value of Capital (V): The total market value of capital is the sum of the market value of
         equity and the market value of debt (V = E + D). It represents the total value of the company's financing,
         both through equity and debt.
+
+        Also known as: WACC, blended cost of capital, discount rate.
 
         Args:
             show_full_results (bool, optional): Whether to show the full results or just the WACC values.
@@ -636,6 +643,8 @@ class Models:
             - Enterprise Value = Sum of Present Value of Cash Flow Projections + Terminal Value
             - Equity Value = Enterprise Value — Total Debt + Cash and Cash Equivalents
             - Intrinsic Value = Equity Value / Total Shares Outstanding
+
+        Also known as: DCF, discounted cash flow, fair value, intrinsic value.
 
         Args:
             growth_rate (float, list or dict): The growth rate to use for the cash flow projections. Can be one number
@@ -805,6 +814,8 @@ class Models:
         or even be suspended. Therefore, the Gordon Growth Model should be used with caution and in conjunction
         with other valuation methods.
 
+        Also known as: Gordon Growth Model, DDM, dividend discount model, GGM.
+
         Args:
             rate_of_return (float): The required rate of return.
             growth_rate (float): The growth rate of the dividends.
@@ -905,6 +916,8 @@ class Models:
             - A Z-Score of less than 1.81 indicates a high likelihood of bankruptcy.
             - A Z-Score between 1.81 and 2.99 indicates a gray area.
             - A Z-Score of greater than 2.99 indicates a low likelihood of bankruptcy.
+
+        Also known as: Altman Z-score, bankruptcy prediction, financial distress score.
 
         Args:
             diluted (bool, optional): Whether to use diluted shares outstanding in the calculation. Defaults to True.
@@ -1070,9 +1083,7 @@ class Models:
         Information to Separate Winners from Losers." Journal of Accounting Research, Vol. 38, No.
         3, 1999, pp. 1-41.
 
-        Args:
-            growth (bool, optional): Whether to calculate the growth of the values. Defaults to False.
-            lag (int | list[int], optional): The lag to use for the growth calculation. Defaults to 1.
+        Also known as: Piotroski F-score, financial strength, quality score.
 
         Returns:
             pd.DataFrame: DataFrame containing the Piotroski F-Score and its components.
@@ -1225,6 +1236,8 @@ class Models:
         The formula is as follows:
 
             - PVGO = Stock Price — Earnings Per Share / Weighted Average Cost of Capital
+
+        Also known as: PVGO, growth value.
 
         Args:
             calculate_daily (bool, optional): Whether to calculate the PVGO using daily historical data.

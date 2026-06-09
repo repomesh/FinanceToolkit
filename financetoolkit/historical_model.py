@@ -292,6 +292,14 @@ def get_historical_data(
         if rounding:
             historical_data = historical_data.round(rounding)
 
+        if not isinstance(historical_data.index, pd.Period):
+            historical_data = historical_data.loc[
+                [isinstance(item, pd.Period) for item in historical_data.index]
+            ]
+            historical_data.index = pd.PeriodIndex(
+                historical_data.index, freq=INTERVAL_STR[interval]
+            )
+
         return historical_data, no_data
 
     return pd.DataFrame(), no_data
