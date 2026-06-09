@@ -3,7 +3,8 @@
 import io
 
 import pandas as pd
-import requests
+
+from financetoolkit.helpers import get_request
 
 GMD_LOCATION = "https://github.com/KMueller-Lab/Global-Macro-Database/blob/main/data/final/data_final.dta?raw=True"
 
@@ -22,13 +23,7 @@ def collect_global_macro_database_dataset(
     Returns:
         pd.DataFrame: A transformed DataFrame indexed by 'year' with country-wise columns.
     """
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-        "AppleWebKit/537.36 (KHTML, like Gecko) "
-        "Chrome/58.0.3029.110 Safari/537.3"
-    }
-
-    response = requests.get(gmd_location, headers=headers, timeout=30)
+    response = get_request(gmd_location, timeout=30)
     response.raise_for_status()
 
     gmd_dataset = pd.read_stata(filepath_or_buffer=io.BytesIO(response.content))

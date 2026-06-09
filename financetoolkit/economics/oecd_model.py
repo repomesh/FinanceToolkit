@@ -7,6 +7,11 @@ from io import StringIO
 import pandas as pd
 import requests
 
+from financetoolkit.helpers import get_request
+from financetoolkit.utilities.logger_model import get_logger
+
+logger = get_logger()
+
 # pylint: disable=too-many-lines
 
 
@@ -202,16 +207,16 @@ def collect_oecd_data(oecd_data_string: str, period_code: str) -> pd.DataFrame:
     Returns:
        pd.DataFrame: A DataFrame containing the data from the OECD API.
     """
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-        "AppleWebKit/537.36 (KHTML, like Gecko) "
-        "Chrome/58.0.3029.110 Safari/537.3"
-    }
-    response = requests.get(
-        f"{BASE_URL}{oecd_data_string}{EXTENSIONS}", headers=headers, timeout=300
-    )
-
-    response.raise_for_status()
+    try:
+        response = get_request(f"{BASE_URL}{oecd_data_string}{EXTENSIONS}", timeout=300)
+    except requests.exceptions.HTTPError as error:
+        if error.response is not None and error.response.status_code == 429:  # noqa
+            logger.warning(
+                "OECD API rate limit reached (429 Too Many Requests). "
+                "Please wait a moment before retrying."
+            )
+            return pd.DataFrame()
+        raise
 
     oecd_data = pd.read_csv(StringIO(response.text))
 
@@ -599,7 +604,7 @@ def get_labour_productivity():
        pd.DataFrame: A DataFrame containing the labour productivity for a
          variety of countries over time.
     """
-    oecd_data_string = "OECD.SDD.TPS,DSD_PDB@DF_PDB_GR,/.A.GDPHRS......"
+    oecd_data_string = "OECD.SDD.TPS,DSD_PDB@DF_PDB,/.A.GDPHRS._T.USD_PPP_H.L.GY._Z.PPP"
 
     labour_productivity = collect_oecd_data(oecd_data_string, "Y")
 

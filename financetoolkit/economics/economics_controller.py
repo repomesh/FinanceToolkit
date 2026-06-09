@@ -4187,9 +4187,9 @@ class Economics:
 
         if gmdb_source:
             if self._gmbd_dataset.empty:
-                self._gmbd_dataset = gmdb_model.collect_global_macro_database_dataset
+                self._gmbd_dataset = gmdb_model.collect_global_macro_database_dataset()
 
-            population_statistics = gmdb_model.get_population(
+            population_statistics_df = gmdb_model.get_population(
                 gmd_dataset=self._gmbd_dataset
             )
         else:
