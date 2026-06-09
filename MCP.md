@@ -699,3 +699,76 @@ These tools help you navigate the available functionality before making any data
 
 </details>
 <br>
+
+# How the MCP Server is Built
+
+The MCP server lives entirely inside `financetoolkit/mcp_server/` and is structured around a **router pattern**: rather than exposing every one of the 200+ Finance Toolkit methods as a separate MCP tool (which would overwhelm an LLM's tool list), the server groups them into ~21 categorical master tools. Each master tool accepts an `indicator` parameter that selects the exact metric at call time.
+
+## Module Overview
+
+| Module | Role |
+|:---|:---|
+| `mcp_controller.py` | Entry points (`main`, `setup`, `inspector`), config loading, server assembly |
+| `registry_controller.py` | Builds and registers the categorical router tools on the FastMCP instance |
+| `inspection_controller.py` | Static introspection of controller classes: method discovery and signature building |
+| `provider_model.py` | Routes tool calls to the correct Finance Toolkit module; manages Toolkit instance caching |
+| `cache_model.py` | Thread-safe SQLite cache for DataFrame results with TTL-based eviction |
+| `tools_model.py` | Registers the four built-in utility tools (list, search, instrument lookup) |
+| `formatting_model.py` | Converts any Finance Toolkit result (DataFrame, Series, dict, scalar) to Markdown |
+| `coercion_model.py` | Best-effort type coercion for string values arriving from LLMs |
+| `setup_model.py` | Interactive and CLI setup wizard: writes client configs and SKILL.md files |
+
+## Startup Sequence
+
+When the server process starts (`uvx … financetoolkit-mcp`), `mcp_controller._build_mcp_app()` runs the following steps in order:
+
+1. **Load environment** — resolves the FMP API key from the process environment, a local `.env` file, or the global Finance Toolkit config path (`~/.config/financetoolkit/.env`).
+2. **Read `config.yaml`** — a single YAML file in the same package directory drives all registration: which controller classes exist (`module_class_map`), which methods to skip (`skip_methods`), which parameters the wrapper always handles (`init_handled_params`), and the full ordered list of tool groups (`tool_groups`).
+3. **Instantiate subsystems** — a `ToolkitProvider` (with its `SQLiteCache`), a `ControllerInspector`, a `ToolRegistry`, and a `UtilityToolRegistry` are all constructed and wired together.
+4. **Register tools** — `ToolRegistry.register_all_tools()` registers the router groups, then `UtilityToolRegistry.register_all_tools()` registers the four utility tools. The server is then ready to serve requests over stdio (or whichever transport `MCP_TRANSPORT` specifies).
+
+## The Router Pattern
+
+`ToolRegistry` reads the `tool_groups` list from `config.yaml`. Each entry is converted to a `RouterGroupSpec` NamedTuple that describes one master tool — its name, the controller class to introspect, and how methods are discovered.
+
+For each group, `ControllerInspector` either:
+- **Parses the source** of a nominated `collect_*` method on the controller class to find every `self.get_*()` call in the order they appear, or
+- **Falls back** to an alphabetical scan of all `get_` methods on the class.
+
+This produces an ordered list of indicator names. `_build_router_wrapper()` then constructs a single `wrapper(**kwargs)` closure that:
+
+1. Reads the `indicator` argument and matches it to the method list (with fuzzy-match suggestions on typos).
+2. Coerces all typed parameters from strings via `coercion_model.coerce_value()`.
+3. Validates required inputs (`tickers` for equity tools, date formats).
+4. Delegates to `ToolkitProvider.call_method()`.
+5. Passes the result through `formatting_model.format_result()` and returns a Markdown string.
+
+The wrapper's `__signature__` is replaced with a proper `inspect.Signature` so that FastMCP can introspect it and generate accurate JSON Schema for the LLM.
+
+## Dispatch Categories
+
+Every tool group has a `category` that controls how `ToolkitProvider` routes the call:
+
+| Category | Behaviour |
+|:---|:---|
+| `ticker` | Instantiates a `Toolkit(tickers=…)` object and calls a method on one of its sub-modules (e.g. `ratios`, `models`, `options`) |
+| `toolkit` | Same Toolkit instance, but calls a method directly on the `Toolkit` class (e.g. `get_historical_data`) |
+| `standalone` | Instantiates `Economics` or `FixedIncome` directly — no tickers required |
+| `discovery` | Instantiates `Discovery(api_key=…)` — no tickers or dates required |
+| `mixed` | Per-method routing table: each indicator maps to its own `(module, category)` pair |
+
+`ToolkitProvider` caches `Toolkit` instances by a key derived from tickers, date range, quarterly flag, and a hash of the API key, so repeated calls for the same parameters reuse an existing instance. Standalone module instances are cached the same way. Full DataFrame results are written to and read from `SQLiteCache` with configurable TTL.
+
+## Utility Tools
+
+`UtilityToolRegistry` registers four tools that operate on the tool index rather than routing to a controller:
+
+- **`get_analyst_guidelines`** — returns the full analyst SKILL.md instructions so the LLM always has the response style guide available.
+- **`list_categories`** — returns a Markdown table of all registered categories and tool counts.
+- **`list_metrics_by_category`** — lists every indicator within a given category.
+- **`search_metrics`** — token-based fuzzy search across all tool names and descriptions, with typo tolerance via `difflib.get_close_matches`.
+- **`search_instruments`** — proxies a live `Discovery.search_instruments()` call for ticker/ISIN/name lookups.
+
+## Setup Wizard
+
+`setup_model.py` powers both the interactive wizard (`financetoolkit-mcp-setup`) and the non-interactive `--client` CLI path. It locates and merges the `finance-toolkit` MCP entry into each client's JSON config file without disturbing other server entries, writes the FMP API key to `~/.config/financetoolkit/.env`, and optionally copies the `SKILL.md` analyst instructions to the location expected by each client (`.agents/skills/` for VS Code/Cursor, `.claude/skills/` for Claude Code, etc.).
