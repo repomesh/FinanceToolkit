@@ -1,0 +1,178 @@
+{
+  "manifest_version": "0.4",
+  "name": "finance-toolkit",
+  "display_name": "Finance Toolkit",
+  "version": "2.1.0",
+  "description": "200+ financial metrics, ratios, and economic indicators directly in your AI assistant, no Python installation required.",
+  "long_description": "The Finance Toolkit MCP Server exposes 200+ pre-computed financial metrics, models, and economic indicators to any AI assistant that supports the Model Context Protocol. Query valuation ratios, profitability metrics, risk measures, technical indicators, fixed income valuations, macroeconomic data, ESG scores, and more \u2014 all backed by the open-source Finance Toolkit's transparent calculation methods. Requires a (free) Financial Modeling Prep API key obtainable [here](https://www.jeroenbouma.com/fmp).",
+  "author": {
+    "name": "Jeroen Bouma",
+    "email": "jer.bouma@gmail.com",
+    "url": "https://www.jeroenbouma.com"
+  },
+  "icon": "finance_toolkit_icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/JerBouma/FinanceToolkit"
+  },
+  "homepage": "https://www.jeroenbouma.com/projects/financetoolkit/mcp",
+  "documentation": "https://www.jeroenbouma.com/projects/financetoolkit/mcp",
+  "support": "https://github.com/JerBouma/FinanceToolkit/issues",
+  "license": "MIT",
+  "keywords": [
+    "finance",
+    "financial",
+    "stocks",
+    "equities",
+    "ratios",
+    "economics",
+    "indicators",
+    "options",
+    "fixed-income",
+    "technical-analysis",
+    "risk",
+    "performance",
+    "esg"
+  ],
+  "server": {
+    "type": "uv",
+    "entry_point": "financetoolkit/mcp_server/mcp_controller.py",
+    "mcp_config": {
+      "command": "uv",
+      "args": [
+        "run",
+        "--directory",
+        "${__dirname}",
+        "-m",
+        "financetoolkit.mcp_server.mcp_controller"
+      ],
+      "env": {
+        "FINANCIAL_MODELING_PREP_API_KEY": "${user_config.api_key}"
+      }
+    }
+  },
+  "user_config": {
+    "api_key": {
+      "type": "string",
+      "title": "Financial Modeling Prep API Key",
+      "description": "Obtain a key at  https://www.jeroenbouma.com/fmp",
+      "required": true,
+      "sensitive": true
+    }
+  },
+  "tools": [
+    {
+      "name": "get_valuation_ratios",
+      "description": "Pre-computed valuation ratios (P/E, EPS, EV/EBITDA, P/B, P/S, PEG, dividend yield, FCF yield, market cap). Requires tickers."
+    },
+    {
+      "name": "get_profitability_ratios",
+      "description": "Pre-computed profitability ratios (gross margin, operating margin, net margin, ROE, ROA, ROIC, ROCE). Requires tickers."
+    },
+    {
+      "name": "get_liquidity_ratios",
+      "description": "Pre-computed liquidity ratios (current ratio, quick ratio, cash ratio, working capital). Requires tickers."
+    },
+    {
+      "name": "get_solvency_ratios",
+      "description": "Pre-computed solvency ratios (debt-to-equity, interest coverage, debt-to-assets, net debt to EBITDA). Requires tickers."
+    },
+    {
+      "name": "get_efficiency_ratios",
+      "description": "Pre-computed efficiency ratios (asset turnover, inventory turnover, days sales outstanding, cash conversion cycle). Requires tickers."
+    },
+    {
+      "name": "get_momentum_indicators",
+      "description": "Momentum technical indicators (RSI, MACD, Stochastic Oscillator, Williams %R, Aroon). Applied to price data automatically. Requires tickers."
+    },
+    {
+      "name": "get_overlap_indicators",
+      "description": "Overlap technical indicators (SMA, EMA, Bollinger Bands, Keltner Channels). Applied to price data automatically. Requires tickers."
+    },
+    {
+      "name": "get_volatility_indicators",
+      "description": "Volatility technical indicators (ATR, True Range). Applied to price data automatically. Requires tickers."
+    },
+    {
+      "name": "get_breadth_indicators",
+      "description": "Market breadth technical indicators (McClellan Oscillator, OBV, Advance/Decline Line, Chaikin). Requires tickers."
+    },
+    {
+      "name": "get_models",
+      "description": "Pre-computed financial models (WACC, DuPont analysis, Altman Z-Score, Piotroski F-Score, intrinsic value/DCF). Requires tickers."
+    },
+    {
+      "name": "get_performance",
+      "description": "Pre-computed risk-adjusted performance metrics (Sharpe ratio, Sortino ratio, Alpha, Beta, CAPM, Fama-French factors). Requires tickers."
+    },
+    {
+      "name": "get_risk",
+      "description": "Pre-computed risk metrics (VaR, CVaR, GARCH volatility, max drawdown, skewness, kurtosis). Requires tickers."
+    },
+    {
+      "name": "get_options",
+      "description": "Option pricing and Greeks (Black-Scholes, binomial tree, delta, gamma, theta, vega, rho, implied volatility). Requires tickers."
+    },
+    {
+      "name": "get_fixed_income_valuations",
+      "description": "Bond and derivative valuation calculations (bond duration, present value, yield-to-maturity, derivative pricing). No tickers needed."
+    },
+    {
+      "name": "get_interest_rates",
+      "description": "Interest rate data (central bank rates, short/long-term rates, government bond yields, ICE BofA series, EURIBOR, ECB, Fed rates). Requires countries."
+    },
+    {
+      "name": "get_general_economy",
+      "description": "Macroeconomic indicators by country (GDP, CPI, inflation, trade balance, investment, consumption, confidence indices, house/rent prices). Requires countries."
+    },
+    {
+      "name": "get_government_economy",
+      "description": "Government fiscal metrics by country (debt, deficit, expenditure, revenue, tax revenue, trust in government). Requires countries."
+    },
+    {
+      "name": "get_jobs_and_society",
+      "description": "Labour and social metrics by country (unemployment rate, labour productivity, population statistics, poverty rate, income inequality). Requires countries."
+    },
+    {
+      "name": "get_environment",
+      "description": "Environmental and ESG data. ESG scores use tickers; carbon footprint and renewable energy use countries. Accepts both."
+    },
+    {
+      "name": "get_toolkit_data",
+      "description": "Raw financial data (historical prices, income statement, balance sheet, cash flow, company profile, quotes, analyst estimates). Requires tickers."
+    },
+    {
+      "name": "get_discovery",
+      "description": "Market discovery tools (lists of stocks/ETFs/cryptocurrencies, stock screener, gainers, losers, sector performance). No tickers needed."
+    },
+    {
+      "name": "list_categories",
+      "description": "List all registered tool categories with metric counts and descriptions."
+    },
+    {
+      "name": "list_metrics_by_category",
+      "description": "List all metrics within a specific category."
+    },
+    {
+      "name": "search_metrics",
+      "description": "Fuzzy keyword search across all 200+ available metrics."
+    },
+    {
+      "name": "search_instruments",
+      "description": "Look up ticker symbols by company name, ISIN, CIK, or keyword."
+    }
+  ],
+  "compatibility": {
+    "platforms": [
+      "darwin",
+      "linux",
+      "win32"
+    ],
+    "runtimes": {
+      "python": ">=3.10"
+    }
+  },
+  "privacy_policies": [
+    "https://site.financialmodelingprep.com/privacy-policy"
+  ]
+}
