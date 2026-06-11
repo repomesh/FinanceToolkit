@@ -3,7 +3,8 @@
 [![GitHub Sponsors](https://img.shields.io/badge/Sponsor_this_Project-grey?logo=github)](https://github.com/sponsors/JerBouma)
 [![Buy Me a Coffee](https://img.shields.io/badge/Buy_Me_a_Coffee-grey?logo=buymeacoffee)](https://www.buymeacoffee.com/jerbouma)
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-grey?logo=Linkedin&logoColor=white)](https://www.linkedin.com/in/boumajeroen/)
-[![MCP Server](https://img.shields.io/badge/MCP_Server-grey?logo=modelcontextprotocol)](https://github.com/JerBouma/FinanceToolkit/blob/main/MCP.md)
+[![MCP Server](https://img.shields.io/badge/MCP_Server-grey?logo=modelcontextprotocol)](https://www.jeroenbouma.com/projects/financetoolkit/mcp)
+[![Download MCP Bundle](https://img.shields.io/badge/Download_MCP_Bundle-grey?logo=anthropic)](https://github.com/JerBouma/FinanceToolkit/releases/latest/download/financetoolkit.mcpb)
 [![Documentation](https://img.shields.io/badge/Documentation-grey?logo=readme)](https://www.jeroenbouma.com/projects/financetoolkit/docs)
 [![Supported Python Versions](https://img.shields.io/pypi/pyversions/financetoolkit)](https://pypi.org/project/FinanceToolkit/)
 [![PYPI Version](https://img.shields.io/pypi/v/FinanceToolkit)](https://pypi.org/project/FinanceToolkit/)
@@ -19,7 +20,7 @@ Beyond Equities, it supports Options, Currencies, Cryptocurrencies, ETFs, Mutual
 
 Complementing this is the [Finance Database 🌎](https://github.com/JerBouma/FinanceDatabase), a database featuring 300.000+ symbols containing Equities, ETFs, Funds, Indices, Currencies, Cryptocurrencies and Money Markets. By utilising both, it is possible to do a fully-fledged competitive analysis with the tickers found from the FinanceDatabase inputted into the FinanceToolkit.
 
-**The Finance Toolkit is also available as an [MCP Server](https://github.com/JerBouma/FinanceToolkit/blob/main/MCP.md)**, connect it to any AI assistant that supports the Model Context Protocol (Claude, GitHub Copilot, Cursor, Windsurf, and more) and query 200+ financial metrics conversationally. **No Python installation required**, a single command configures your AI client automatically.
+**The Finance Toolkit is also available as an [MCP Server](https://www.jeroenbouma.com/projects/financetoolkit/mcp)**, connect it to any AI assistant that supports the Model Context Protocol (Claude, GitHub Copilot, Cursor, Windsurf, and more) and query 200+ financial metrics conversationally. **No Python installation required**, a single command configures your AI client automatically.
 
 # Table of Contents
 
@@ -71,7 +72,7 @@ Prefer a conversational interface over writing Python? Run the one-line setup wi
 uvx --from "financetoolkit[mcp]" financetoolkit-mcp-setup
 ```
 
-Supports Claude Desktop, Claude Code, GitHub Copilot (VS Code), Cursor, Windsurf, and Gemini. See the full MCP documentation [here](https://github.com/JerBouma/FinanceToolkit/blob/main/MCP.md).
+Supports Claude Desktop, Claude Code, GitHub Copilot (VS Code), Cursor, Windsurf, and Gemini. See the full MCP documentation [here](https://www.jeroenbouma.com/projects/financetoolkit/mcp).
 
 # Basic Usage
 
@@ -3081,58 +3082,25 @@ This returns a rather large DataFrame so to keep it concise, only the first 5 ti
 
 # MCP Server
 
-The Finance Toolkit contains a **MCP Server** that exposes 200+ financial metrics, models, and economic indicators directly to any AI assistant that supports the Model Context Protocol including Claude Desktop & Code, GitHub Copilot, Cursor and Windsurf. No local installation is required; the setup wizard configures your client(s) to launch the server on demand via `uvx`:
+The Finance Toolkit contains a **MCP Server** that exposes 200+ financial metrics, models, and economic indicators directly to any AI assistant that supports the Model Context Protocol including Claude Desktop & Code, GitHub Copilot, Cursor and Windsurf. No local installation is required.
+
+**Option 1 — One-click install (Claude Desktop):** Download the MCP Bundle from the latest release and open it with Claude Desktop. An installation dialog will appear and prompt you for your API key — no terminal required.
+
+___
+<b><div align="center">Download the Finance Toolkit MCP Bundle <a href="https://github.com/JerBouma/FinanceToolkit/releases/latest/download/financetoolkit.mcpb">here</a>.</div></b>
+___
+
+**Option 2 — Setup wizard (all clients):** Run the one-line setup wizard and it will configure your AI client automatically:
 
 ```
 uvx --from "financetoolkit[mcp]" financetoolkit-mcp-setup
 ```
 
-After the installation process is finished, it will automatically launch the setup wizard. For more information about the setup wizard, see the [MCP Documentation](https://github.com/JerBouma/FinanceToolkit/blob/main/MCP.md) which also contains example prompts to get you started with using the Finance Toolkit MCP server in your AI assistant.
-
-Once configured, you can ask your AI assistant questions like:
-
-> *"Compare Apple with Microsoft, what company is the most profitable?"*
-
-> *"When looking at biggest banks in Europe, which one seems to be the most solvent?"*
-
-> *"Tell me something about the Semiconductor industry, is it overbought?"*
+After running this command the wizard will launch and walk you through the rest of the setup interactively. For more information, see the [MCP Documentation](https://www.jeroenbouma.com/projects/financetoolkit/mcp) which also contains example prompts to get you started.
 
 See an example of the Finance Toolkit MCP server in action in Claude Desktop below:
 
 https://github.com/user-attachments/assets/96ad5288-d83d-4497-a345-1841c48c29d5
-
-If you prefer not to run the setup wizard, you can configure each client manually by editing its JSON configuration file. The `env` block accepts either of two environment variables — set whichever suits your workflow. When both are present the directly-set key takes priority.
-
-- `FINANCIAL_MODELING_PREP_API_KEY`: your API key embedded directly in the config.
-- `FINANCETOOLKIT_ENV_FILE`: an absolute path to a `.env` file that contains `FINANCIAL_MODELING_PREP_API_KEY=<your-key>`.
-
-The command needing to boot up the MCP server is `uvx --from "financetoolkit[mcp]" financetoolkit-mcp`, where uvx should be set as the *command* and the rest as *args* in the config entry for each client.
-
-As an example, the Claude Desktop configuration file lives at a platform-specific path (see other client documentation [here](https://github.com/JerBouma/FinanceToolkit/blob/main/MCP.md)):
-
-| Platform | Path |
-|:---|:---|
-| macOS | `~/Library/Application Support/Claude/claude_desktop_config.json` |
-| Windows | `%APPDATA%\Claude\claude_desktop_config.json` |
-| Linux | `~/.config/claude/claude_desktop_config.json` |
-
-Open (or create) that file and add the `finance-toolkit` entry inside `mcpServers`. To embed your API key directly:
-
-```json
-{
-  "mcpServers": {
-    "finance-toolkit": {
-      "command": "uvx",
-      "args": ["--from", "financetoolkit[mcp]", "financetoolkit-mcp"],
-      "env": {
-        "FINANCIAL_MODELING_PREP_API_KEY": "YOUR_API_KEY_HERE"
-      }
-    }
-  }
-}
-```
-
-After saving, **restart Claude Desktop** and the Finance Toolkit tools will appear. Find other client configuration instructions in the [MCP Documentation](https://github.com/JerBouma/FinanceToolkit/blob/main/MCP.md).
 
 # Questions & Answers
 
