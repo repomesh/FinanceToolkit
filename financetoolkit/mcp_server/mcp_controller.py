@@ -8,11 +8,23 @@ import pathlib
 import subprocess
 import sys
 
+import anyio
+import uvicorn
 import yaml
 from dotenv import dotenv_values, load_dotenv
+from fastmcp.server.dependencies import (  # noqa: PLC0415
+    get_http_headers,
+    get_http_request,
+)
 from mcp.server.fastmcp import FastMCP
+from starlette.middleware.cors import CORSMiddleware
 
 from financetoolkit.mcp_server import setup_model
+from financetoolkit.mcp_server.auth_model import (
+    MCPAuthMiddleware,
+    register_auth_routes,
+    resolve_api_key,
+)
 from financetoolkit.mcp_server.inspection_controller import ControllerInspector
 from financetoolkit.mcp_server.provider_model import ToolkitProvider
 from financetoolkit.mcp_server.registry_controller import ToolRegistry
@@ -121,6 +133,42 @@ def _build_mcp_app() -> FastMCP:
     toolkit_count = toolkit_registry.register_all_tools()
     utility_count = utility_registry.register_all_tools()
 
+    # Optional diagnostic tool — only registered when FT_MCP_DIAG is set.  Used to
+    # inspect what the (possibly proxied / worker-restored) HTTP request carries
+    # at tool-call time on hosted platforms such as fastmcp.app.  Never exposes
+    # the full key.
+    if os.environ.get("FT_MCP_DIAG"):
+
+        def diagnostics() -> str:
+            """Report what the server sees for API-key resolution (debug)."""
+
+            report: dict = {}
+            try:
+
+                headers = get_http_headers(include={"authorization"})
+                report["header_names"] = sorted(headers.keys())
+                report["has_x_fmp_api_key"] = "x-fmp-api-key" in headers
+                report["mcp_session_id"] = headers.get("mcp-session-id", "")
+                try:
+                    request = get_http_request()
+                    report["query_string"] = str(request.url.query)
+                    report["query_keys"] = sorted(request.query_params.keys())
+                except RuntimeError as exc:
+                    report["request_err"] = repr(exc)
+            except Exception as exc:  # pragma: no cover - diagnostic only
+                report["error"] = repr(exc)
+
+            resolved = resolve_api_key()
+            report["resolved_present"] = bool(resolved)
+            report["resolved_len"] = len(resolved)
+            report["resolved_tail"] = resolved[-4:] if resolved else ""
+            return str(report)
+
+        mcp.add_tool(
+            diagnostics, name="diagnostics", description=diagnostics.__doc__ or ""
+        )
+        logger.info("Diagnostic tool registered (FT_MCP_DIAG set).")
+
     logger.info(
         f"Finance Toolkit MCP Server ready. Registered {toolkit_count} "
         f"router tools and {utility_count} utility tools."
@@ -130,6 +178,7 @@ def _build_mcp_app() -> FastMCP:
 
 
 mcp = _build_mcp_app()
+register_auth_routes(mcp)
 
 
 def main() -> None:
@@ -143,7 +192,43 @@ def main() -> None:
     """
     transport = os.environ.get("MCP_TRANSPORT", "stdio")
     get_logger().info(f"Starting MCP server on transport {transport}")
-    mcp.run(transport=transport)
+
+    if transport in ("sse", "streamable-http"):
+        # Apply environment variable overrides for host/port if specified
+        host = os.environ.get("MCP_HOST", "0.0.0.0")  # noqa: S104
+        port_env = os.environ.get("MCP_PORT", "8000")
+        port = int(port_env) if port_env.isdigit() else 8000
+
+        mcp.settings.host = host
+        mcp.settings.port = port
+
+        starlette_app = (
+            mcp.streamable_http_app()
+            if transport == "streamable-http"
+            else mcp.sse_app()
+        )
+
+        # MCPAuthMiddleware is innermost (runs after CORS)
+        starlette_app.add_middleware(MCPAuthMiddleware)
+        # CORSMiddleware is outermost — handles OPTIONS before auth check
+        starlette_app.add_middleware(
+            CORSMiddleware,
+            allow_origins=["*"],
+            allow_methods=["*"],
+            allow_headers=["*"],
+            expose_headers=["WWW-Authenticate"],
+        )
+
+        config = uvicorn.Config(
+            starlette_app,
+            host=mcp.settings.host,
+            port=mcp.settings.port,
+            log_level=mcp.settings.log_level.lower(),
+        )
+        server = uvicorn.Server(config)
+        anyio.run(server.serve)
+    else:
+        mcp.run(transport=transport)
 
 
 def inspector() -> None:
