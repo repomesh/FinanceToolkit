@@ -17,6 +17,7 @@ from financetoolkit import Toolkit
 from financetoolkit.discovery.discovery_controller import Discovery
 from financetoolkit.economics.economics_controller import Economics
 from financetoolkit.fixedincome.fixedincome_controller import FixedIncome
+from financetoolkit.mcp_server.auth_model import resolve_api_key
 from financetoolkit.mcp_server.cache_model import SQLiteCache
 from financetoolkit.utilities.logger_model import get_logger
 
@@ -60,11 +61,6 @@ class ToolkitProvider:
         self._standalone_cache: dict[str, Any] = {}
         self._lock = Lock()
         self._last_eviction = 0.0
-
-        # create API key hash in case the user changes this key and a cached instance
-        # was created with a different key. This can result in conflicts related to permissions
-        # to the FinancialModelingPrep endpoints.
-        self._api_hash = hashlib.sha256((self._api_key or "").encode()).hexdigest()
 
     def call_method(
         self,
@@ -112,6 +108,10 @@ class ToolkitProvider:
             Any: The raw result from the underlying Finance Toolkit method —
                 typically a ``pd.DataFrame``, ``pd.Series``, scalar, or dict.
         """
+        # Resolve the per-request key (hosted HTTP transport) and fall back to
+        # the instance/env key (local stdio / uvx).  When running over stdio
+        # there is no HTTP request and ``resolve_api_key`` returns "".
+        effective_key = resolve_api_key() or self._api_key
         current_time = time.time()
 
         if self._cache_ttl and (current_time - self._last_eviction) > self._cache_ttl:
@@ -176,6 +176,7 @@ class ToolkitProvider:
                 end_date=end_date,
                 quarterly=quarterly,
                 benchmark_ticker=benchmark_ticker,
+                api_key=effective_key,
                 **method_kwargs,
             )
         elif category == "toolkit":
@@ -194,6 +195,7 @@ class ToolkitProvider:
                 end_date=end_date,
                 quarterly=quarterly,
                 benchmark_ticker=benchmark_ticker,
+                api_key=effective_key,
                 **method_kwargs,
             )
         elif category == "standalone":
@@ -206,12 +208,13 @@ class ToolkitProvider:
                 end_date=end_date,
                 quarterly=quarterly,
                 countries=countries,
+                api_key=effective_key,
                 **method_kwargs,
             )
         elif category == "discovery":
             # Module that can also be initialized with the Toolkit class
             # but doesn't require any parameters other than the API key
-            instance = Discovery(api_key=self._api_key)
+            instance = Discovery(api_key=effective_key)
             result = getattr(instance, method_name)(**method_kwargs)
         else:
             raise ValueError(
@@ -232,6 +235,7 @@ class ToolkitProvider:
         end_date: str,
         quarterly: bool,
         benchmark_ticker: str,
+        api_key: str = "",
     ) -> Toolkit:
         """
         Return a (potentially cached) Toolkit instance for the requested tickers and date range.
@@ -284,10 +288,15 @@ class ToolkitProvider:
                 )
                 benchmark_ticker = None  # type: ignore[assignment]
 
+        # The effective key may differ per request (hosted multi-user). Key the
+        # instance cache by its hash so one user's Toolkit (built with their key)
+        # is never handed to another user.
+        effective_key = api_key or self._api_key
+        key_hash = hashlib.sha256((effective_key or "").encode()).hexdigest()
         cache_key = (
             f"{','.join(sorted(upper_tickers))}"
             f"|{start_date}|{end_date}|{quarterly}"
-            f"|{benchmark_ticker or 'none'}|{self._api_hash}"
+            f"|{benchmark_ticker or 'none'}|{key_hash}"
         )
 
         # Hold the lock for the full check-create-store sequence to prevent
@@ -297,16 +306,18 @@ class ToolkitProvider:
             if cache_key in self._toolkit_cache:
                 return self._toolkit_cache[cache_key]
 
-            if not self._api_key:
+            if not effective_key:
                 raise ValueError(
                     "A FinancialModelingPrep API key is required for this tool. "
-                    "Set FINANCIAL_MODELING_PREP_API_KEY in your environment or .env file. "
+                    "Local setup: set FINANCIAL_MODELING_PREP_API_KEY in your "
+                    "environment or .env file. Hosted setup: pass your key via the "
+                    "`X-FMP-API-Key` header or a `?fmp_api_key=...` URL parameter. "
                     "Get a key with 15% off via https://www.jeroenbouma.com/fmp"
                 )
 
             toolkit_instance: Toolkit = Toolkit(
                 tickers=tickers,
-                api_key=self._api_key,
+                api_key=effective_key,
                 start_date=start_date,
                 end_date=end_date,
                 quarterly=quarterly,
@@ -325,6 +336,7 @@ class ToolkitProvider:
         end_date: str,
         quarterly: bool,
         benchmark_ticker: str,
+        api_key: str = "",
         **kwargs: Any,
     ) -> pd.DataFrame | pd.Series | dict | float | int | str:
         """
@@ -352,6 +364,7 @@ class ToolkitProvider:
             end_date=end_date,
             quarterly=quarterly,
             benchmark_ticker=benchmark_ticker,
+            api_key=api_key,
         )
         module = getattr(toolkit_instance, module_name)
         method = getattr(module, method_name)
@@ -366,6 +379,7 @@ class ToolkitProvider:
         end_date: str,
         quarterly: bool,
         benchmark_ticker: str,
+        api_key: str = "",
         **kwargs: Any,
     ) -> pd.DataFrame | pd.Series | dict | float | int | str:
         """
@@ -394,6 +408,7 @@ class ToolkitProvider:
             end_date=end_date,
             quarterly=quarterly,
             benchmark_ticker=benchmark_ticker,
+            api_key=api_key,
         )
         method = getattr(toolkit_instance, method_name)
 
@@ -407,6 +422,7 @@ class ToolkitProvider:
         end_date: str,
         quarterly: bool,
         countries: list[str] | None = None,
+        api_key: str = "",
         **kwargs: Any,
     ) -> Any:
         """
@@ -434,12 +450,14 @@ class ToolkitProvider:
             pandas.DataFrame, a filtered DataFrame containing only the requested country
             columns (if present) is returned.
         """
+        # Discovery requires the API key, so key its cache by the effective key
+        # hash.  Economics/FixedIncome need no key; their cache stays key-agnostic.
+        effective_key = api_key or self._api_key
+        key_hash = hashlib.sha256((effective_key or "").encode()).hexdigest()
         if module_name == "discovery":
-            cache_key = f"discovery|{self._api_hash}"
+            cache_key = f"discovery|{key_hash}"
         else:
-            cache_key = (
-                f"{module_name}|{start_date}|{end_date}|{quarterly}|{self._api_hash}"
-            )
+            cache_key = f"{module_name}|{start_date}|{end_date}|{quarterly}"
 
         # Hold the lock for the full check-create-store sequence to prevent
         # TOCTOU races where two threads both see a cache miss and create
@@ -461,7 +479,7 @@ class ToolkitProvider:
                         quarterly=quarterly,
                     )
                 elif module_name == "discovery":
-                    instance = Discovery(api_key=self._api_key)
+                    instance = Discovery(api_key=effective_key)
                 else:
                     raise ValueError(f"Unknown standalone module: {module_name}")
 
