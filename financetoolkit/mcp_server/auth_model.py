@@ -7,6 +7,7 @@ import hashlib
 import hmac
 import json
 import os
+import pathlib
 import secrets
 import time
 from typing import Any
@@ -14,7 +15,7 @@ from typing import Any
 import fastmcp.server.dependencies as deps
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
-from starlette.responses import HTMLResponse, JSONResponse, RedirectResponse
+from starlette.responses import HTMLResponse, JSONResponse, RedirectResponse, Response
 
 from financetoolkit.mcp_server.setup_model import (
     get_global_env_path,
@@ -47,8 +48,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     <title>Finance Toolkit &middot; Authorize</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;800&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         *, *::before, *::after {{
             box-sizing: border-box;
@@ -57,87 +57,129 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         }}
 
         :root {{
-            --bg: #060C1A;
-            --card-bg: rgba(10, 18, 36, 0.92);
-            --card-border: rgba(79, 172, 254, 0.18);
-            --cyan: #00F2FE;
-            --blue: #4FACFE;
-            --text-1: #EEF4FF;
-            --text-2: #7B91B0;
-            --text-3: #4A5E7A;
-            --input-bg: rgba(4, 10, 24, 0.7);
-            --input-border: rgba(79, 172, 254, 0.2);
-            --glow: rgba(0, 242, 254, 0.12);
+            --accent: #38bdf8;
+            --accent-dark: #0284c7;
+            --text-primary: #f8fafc;
+            --text-secondary: #cbd5e1;
+            --text-muted: #94a3b8;
+            --card-bg: rgba(30, 41, 59, 0.6);
+            --card-border: rgba(255, 255, 255, 0.1);
+            --input-bg: rgba(15, 23, 42, 0.5);
+            --input-border: rgba(255, 255, 255, 0.1);
+            --btn-gradient: linear-gradient(135deg, #0284c7, #2563eb);
+            --btn-gradient-hover: linear-gradient(135deg, #0369a1, #1d4ed8);
+            --btn-shadow: rgba(37, 99, 235, 0.4);
         }}
 
         body {{
-            font-family: 'Inter', system-ui, sans-serif;
-            background: var(--bg);
-            background-image:
-                radial-gradient(ellipse 60% 40% at 20% 10%, rgba(79, 172, 254, 0.08) 0%, transparent 60%),
-                radial-gradient(ellipse 50% 35% at 80% 90%, rgba(0, 242, 254, 0.06) 0%, transparent 60%);
-            color: var(--text-1);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #020617 100%);
+            background-attachment: fixed;
+            color: var(--text-primary);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             padding: 24px 16px;
+            position: relative;
+            overflow-x: hidden;
+        }}
+
+        .glow {{
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(70px);
+            pointer-events: none;
+            z-index: 0;
+        }}
+
+        .glow-1 {{
+            width: 500px;
+            height: 500px;
+            top: -120px;
+            left: -100px;
+            background: radial-gradient(circle, rgba(2, 132, 199, 0.18) 0%, transparent 70%);
+        }}
+
+        .glow-2 {{
+            width: 420px;
+            height: 420px;
+            bottom: -100px;
+            right: -80px;
+            background: radial-gradient(circle, rgba(37, 99, 235, 0.15) 0%, transparent 70%);
+        }}
+
+        .glow-3 {{
+            width: 360px;
+            height: 360px;
+            top: 40%;
+            right: 10%;
+            background: radial-gradient(circle, rgba(56, 189, 248, 0.1) 0%, transparent 70%);
+        }}
+
+        .content {{
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
         }}
 
         .wordmark {{
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
             margin-bottom: 28px;
         }}
 
-        .logo-mark {{
-            width: 36px;
-            height: 36px;
-            border-radius: 9px;
-            background: linear-gradient(135deg, var(--blue) 0%, var(--cyan) 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        .logo-img {{
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
             flex-shrink: 0;
-            box-shadow: 0 0 16px rgba(0, 242, 254, 0.25);
-        }}
-
-        .logo-mark span {{
-            font-family: 'Outfit', sans-serif;
-            font-weight: 800;
-            font-size: 14px;
-            color: #060C1A;
-            letter-spacing: -0.5px;
+            object-fit: contain;
         }}
 
         .wordmark-text {{
-            font-family: 'Outfit', sans-serif;
-            font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            font-weight: 700;
             font-size: 15px;
-            color: var(--text-1);
-            letter-spacing: -0.2px;
+            color: var(--text-primary);
+            letter-spacing: -0.3px;
         }}
 
         .wordmark-text span {{
-            color: var(--text-3);
+            color: var(--text-muted);
             font-weight: 400;
+            margin-left: 8px;
         }}
 
         .card {{
+            position: relative;
             width: 100%;
             max-width: 420px;
             background: var(--card-bg);
             border: 1px solid var(--card-border);
-            border-radius: 20px;
+            border-radius: 18px;
             padding: 36px 32px 28px;
-            box-shadow:
-                0 0 0 1px rgba(0, 0, 0, 0.4),
-                0 24px 48px rgba(0, 0, 0, 0.5),
-                0 0 80px rgba(0, 242, 254, 0.04);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
+            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+        }}
+
+        .card::before {{
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 15%;
+            right: 15%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+            opacity: 0.55;
+            pointer-events: none;
+            border-radius: 0 0 2px 2px;
         }}
 
         .card-header {{
@@ -149,42 +191,41 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            background: rgba(79, 172, 254, 0.08);
-            border: 1px solid rgba(79, 172, 254, 0.2);
+            background: rgba(56, 189, 248, 0.08);
+            border: 1px solid rgba(56, 189, 248, 0.2);
             border-radius: 100px;
             padding: 4px 12px 4px 8px;
             margin-bottom: 16px;
             font-size: 12px;
-            color: var(--blue);
+            color: var(--accent);
             font-weight: 500;
         }}
 
         .client-badge-dot {{
             width: 6px;
             height: 6px;
-            background: var(--cyan);
+            background: var(--accent);
             border-radius: 50%;
             flex-shrink: 0;
         }}
 
         h1 {{
-            font-family: 'Outfit', sans-serif;
-            font-weight: 600;
+            font-weight: 700;
             font-size: 22px;
-            letter-spacing: -0.4px;
-            color: var(--text-1);
+            letter-spacing: -0.5px;
+            color: var(--text-primary);
             margin-bottom: 8px;
         }}
 
         .subtitle {{
             font-size: 13.5px;
-            color: var(--text-2);
+            color: var(--text-secondary);
             line-height: 1.55;
         }}
 
         .divider {{
             height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(79, 172, 254, 0.15), transparent);
+            background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.15), transparent);
             margin: 24px 0;
         }}
 
@@ -198,7 +239,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.8px;
-            color: var(--text-2);
+            color: var(--text-secondary);
             margin-bottom: 7px;
         }}
 
@@ -210,25 +251,25 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             width: 100%;
             background: var(--input-bg);
             border: 1px solid var(--input-border);
-            border-radius: 10px;
+            border-radius: 8px;
             padding: 12px 44px 12px 14px;
-            color: var(--text-1);
+            color: var(--text-primary);
             font-size: 14px;
             font-family: 'Inter', monospace;
             letter-spacing: 0.5px;
-            transition: border-color 0.15s, box-shadow 0.15s;
+            transition: border-color 0.18s, box-shadow 0.18s;
             -webkit-appearance: none;
         }}
 
         .key-input::placeholder {{
-            color: var(--text-3);
+            color: var(--text-muted);
             letter-spacing: 0;
         }}
 
         .key-input:focus {{
             outline: none;
-            border-color: rgba(0, 242, 254, 0.5);
-            box-shadow: 0 0 0 3px rgba(0, 242, 254, 0.08);
+            border-color: rgba(56, 189, 248, 0.5);
+            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.08);
         }}
 
         .toggle-btn {{
@@ -238,18 +279,18 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             transform: translateY(-50%);
             background: none;
             border: none;
-            color: var(--text-3);
+            color: var(--text-muted);
             cursor: pointer;
             padding: 4px;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: color 0.15s;
+            transition: color 0.18s;
             border-radius: 4px;
         }}
 
         .toggle-btn:hover {{
-            color: var(--text-2);
+            color: var(--accent);
         }}
 
         .toggle-btn .icon-hidden {{ display: none; }}
@@ -260,51 +301,51 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             display: flex;
             align-items: center;
             gap: 7px;
-            background: rgba(0, 242, 254, 0.04);
-            border: 1px solid rgba(0, 242, 254, 0.1);
+            background: rgba(56, 189, 248, 0.05);
+            border: 1px solid rgba(56, 189, 248, 0.12);
             border-radius: 8px;
             padding: 9px 12px;
             margin-bottom: 20px;
             font-size: 12px;
-            color: var(--text-2);
+            color: var(--text-secondary);
             line-height: 1.4;
         }}
 
         .trust-note svg {{
-            color: var(--cyan);
+            color: var(--accent);
             flex-shrink: 0;
         }}
 
         .btn-authorize {{
             width: 100%;
-            background: linear-gradient(135deg, var(--blue) 0%, var(--cyan) 100%);
+            background: var(--btn-gradient);
             border: none;
-            border-radius: 10px;
+            border-radius: 8px;
             padding: 13px 20px;
-            color: #060C1A;
+            color: #fff;
             font-size: 15px;
             font-weight: 600;
             font-family: 'Inter', sans-serif;
             cursor: pointer;
-            transition: opacity 0.15s, transform 0.1s, box-shadow 0.15s;
-            box-shadow: 0 4px 16px rgba(0, 242, 254, 0.2);
+            transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 6px -1px var(--btn-shadow), 0 2px 4px -1px var(--btn-shadow);
             letter-spacing: -0.1px;
         }}
 
         .btn-authorize:hover {{
-            opacity: 0.92;
-            box-shadow: 0 6px 24px rgba(0, 242, 254, 0.3);
+            background: var(--btn-gradient-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px var(--btn-shadow);
         }}
 
         .btn-authorize:active {{
-            transform: scale(0.99);
-            opacity: 1;
+            transform: translateY(0);
         }}
 
         .card-footer {{
             margin-top: 20px;
             padding-top: 18px;
-            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -314,46 +355,51 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 
         .footer-text {{
             font-size: 12px;
-            color: var(--text-3);
+            color: var(--text-muted);
         }}
 
         .footer-link {{
             font-size: 12px;
-            color: var(--text-2);
+            color: var(--text-secondary);
             text-decoration: none;
             font-weight: 500;
-            transition: color 0.15s;
+            transition: color 0.18s;
             display: flex;
             align-items: center;
             gap: 4px;
         }}
 
         .footer-link:hover {{
-            color: var(--cyan);
+            color: var(--accent);
         }}
 
         .page-footer {{
             margin-top: 24px;
             font-size: 12px;
-            color: var(--text-3);
+            color: var(--text-muted);
             text-align: center;
         }}
 
         .page-footer a {{
-            color: var(--text-3);
+            color: var(--text-muted);
             text-decoration: none;
-            transition: color 0.15s;
+            transition: color 0.18s;
         }}
 
         .page-footer a:hover {{
-            color: var(--text-2);
+            color: var(--accent);
         }}
     </style>
 </head>
 <body>
+    <div class="glow glow-1"></div>
+    <div class="glow glow-2"></div>
+    <div class="glow glow-3"></div>
+
+    <div class="content">
     <div class="wordmark">
-        <div class="logo-mark"><span>FT</span></div>
-        <div class="wordmark-text">Finance Toolkit <span>&middot; MCP Server</span></div>
+        <img class="logo-img" src="/oauth/icon" alt="Finance Toolkit" />
+        <div class="wordmark-text">Finance Toolkit<span>&middot; MCP Server</span></div>
     </div>
 
     <div class="card">
@@ -446,6 +492,7 @@ a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
         &nbsp;&middot;&nbsp;
         <a href="https://github.com/JerBouma/FinanceToolkit" target="_blank" rel="noopener noreferrer">GitHub</a>
     </p>
+    </div>
 
     <script>
         (function () {{
@@ -670,6 +717,14 @@ def register_auth_routes(mcp: Any) -> None:
     @mcp.custom_route("/health", methods=["GET"])
     async def health(request: Request) -> JSONResponse:
         return JSONResponse({"status": "ok"})
+
+    _icon_path = pathlib.Path(__file__).parent / "mcpb" / "finance_toolkit_icon.png"
+
+    @mcp.custom_route("/oauth/icon", methods=["GET"])
+    async def oauth_icon(request: Request) -> Response:
+        if not _icon_path.exists():
+            return Response(status_code=404)
+        return Response(content=_icon_path.read_bytes(), media_type="image/png")
 
     @mcp.custom_route("/.well-known/oauth-protected-resource", methods=["GET"])
     async def oauth_protected_resource(request: Request) -> JSONResponse:
