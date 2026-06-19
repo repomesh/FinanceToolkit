@@ -46,6 +46,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Finance Toolkit &middot; Authorize</title>
+    <link rel="icon" type="image/png" href="/oauth/icon">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -741,6 +742,7 @@ def register_auth_routes(mcp: Any) -> None:
                 "authorization_endpoint": f"{base_url}/oauth/authorize",
                 "token_endpoint": f"{base_url}/oauth/token",
                 "registration_endpoint": f"{base_url}/oauth/register",
+                "logo_uri": f"{base_url}/oauth/icon",
                 "response_types_supported": ["code"],
                 "grant_types_supported": ["authorization_code"],
                 "token_endpoint_auth_methods_supported": ["none"],
@@ -761,11 +763,13 @@ def register_auth_routes(mcp: Any) -> None:
 
         client_id = f"client_{secrets.token_hex(8)}"
 
+        base_url = str(request.base_url).rstrip("/")
         return JSONResponse(
             {
                 "client_id": client_id,
                 "client_name": client_name,
                 "redirect_uris": redirect_uris,
+                "logo_uri": f"{base_url}/oauth/icon",
                 "token_endpoint_auth_method": "none",
                 "grant_types": ["authorization_code"],
                 "response_types": ["code"],
