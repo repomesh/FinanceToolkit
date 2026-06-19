@@ -10,3 +10,11 @@ This directory contains the source for `financetoolkit.mcpb`, an [MCP Bundle](ht
 4. The bundle will ask you to provide a Financial Modeling Prep API key (obtain one [here](https://www.jeroenbouma.com/fmp)) and click "Save".
 5. Enable the bundle by toggling the switch which says "Disabled" to "Enabled".
 6. Restart Claude Desktop and the Finance Toolkit MCP Server will be available for use in your conversations.
+
+## Building and Testing Locally
+
+1. Pull in the repository with `git pull https://github.com/JerBouma/FinanceToolkit`
+2. Install required dependencies with `uv sync`
+3. Build the MCP bundle with `bash financetoolkit/mcp_server/mcpb/build-mcpb.sh`
+4. Find the generated `financetoolkit.mcpb` in the `dist/` directory
+5. Double-click it to install it into Claude Desktop.
