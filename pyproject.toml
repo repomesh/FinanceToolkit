@@ -135,6 +135,10 @@ lint.ignore = [
 
 exclude = ["conftest.py"]
 
+[tool.ruff.lint.per-file-ignores]
+# HTML template strings contain lines that cannot be wrapped
+"financetoolkit/mcp_server/auth_model.py" = ["E501"]
+
 [tool.ruff.lint.isort]
 combine-as-imports = true
 force-wrap-aliases = true
