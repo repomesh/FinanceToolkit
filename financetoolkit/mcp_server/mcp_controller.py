@@ -129,6 +129,9 @@ def _build_mcp_app() -> FastMCP:
     return mcp
 
 
+mcp = _build_mcp_app()
+
+
 def main() -> None:
     """
     Start the Finance Toolkit MCP server.
@@ -138,7 +141,6 @@ def main() -> None:
     Defaults to stdio transport when MCP_TRANSPORT is not set, which is the
     correct setting for use with VS Code and other MCP clients.
     """
-    mcp = _build_mcp_app()
     transport = os.environ.get("MCP_TRANSPORT", "stdio")
     get_logger().info(f"Starting MCP server on transport {transport}")
     mcp.run(transport=transport)
