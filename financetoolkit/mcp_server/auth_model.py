@@ -134,14 +134,6 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             margin-bottom: 28px;
         }}
 
-        .logo-img {{
-            width: 38px;
-            height: 38px;
-            border-radius: 10px;
-            flex-shrink: 0;
-            object-fit: contain;
-        }}
-
         .wordmark-text {{
             font-family: 'Inter', sans-serif;
             font-weight: 700;
@@ -398,7 +390,6 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 
     <div class="content">
     <div class="wordmark">
-        <img class="logo-img" src="/oauth/icon" alt="Finance Toolkit" />
         <div class="wordmark-text">Finance Toolkit<span>&middot; MCP Server</span></div>
     </div>
 
@@ -491,6 +482,8 @@ a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
             target="_blank" rel="noopener noreferrer">Finance Toolkit</a>
         &nbsp;&middot;&nbsp;
         <a href="https://github.com/JerBouma/FinanceToolkit" target="_blank" rel="noopener noreferrer">GitHub</a>
+        &nbsp;&middot;&nbsp;
+        <a href="https://www.linkedin.com/in/boumajeroen/" target="_blank" rel="noopener noreferrer">LinkedIn</a>
     </p>
     </div>
 
