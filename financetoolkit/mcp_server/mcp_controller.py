@@ -223,7 +223,8 @@ def main() -> None:
             starlette_app,
             host=mcp.settings.host,
             port=mcp.settings.port,
-            log_level=mcp.settings.log_level.lower(),
+            log_level="info",
+            access_log=True,
             proxy_headers=True,
             forwarded_allow_ips="*",
         )
