@@ -224,6 +224,8 @@ def main() -> None:
             host=mcp.settings.host,
             port=mcp.settings.port,
             log_level=mcp.settings.log_level.lower(),
+            proxy_headers=True,
+            forwarded_allow_ips="*",
         )
         server = uvicorn.Server(config)
         anyio.run(server.serve)
