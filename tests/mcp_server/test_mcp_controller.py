@@ -16,6 +16,9 @@ def test_build_mcp_app_uses_global_cache_path(monkeypatch, tmp_path):
         def __init__(self, *args, **kwargs):
             pass
 
+        def add_tool(self, *args, **kwargs):
+            pass
+
     fastmcp_module.FastMCP = StubFastMCP
     server_module = types.ModuleType("mcp.server")
     server_module.fastmcp = fastmcp_module
@@ -24,7 +27,12 @@ def test_build_mcp_app_uses_global_cache_path(monkeypatch, tmp_path):
     monkeypatch.setitem(sys.modules, "mcp", mcp_module)
     monkeypatch.setitem(sys.modules, "mcp.server", server_module)
     monkeypatch.setitem(sys.modules, "mcp.server.fastmcp", fastmcp_module)
-    sys.modules.pop("financetoolkit.mcp_server.mcp_controller", None)
+    for mod in [
+        "financetoolkit.mcp_server.mcp_controller",
+        "financetoolkit.mcp_server.registry_controller",
+        "financetoolkit.mcp_server.tools_model",
+    ]:
+        sys.modules.pop(mod, None)
 
     mcp_controller = importlib.import_module("financetoolkit.mcp_server.mcp_controller")
 
