@@ -11,6 +11,7 @@ from __future__ import annotations
 import difflib
 import importlib
 import inspect
+import types
 import typing
 from datetime import datetime, timedelta
 from typing import Any, NamedTuple
@@ -28,6 +29,65 @@ from financetoolkit.mcp_server.provider_model import ToolkitProvider
 from financetoolkit.utilities.logger_model import get_logger
 
 logger = get_logger()
+
+# Types that are not representable in JSON Schema — dropped during normalization.
+_OPAQUE_TYPES = {"list", "dict", "set", "tuple", "range", "ndarray"}
+
+
+def _simplify_annotation(ann: Any) -> Any:
+    """Reduce complex union/collection annotations to JSON-schema-compatible scalars.
+
+    FastMCP generates "unknown" schema entries for union types that contain
+    collections (list, dict, range, ndarray) or mixed numeric types. This
+    function strips those parts out and returns the simplest scalar equivalent:
+
+    - ``int | list[int]``                → ``int``
+    - ``int | float | None``             → ``float | None``
+    - ``float | range | list | None``    → ``float | None``
+    - ``list[str] | str | None``         → ``str | None``
+    - ``float | list | dict[str,float]`` → ``float``
+    """
+    if ann is inspect.Parameter.empty or ann is None:
+        return str
+
+    origin = typing.get_origin(ann)
+    args = typing.get_args(ann)
+
+    # Bare list[T] → T
+    if origin is list:
+        return args[0] if args else str
+
+    # Union types (both `X | Y` and `Union[X, Y]`)
+    is_union = origin is typing.Union or (
+        hasattr(types, "UnionType") and isinstance(ann, types.UnionType)
+    )
+    if not is_union:
+        return ann
+
+    has_none = type(None) in args
+    scalars: list[Any] = []
+    for a in args:
+        if a is type(None):
+            continue
+        a_origin = typing.get_origin(a)
+        # Drop generic collections (list[str], dict[str, float], …)
+        if a_origin in (list, dict, set, tuple):
+            continue
+        # Drop bare opaque types by name
+        name = getattr(a, "__name__", "")
+        if name in _OPAQUE_TYPES:
+            continue
+        scalars.append(a)
+
+    if not scalars:
+        return str | None if has_none else str
+
+    # Merge int + float → float (float is the wider type)
+    if int in scalars and float in scalars:
+        scalars = [x for x in scalars if x is not int]
+
+    scalar = scalars[0]
+    return scalar | None if has_none else scalar
 
 
 class RouterGroupSpec(NamedTuple):
@@ -423,7 +483,11 @@ class ToolRegistry:
         sig_params = [indicator_param] + list(common)
 
         for p in extra_params:
-            ann = p.annotation if p.annotation is not P.empty else str
+            ann = (
+                _simplify_annotation(p.annotation)
+                if p.annotation is not P.empty
+                else str
+            )
             default = p.default if p.default is not P.empty else ""
             sig_params.append(P(p.name, POS, default=default, annotation=ann))
 
