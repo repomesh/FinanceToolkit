@@ -5,6 +5,7 @@
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-grey?logo=Linkedin&logoColor=white)](https://www.linkedin.com/in/boumajeroen/)
 [![MCP Server](https://img.shields.io/badge/MCP_Server-grey?logo=modelcontextprotocol)](https://www.jeroenbouma.com/projects/financetoolkit/mcp)
 [![Download MCP Bundle](https://img.shields.io/badge/Download_MCP_Bundle-grey?logo=anthropic)](https://github.com/JerBouma/FinanceToolkit/releases/latest/download/financetoolkit.mcpb)
+[![Smithery](https://img.shields.io/badge/Smithery-Deployed-success)](https://smithery.ai/servers/jer-bouma/financetoolkit)
 [![Documentation](https://img.shields.io/badge/Documentation-grey?logo=readme)](https://www.jeroenbouma.com/projects/financetoolkit/docs)
 [![Supported Python Versions](https://img.shields.io/pypi/pyversions/financetoolkit)](https://pypi.org/project/FinanceToolkit/)
 [![PYPI Version](https://img.shields.io/pypi/v/FinanceToolkit)](https://pypi.org/project/FinanceToolkit/)
