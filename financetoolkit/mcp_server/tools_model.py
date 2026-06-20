@@ -19,10 +19,11 @@ from __future__ import annotations
 
 import difflib
 import re
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Annotated
 
 from mcp.server.fastmcp import FastMCP
 from mcp.types import ToolAnnotations
+from pydantic import Field
 
 from financetoolkit.mcp_server.formatting_model import format_result
 from financetoolkit.utilities.logger_model import get_logger
@@ -101,15 +102,19 @@ class UtilityToolRegistry:
             openWorldHint=False,
         )
         tools = [
-            (self.list_categories, "List Categories"),
-            (self.list_metrics_by_category, "List Metrics by Category"),
-            (self.search_metrics, "Search Metrics"),
-            (self.search_instruments, "Search Instruments"),
+            (self.list_categories, "search.categories", "List Categories"),
+            (
+                self.list_metrics_by_category,
+                "search.by_category",
+                "List Metrics by Category",
+            ),
+            (self.search_metrics, "search.metrics", "Search Metrics"),
+            (self.search_instruments, "search.instruments", "Search Instruments"),
         ]
-        for method, title in tools:
+        for method, tool_name, title in tools:
             self._mcp.add_tool(
                 method,
-                name=method.__name__,
+                name=tool_name,
                 description=method.__doc__ or "",
                 annotations=ToolAnnotations(
                     title=title,
@@ -145,7 +150,16 @@ class UtilityToolRegistry:
         result = "\n".join(lines)
         return result
 
-    def list_metrics_by_category(self, category: str) -> str:
+    def list_metrics_by_category(
+        self,
+        category: Annotated[
+            str,
+            Field(
+                description="Category name as returned by search.categories, "
+                "e.g. 'ratios', 'technicals', 'economics', 'discovery'."
+            ),
+        ],  # noqa: E501
+    ) -> str:
         """List every available metric/tool within a category.
 
         Args:
@@ -176,7 +190,16 @@ class UtilityToolRegistry:
         result = "\n".join(lines)
         return result
 
-    def search_metrics(self, query: str) -> str:
+    def search_metrics(
+        self,
+        query: Annotated[
+            str,
+            Field(
+                description="Free-text keyword to search across all metric names and "
+                "descriptions, e.g. 'sharpe', 'debt', or 'moving average'."
+            ),
+        ],  # noqa: E501
+    ) -> str:
         """Search across all metrics by keyword with typo tolerance.
 
         Supports minor typos and common financial abbreviations. Tokens
@@ -240,7 +263,22 @@ class UtilityToolRegistry:
         result = "\n".join(lines)
         return result
 
-    def search_instruments(self, query: str, search_method: str = "name") -> str:
+    def search_instruments(
+        self,
+        query: Annotated[
+            str,
+            Field(
+                description="Company name, ticker symbol, CIK, CUSIP, or ISIN to look up, e.g. "
+                "'Apple', 'AAPL', or '0000320193'."
+            ),
+        ],  # noqa: E501
+        search_method: Annotated[
+            str,
+            Field(
+                description="Lookup strategy: 'name', 'symbol', 'cik', 'cusip', or 'isin'. Defaults to 'name'."
+            ),
+        ] = "name",  # noqa: E501
+    ) -> str:
         """Search for ticker symbols by company name, symbol, CIK, CUSIP, or ISIN.
 
         Args:
