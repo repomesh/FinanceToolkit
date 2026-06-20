@@ -14,10 +14,11 @@ import inspect
 import types
 import typing
 from datetime import datetime, timedelta
-from typing import Any, NamedTuple
+from typing import Annotated, Any, NamedTuple
 
 from mcp.server.fastmcp import FastMCP
 from mcp.types import ToolAnnotations
+from pydantic import Field as PydanticField
 
 from financetoolkit.mcp_server.coercion_model import (
     coerce_value,
@@ -68,22 +69,15 @@ _PARAM_DESCRIPTIONS: dict[str, str] = {
 }
 
 
-def _build_args_docstring(sig: inspect.Signature) -> str:
-    """Return a Google-style Args section for *sig* using _PARAM_DESCRIPTIONS."""
-    lines = ["Args:"]
-    for name, param in sig.parameters.items():
-        desc = _PARAM_DESCRIPTIONS.get(name, "")
-        ann = param.annotation
-        type_hint = (
-            getattr(ann, "__name__", str(ann))
-            if ann is not inspect.Parameter.empty
-            else "str"
-        )
-        if desc:
-            lines.append(f"    {name} ({type_hint}): {desc}")
-        else:
-            lines.append(f"    {name} ({type_hint}): Value for {name}.")
-    return "\n".join(lines)
+def _annotate_with_description(name: str, ann: Any) -> Any:
+    """Wrap *ann* in ``Annotated[ann, Field(description=...)]`` for JSON schema output.
+
+    Pydantic reads the ``Field(description=...)`` metadata and includes it in the
+    ``properties[name].description`` field of the generated JSON schema, which is
+    what Smithery (and other MCP clients) use to display parameter descriptions.
+    """
+    desc = _PARAM_DESCRIPTIONS.get(name, f"Value for {name}.")
+    return Annotated[ann, PydanticField(description=desc)]  # type: ignore[valid-type]
 
 
 def _simplify_annotation(ann: Any) -> Any:
@@ -522,7 +516,10 @@ class ToolRegistry:
         )
         indicator_default = P.empty
         indicator_param = P(
-            "indicator", POS, default=indicator_default, annotation=indicator_ann
+            "indicator",
+            POS,
+            default=indicator_default,
+            annotation=_annotate_with_description("indicator", indicator_ann),
         )
 
         mixed_cats = None
@@ -532,7 +529,15 @@ class ToolRegistry:
         common = inspector.build_common_signature_params(
             category, mixed_categories=mixed_cats
         )
-        sig_params = [indicator_param] + list(common)
+        sig_params = [indicator_param] + [
+            P(
+                p.name,
+                POS,
+                default=p.default,
+                annotation=_annotate_with_description(p.name, p.annotation),
+            )
+            for p in common
+        ]
 
         for p in extra_params:
             ann = (
@@ -541,7 +546,14 @@ class ToolRegistry:
                 else str
             )
             default = p.default if p.default is not P.empty else ""
-            sig_params.append(P(p.name, POS, default=default, annotation=ann))
+            sig_params.append(
+                P(
+                    p.name,
+                    POS,
+                    default=default,
+                    annotation=_annotate_with_description(p.name, ann),
+                )
+            )
 
         wrapper.__signature__ = inspect.Signature(sig_params, return_annotation=str)
         wrapper.__annotations__ = {p.name: p.annotation for p in sig_params}
@@ -637,8 +649,7 @@ class ToolRegistry:
                 method_dispatch=method_dispatch,
             )
             fn.__name__ = spec.tool_name
-            args_section = _build_args_docstring(fn.__signature__)
-            fn.__doc__ = f"{description}\n\n{args_section}"
+            fn.__doc__ = description
             self._mcp.add_tool(
                 fn,
                 name=spec.tool_name,

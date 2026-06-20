@@ -22,6 +22,7 @@ import re
 from typing import TYPE_CHECKING
 
 from mcp.server.fastmcp import FastMCP
+from mcp.types import ToolAnnotations
 
 from financetoolkit.mcp_server.formatting_model import format_result
 from financetoolkit.utilities.logger_model import get_logger
@@ -93,15 +94,29 @@ class UtilityToolRegistry:
         Returns:
             int: Number of utility tools successfully registered.
         """
+        _utility_annotations = ToolAnnotations(
+            readOnlyHint=True,
+            destructiveHint=False,
+            idempotentHint=True,
+            openWorldHint=False,
+        )
         tools = [
-            self.list_categories,
-            self.list_metrics_by_category,
-            self.search_metrics,
-            self.search_instruments,
+            (self.list_categories, "List Categories"),
+            (self.list_metrics_by_category, "List Metrics by Category"),
+            (self.search_metrics, "Search Metrics"),
+            (self.search_instruments, "Search Instruments"),
         ]
-        for method in tools:
+        for method, title in tools:
             self._mcp.add_tool(
-                method, name=method.__name__, description=method.__doc__ or ""
+                method,
+                name=method.__name__,
+                description=method.__doc__ or "",
+                annotations=ToolAnnotations(
+                    title=title,
+                    **_utility_annotations.model_dump(
+                        exclude={"title"}, exclude_none=True
+                    ),
+                ),
             )
         logger.info("Registered %d utility tools.", len(tools))
         return len(tools)
