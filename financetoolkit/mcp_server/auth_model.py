@@ -382,92 +382,6 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         .page-footer a:hover {{
             color: var(--accent);
         }}
-
-        .pills {{
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-            margin-top: 12px;
-            justify-content: center;
-        }}
-
-        .pill {{
-            font-size: 11px;
-            font-weight: 500;
-            color: var(--text-muted);
-            background: rgba(56, 189, 248, 0.05);
-            border: 1px solid rgba(56, 189, 248, 0.12);
-            border-radius: 100px;
-            padding: 3px 9px;
-            letter-spacing: 0.1px;
-        }}
-
-        .info-row {{
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            margin-bottom: 20px;
-        }}
-
-        .info-item {{
-            display: flex;
-            align-items: flex-start;
-            gap: 7px;
-            font-size: 12px;
-            color: var(--text-muted);
-            line-height: 1.45;
-            position: relative;
-        }}
-
-        .info-item svg {{
-            color: var(--text-muted);
-            flex-shrink: 0;
-            margin-top: 1px;
-        }}
-
-        .tip-icon {{
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 13px;
-            height: 13px;
-            border-radius: 50%;
-            border: 1px solid rgba(56, 189, 248, 0.35);
-            color: var(--accent);
-            font-size: 9px;
-            font-weight: 700;
-            cursor: default;
-            flex-shrink: 0;
-            margin-top: 1px;
-            position: relative;
-        }}
-
-        .tip-icon::after {{
-            content: attr(data-tip);
-            position: absolute;
-            left: 50%;
-            bottom: calc(100% + 8px);
-            transform: translateX(-50%);
-            background: rgba(15, 23, 42, 0.97);
-            border: 1px solid rgba(56, 189, 248, 0.2);
-            border-radius: 8px;
-            padding: 9px 12px;
-            font-size: 11.5px;
-            font-weight: 400;
-            color: var(--text-secondary);
-            white-space: pre-wrap;
-            width: 230px;
-            line-height: 1.5;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
-            pointer-events: none;
-            opacity: 0;
-            transition: opacity 0.15s;
-            z-index: 10;
-        }}
-
-        .tip-icon:hover::after {{
-            opacity: 1;
-        }}
     </style>
 </head>
 <body>
@@ -488,42 +402,11 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             </div>
             <h1>Authorize Access</h1>
             <p class="subtitle">
-                Enter your Financial Modeling Prep API key to unlock 200+ financial metrics, calculated transparently from raw data.
+                Enter your Financial Modeling Prep API key to grant this client access to financial data tools.
             </p>
-            <div class="pills">
-                <span class="pill">80+ fundamentals</span>
-                <span class="pill">30+ technicals</span>
-                <span class="pill">20+ risk &amp; perf</span>
-                <span class="pill">50+ economics</span>
-            </div>
         </div>
 
         <div class="divider"></div>
-
-        <div class="info-row">
-            <div class="info-item">
-                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24"
-                    fill="none" stroke="currentColor" stroke-width="2"
-                    stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <line x1="12" y1="8" x2="12" y2="12"></line>
-                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                </svg>
-                <span>FMP key provides 30+ years of financial statements. Yahoo Finance serves as automatic fallback when rate-limited.</span>
-                <span class="tip-icon" data-tip="When FMP is rate-limited or unavailable, the toolkit falls back to Yahoo Finance automatically. No configuration needed — the switch is transparent.">i</span>
-            </div>
-            <div class="info-item">
-                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24"
-                    fill="none" stroke="currentColor" stroke-width="2"
-                    stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <line x1="12" y1="8" x2="12" y2="12"></line>
-                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                </svg>
-                <span>Macroeconomic data (OECD &amp; GMDB) is accessed independently — no FMP subscription required.</span>
-                <span class="tip-icon" data-tip="The 50+ economics metrics pull from OECD and the Global Macro Data Bank directly. These databases are free and do not count against your FMP quota.">i</span>
-            </div>
-        </div>
 
         <form action="/oauth/authorize" method="POST">
             <input type="hidden" name="client_id" value="{client_id}">
