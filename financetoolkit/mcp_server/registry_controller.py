@@ -17,6 +17,7 @@ from datetime import datetime, timedelta
 from typing import Any, NamedTuple
 
 from mcp.server.fastmcp import FastMCP
+from mcp.types import ToolAnnotations
 
 from financetoolkit.mcp_server.coercion_model import (
     coerce_value,
@@ -32,6 +33,57 @@ logger = get_logger()
 
 # Types that are not representable in JSON Schema — dropped during normalization.
 _OPAQUE_TYPES = {"list", "dict", "set", "tuple", "range", "ndarray"}
+
+# Human-readable descriptions injected into each tool's Args docstring so that
+# FastMCP can surface them as parameter descriptions in Smithery and other clients.
+_PARAM_DESCRIPTIONS: dict[str, str] = {
+    "indicator": (
+        "Name of the specific metric to calculate, e.g. 'get_asset_turnover_ratio'. "
+        "Required — omitting it returns the list of available indicators."
+    ),
+    "tickers": "Comma-separated ticker symbols, e.g. 'AAPL,MSFT,GOOGL'.",
+    "countries": "Comma-separated country names, e.g. 'United States,Germany,Japan'.",
+    "start_date": "Start of the date range in YYYY-MM-DD format.",
+    "end_date": "End of the date range in YYYY-MM-DD format.",
+    "quarterly": "Return quarterly data instead of annual when True.",
+    "benchmark_ticker": "Ticker used as the market benchmark, e.g. 'SPY' or '^GSPC'.",
+    "growth": "Return period-over-period growth rates instead of absolute values.",
+    "lag": "Number of periods to lag when computing growth rates.",
+    "trailing": "Number of trailing periods for rolling-window calculations.",
+    "rounding": "Number of decimal places to round results to.",
+    "days": "Number of calendar days used in day-count-based calculations.",
+    "period": "Observation frequency, e.g. 'monthly', 'quarterly', or 'annual'.",
+    "measure": "Sub-measure selector, e.g. 'M1', 'M2', or 'M3' for money supply.",
+    "gmdb_source": "Use the OECD Global Macro Data Bank as the data source when True.",
+    "inflation_adjusted": "Adjust nominal values for inflation when True.",
+    "bond_price": "Clean price of the bond per 100 face value.",
+    "coupon_rate": "Annual coupon rate as a decimal, e.g. 0.05 for 5 %.",
+    "years_to_maturity": "Years remaining until the bond matures.",
+    "maturities": "Comma-separated bond maturity labels, e.g. '3month,2year,10year'.",
+    "strike_rate": "Option strike price.",
+    "factors_to_calculate": "Comma-separated factor names to include in the calculation.",
+    "growth_rate": "Assumed constant growth rate as a decimal.",
+    "perpetual_growth_rate": "Terminal (perpetual) growth rate used in DCF models.",
+    "weighted_average_cost_of_capital": "WACC as a decimal, e.g. 0.09 for 9 %.",
+}
+
+
+def _build_args_docstring(sig: inspect.Signature) -> str:
+    """Return a Google-style Args section for *sig* using _PARAM_DESCRIPTIONS."""
+    lines = ["Args:"]
+    for name, param in sig.parameters.items():
+        desc = _PARAM_DESCRIPTIONS.get(name, "")
+        ann = param.annotation
+        type_hint = (
+            getattr(ann, "__name__", str(ann))
+            if ann is not inspect.Parameter.empty
+            else "str"
+        )
+        if desc:
+            lines.append(f"    {name} ({type_hint}): {desc}")
+        else:
+            lines.append(f"    {name} ({type_hint}): Value for {name}.")
+    return "\n".join(lines)
 
 
 def _simplify_annotation(ann: Any) -> Any:
@@ -585,8 +637,20 @@ class ToolRegistry:
                 method_dispatch=method_dispatch,
             )
             fn.__name__ = spec.tool_name
-            fn.__doc__ = description
-            self._mcp.add_tool(fn, name=spec.tool_name, description=description)
+            args_section = _build_args_docstring(fn.__signature__)
+            fn.__doc__ = f"{description}\n\n{args_section}"
+            self._mcp.add_tool(
+                fn,
+                name=spec.tool_name,
+                description=description,
+                annotations=ToolAnnotations(
+                    title=spec.display_name,
+                    readOnlyHint=True,
+                    destructiveHint=False,
+                    idempotentHint=True,
+                    openWorldHint=True,
+                ),
+            )
             index_cat = spec.index_category or spec.module_name
             if index_cat not in self._tool_index:
                 self._tool_index[index_cat] = []
