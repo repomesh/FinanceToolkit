@@ -3079,19 +3079,12 @@ This returns a rather large DataFrame so to keep it concise, only the first 5 ti
 
 The Finance Toolkit MCP Server exposes 200+ financial metrics, models, and economic indicators directly to any AI assistant that supports the Model Context Protocol including Claude Desktop & Code, GitHub Copilot, Cursor and Windsurf.
 
-**Option 1: Remote server (all clients, no installation):** Connect directly to the hosted server. Nothing needs to be installed locally. On first connection your client opens an OAuth consent page asking for your FMP API key; enter it once and the server handles authentication from there.
+**Option 1: Remote server (all clients, no installation):** Connect directly to the hosted server. Nothing needs to be installed locally. On first connection your client opens an OAuth consent page asking for your FMP API key; enter it once and the server handles authentication from there. Add the URL as a remote HTTP MCP server in your client's settings or config file.
 
 ___
 <b><div align="center">MCP Server URL: <code>https://financetoolkit.jeroenbouma.com/mcp</code></div></b>
 ___
 
-For Claude Code, add it in one command:
-
-```
-claude mcp add --transport http finance-toolkit https://financetoolkit.jeroenbouma.com/mcp
-```
-
-For all other clients, add the URL as a remote HTTP MCP server in your client's settings or config file.
 
 **Option 2: One-click install (Claude Desktop):** Download the MCP Bundle and open it with Claude Desktop. An installation dialog will appear and prompt you for your API key. No terminal required.
 
@@ -3099,7 +3092,7 @@ ___
 <b><div align="center">Download the Finance Toolkit MCP Bundle <a href="https://github.com/JerBouma/FinanceToolkit/releases/latest/download/financetoolkit.mcpb">here</a>.</div></b>
 ___
 
-**Option 3: Setup wizard (all other clients):** Run the one-line setup wizard and it will configure your AI client automatically:
+**Option 3: Local installation (all clients):** Run the one-line setup wizard and it will configure your AI client automatically:
 
 ```
 uvx --from "financetoolkit[mcp]" financetoolkit-mcp-setup
