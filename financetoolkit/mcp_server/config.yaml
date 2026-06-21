@@ -214,35 +214,35 @@ category_descriptions:
 tool_groups:
   # ── Ratios (5 sub-groups) ────────────────────────────────────────────────
   - tool_name:      "ratios_efficiency"
-    display_name:   "efficiency_ratios"
+    display_name:   "Efficiency Ratios"
     description:    "Pre-computed efficiency ratios (asset turnover, inventory turnover, days sales outstanding, days payable outstanding, cash conversion cycle). Requires tickers='AAPL' — use comma-separated values for multiple tickers. Use instead of raw financial statements. Supports quarterly=true and start_date/end_date."
     module_name:    "ratios"
     category:       "ticker"
     collect_method: "collect_efficiency_ratios"
 
   - tool_name:      "ratios_liquidity"
-    display_name:   "liquidity_ratios"
+    display_name:   "Liquidity Ratios"
     description:    "Pre-computed liquidity ratios (current ratio, quick ratio, cash ratio, working capital). Requires tickers='AAPL' — use comma-separated values for multiple tickers. Use instead of raw financial statements. Supports quarterly=true and start_date/end_date."
     module_name:    "ratios"
     category:       "ticker"
     collect_method: "collect_liquidity_ratios"
 
   - tool_name:      "ratios_profitability"
-    display_name:   "profitability_ratios"
+    display_name:   "Profitability Ratios"
     description:    "Pre-computed profitability ratios (gross margin, operating margin, net margin, ROE, ROA, ROIC, ROCE). Requires tickers='AAPL' — use comma-separated values for multiple tickers. Use instead of raw financial statements. Supports quarterly=true and start_date/end_date."
     module_name:    "ratios"
     category:       "ticker"
     collect_method: "collect_profitability_ratios"
 
   - tool_name:      "ratios_solvency"
-    display_name:   "solvency_ratios"
+    display_name:   "Solvency Ratios"
     description:    "Pre-computed solvency ratios (debt-to-equity, interest coverage, debt-to-assets, net debt to EBITDA). Requires tickers='AAPL' — use comma-separated values for multiple tickers. Use instead of raw financial statements. Supports quarterly=true and start_date/end_date."
     module_name:    "ratios"
     category:       "ticker"
     collect_method: "collect_solvency_ratios"
 
   - tool_name:      "ratios_valuation"
-    display_name:   "valuation_ratios"
+    display_name:   "Valuation Ratios"
     description:    "Pre-computed valuation ratios (P/E, EPS, EV/EBITDA, EV/EBIT, P/B, P/S, PEG, dividend yield, FCF yield, market cap). Requires tickers='AAPL' — use comma-separated values for multiple tickers. Use instead of raw financial statements. Supports quarterly=true and start_date/end_date."
     module_name:    "ratios"
     category:       "ticker"
@@ -250,28 +250,28 @@ tool_groups:
 
   # ── Technicals (4 sub-groups) ────────────────────────────────────────────
   - tool_name:      "technicals_breadth"
-    display_name:   "breadth_indicators"
+    display_name:   "Breadth Indicators"
     description:    "Market breadth technical indicators (McClellan Oscillator, OBV, Advance/Decline Line, Chaikin). Applied to price data automatically — no need to fetch prices first. Requires tickers='AAPL' — use comma-separated values for multiple tickers."
     module_name:    "technicals"
     category:       "ticker"
     collect_method: "collect_breadth_indicators"
 
   - tool_name:      "technicals_momentum"
-    display_name:   "momentum_indicators"
+    display_name:   "Momentum Indicators"
     description:    "Momentum technical indicators (RSI, MACD, Stochastic Oscillator, Williams %R, Aroon). Applied to price data automatically — no need to fetch prices first. Requires tickers='AAPL' — use comma-separated values for multiple tickers."
     module_name:    "technicals"
     category:       "ticker"
     collect_method: "collect_momentum_indicators"
 
   - tool_name:      "technicals_overlap"
-    display_name:   "overlap_indicators"
+    display_name:   "Overlap Indicators"
     description:    "Overlap technical indicators (SMA, EMA, Bollinger Bands, Keltner Channels). Applied to price data automatically — no need to fetch prices first. Requires tickers='AAPL' — use comma-separated values for multiple tickers."
     module_name:    "technicals"
     category:       "ticker"
     collect_method: "collect_overlap_indicators"
 
   - tool_name:      "technicals_volatility"
-    display_name:   "volatility_indicators"
+    display_name:   "Volatility Indicators"
     description:    "Volatility technical indicators (ATR, True Range). Applied to price data automatically — no need to fetch prices first. Requires tickers='AAPL' — use comma-separated values for multiple tickers."
     module_name:    "technicals"
     category:       "ticker"
@@ -279,25 +279,25 @@ tool_groups:
 
   # ── Single-module ticker tools ───────────────────────────────────────────
   - tool_name:    "quant_models"
-    display_name: "financial_models"
+    display_name: "Financial Models"
     description:  "Pre-computed financial models (WACC, DuPont analysis, Altman Z-Score, Piotroski F-Score, intrinsic value/DCF). Requires tickers='AAPL' — use comma-separated values for multiple tickers. Supports quarterly=true and start_date/end_date."
     module_name:  "models"
     category:     "ticker"
 
   - tool_name:    "quant_performance"
-    display_name: "performance_metrics"
+    display_name: "Performance Metrics"
     description:  "Pre-computed risk-adjusted performance metrics (Sharpe ratio, Sortino ratio, Alpha, Beta, CAPM, Fama-French factors). Requires tickers='AAPL' — use comma-separated values for multiple tickers. Does NOT support period='daily'; use weekly, monthly, quarterly, or yearly instead."
     module_name:  "performance"
     category:     "ticker"
 
   - tool_name:    "quant_risk"
-    display_name: "risk_metrics"
+    display_name: "Risk Metrics"
     description:  "Pre-computed risk metrics (VaR, CVaR, GARCH volatility, max drawdown, skewness, kurtosis). Requires tickers='AAPL' — use comma-separated values for multiple tickers. Does NOT support period='daily'; use weekly, monthly, quarterly, or yearly instead."
     module_name:  "risk"
     category:     "ticker"
 
   - tool_name:    "quant_options"
-    display_name: "options"
+    display_name: "Options"
     description:  "Option pricing and Greeks (Black-Scholes model, binomial tree, delta, gamma, theta, vega, rho, implied volatility). Requires tickers='AAPL' — use comma-separated values for multiple tickers."
     module_name:  "options"
     category:     "ticker"
@@ -305,7 +305,7 @@ tool_groups:
   # ── Economics: Government & Fiscal ──────────────────────────────────────
   # All government debt, deficit, expenditure, revenue, tax, and trust metrics.
   - tool_name:       "economics_government"
-    display_name:    "government_and_fiscal_metrics"
+    display_name:    "Government & Fiscal Metrics"
     description:     "Government fiscal metrics by country (debt, deficit, expenditure, revenue, tax revenue, trust in government). Requires countries='United States' — use comma-separated values for multiple countries. Do NOT use tickers= for this tool. Supports start_date/end_date and quarterly=true."
     module_name:     "economics"
     category:        "standalone"
@@ -327,7 +327,7 @@ tool_groups:
   # GDP, CPI, inflation, trade balances, investment, consumption,
   # confidence indices, house/rent prices, exchange rates, share prices.
   - tool_name:       "economics_general"
-    display_name:    "general_economy"
+    display_name:    "General Economy"
     description:     "Macroeconomic indicators by country (GDP, CPI, inflation rate, trade balance, imports, exports, investment, consumption, business/consumer confidence, house prices, rent prices, exchange rates). Requires countries='United States' — use comma-separated values for multiple countries. Do NOT use tickers= for this tool. Supports start_date/end_date and quarterly=true."
     module_name:     "economics"
     category:        "standalone"
@@ -363,7 +363,7 @@ tool_groups:
   # ESG scores come from Toolkit (use tickers=). This is the only tool where
   # BOTH tickers= and countries= are accepted.
   - tool_name:       "economics_environment"
-    display_name:    "environment_and_esg"
+    display_name:    "Environment & ESG"
     description:     "Environmental and ESG data. For ESG scores (E, S, G ratings) use tickers='AAPL'. For carbon footprint and renewable energy data use countries='United States'. This is the only tool that accepts BOTH tickers= and countries= depending on the indicator."
     module_name:     "mixed"
     category:        "mixed"
@@ -386,7 +386,7 @@ tool_groups:
   # ── Economics: Jobs & Society ────────────────────────────────────────────
   # Unemployment, labour productivity, population, poverty, income inequality.
   - tool_name:       "economics_jobs"
-    display_name:    "jobs_and_society"
+    display_name:    "Jobs & Society"
     description:     "Labour and social metrics by country (unemployment rate, labour productivity, population statistics, poverty rate, income inequality). Requires countries='United States' — use comma-separated values for multiple countries. Do NOT use tickers= for this tool. Supports start_date/end_date and quarterly=true."
     module_name:     "economics"
     category:        "standalone"
@@ -404,7 +404,7 @@ tool_groups:
   # ECB rates, and Federal Reserve rates from FixedIncome.
   # All indicators use countries= (both modules are CATEGORY_STANDALONE).
   - tool_name:       "economics_rates"
-    display_name:    "interest_rates"
+    display_name:    "Interest Rates"
     description:     "Interest rate data (central bank policy rates, short/long-term rates, government bond yields, ICE BofA corporate bond series, EURIBOR, ECB rates, Federal Reserve rates). Requires countries='United States' — use comma-separated values for multiple countries. Do NOT use tickers= for this tool. Supports start_date/end_date and quarterly=true."
     module_name:     "mixed"
     category:        "mixed"
@@ -460,7 +460,7 @@ tool_groups:
   # Computational valuation tools: bond duration, present value,
   # yield-to-maturity, and derivative pricing models.
   - tool_name:       "economics_fixed_income"
-    display_name:    "bond_and_derivative_valuations"
+    display_name:    "Bond & Derivative Valuations"
     description:     "Bond and derivative valuation calculations (bond duration, present value, yield-to-maturity, derivative pricing). No tickers or countries needed — provide bond/derivative parameters (e.g. face_value, coupon_rate, maturity) directly as arguments."
     module_name:     "fixedincome"
     category:        "standalone"
@@ -473,7 +473,7 @@ tool_groups:
 
   # ── Discovery ────────────────────────────────────────────────────────────
   - tool_name:    "market_discovery"
-    display_name: "market_discovery"
+    display_name: "Market Discovery"
     description:  "Market discovery tools (lists of stocks/ETFs/cryptocurrencies, stock screener, gainers, losers, sector performance, earnings/dividend calendars). No tickers or countries needed."
     module_name:  "discovery"
     category:     "discovery"
@@ -481,7 +481,7 @@ tool_groups:
   # ── Raw Financial Data (Toolkit direct methods) ──────────────────────────
   # Method list is populated at startup from toolkit_direct_methods above.
   - tool_name:                    "market_data"
-    display_name:                 "raw_financial_data"
+    display_name:                 "Raw Financial Data"
     description:                  "Raw financial data (historical prices, income statement, balance sheet, cash flow statement, company profile, quotes, analyst estimates, dividend/earnings calendars, statistics). Use this ONLY for raw data needs — for pre-computed ratios, performance, risk, or model metrics use the dedicated tools instead. Requires tickers='AAPL' — use comma-separated values for multiple tickers."
     module_name:                  "toolkit"
     category:                     "toolkit"

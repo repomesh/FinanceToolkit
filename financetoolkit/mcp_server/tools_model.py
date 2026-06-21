@@ -102,14 +102,14 @@ class UtilityToolRegistry:
             openWorldHint=False,
         )
         tools = [
-            (self.list_categories, "search_categories", "list_categories"),
+            (self.list_categories, "search_categories", "List Categories"),
             (
                 self.list_metrics_by_category,
                 "search_by_category",
-                "list_metrics_by_category",
+                "List Metrics by Category",
             ),
-            (self.search_metrics, "search_metrics", "search_metrics"),
-            (self.search_instruments, "search_instruments", "search_instruments"),
+            (self.search_metrics, "search_metrics", "Search Metrics"),
+            (self.search_instruments, "search_instruments", "Search Instruments"),
         ]
         for method, tool_name, title in tools:
             self._mcp.add_tool(
