@@ -3,8 +3,8 @@
   "name": "finance-toolkit",
   "display_name": "Finance Toolkit",
   "version": "2.1.0",
-  "description": "200+ financial metrics, ratios, and economic indicators directly in your AI assistant, no Python installation required.",
-  "long_description": "The Finance Toolkit MCP Server exposes 200+ pre-computed financial metrics, models, and economic indicators to any AI assistant that supports the Model Context Protocol. Query valuation ratios, profitability metrics, risk measures, technical indicators, fixed income valuations, macroeconomic data, ESG scores, and more \u2014 all backed by the open-source Finance Toolkit's transparent calculation methods. Requires a (free) Financial Modeling Prep API key obtainable [here](https://www.jeroenbouma.com/fmp).",
+  "description": "Give AI assistants access to 200+ financial metrics calculated transparently from raw financial statements, not pulled from third-party endpoints.",
+  "long_description": "The Finance Toolkit gives AI assistants access to 200+ financial metrics calculated transparently from raw financial statements. This includes financial statements, historical prices, analyst estimates, 80+ fundamental ratios, 30+ technical indicators, 20+ risk and performance metrics, and 50+ macro and fixed income indicators.\n\nA Financial Modeling Prep API key is required to access 30+ years of financial data. Obtain one at [jeroenbouma.com/fmp](https://jeroenbouma.com/fmp). Authenticate once via OAuth, no key is stored on the server. Rate limit fallback to Yahoo Finance is built in, and macro databases from OECD and GMDB are accessed independently.",
   "author": {
     "name": "Jeroen Bouma",
     "email": "jer.bouma@gmail.com",
