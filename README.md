@@ -21,7 +21,7 @@ Beyond Equities, it supports Options, Currencies, Cryptocurrencies, ETFs, Mutual
 
 Complementing this is the [Finance Database 🌎](https://github.com/JerBouma/FinanceDatabase), a database featuring 300.000+ symbols containing Equities, ETFs, Funds, Indices, Currencies, Cryptocurrencies and Money Markets. By utilising both, it is possible to do a fully-fledged competitive analysis with the tickers found from the FinanceDatabase inputted into the FinanceToolkit.
 
-**The Finance Toolkit is also available as a hosted [MCP Server](https://www.jeroenbouma.com/projects/financetoolkit/mcp)** — point any MCP-compatible AI assistant (Claude, GitHub Copilot, Cursor, Windsurf, and more) at `https://financetoolkit.jeroenbouma.com/mcp` and query 200+ financial metrics conversationally. **No local installation required**, the server runs in the cloud and authenticates via OAuth on first connection.
+**The Finance Toolkit is also available as a hosted [MCP Server](https://www.jeroenbouma.com/projects/financetoolkit/mcp).** Point any MCP-compatible AI assistant (Claude, GitHub Copilot, Cursor, Windsurf, and more) at `https://financetoolkit.jeroenbouma.com/mcp` and query 200+ financial metrics conversationally. **No local installation required**, the server runs in the cloud and authenticates via OAuth on first connection.
 
 # Table of Contents
 
@@ -67,19 +67,7 @@ Through the link you are able to subscribe for the free plan and also premium pl
 
 **By default, the Finance Toolkit prioritizes Financial Modeling Prep for data retrieval. If data acquisition from Financial Modeling Prep is unsuccessful (e.g., due to plan restrictions or API key issues), the toolkit automatically switches to Yahoo Finance as a secondary source.** To disable this fallback behavior and exclusively use Financial Modeling Prep, set `enforce_source="FinancialModelingPrep"` during Toolkit initialization. This configuration ensures that an error is raised if Financial Modeling Prep data cannot be accessed. Alternatively, you can set `enforce_source="YahooFinance"` to exclusively use Yahoo Finance as the data source.
 
-Prefer a conversational interface over writing Python? The Finance Toolkit MCP Server is hosted at `https://financetoolkit.jeroenbouma.com/mcp` — connect any MCP-compatible client to that URL and you are up and running immediately, no Python or terminal required. For Claude Code specifically:
-
-```
-claude mcp add --transport http finance-toolkit https://financetoolkit.jeroenbouma.com/mcp
-```
-
-For Claude Desktop, use the one-click MCPB bundle. For all other clients, the setup wizard handles configuration automatically:
-
-```
-uvx --from "financetoolkit[mcp]" financetoolkit-mcp-setup
-```
-
-See the full MCP documentation [here](https://www.jeroenbouma.com/projects/financetoolkit/mcp).
+Prefer a conversational interface over writing Python? The Finance Toolkit MCP Server is hosted at `https://financetoolkit.jeroenbouma.com/mcp`. Connect any MCP-compatible client to that URL and you are up and running immediately, no Python or terminal required.
 
 # Basic Usage
 
@@ -449,7 +437,7 @@ Which returns:
 | CUSIP                 | 594918104                 | 37833100              |
 | Exchange              | NASDAQ Global Select      | NASDAQ Global Select  |
 | Exchange Short Name   | NASDAQ                    | NASDAQ                |
-| Industry              | Software—Infrastructure   | Consumer Electronics  |
+| Industry              | Software - Infrastructure | Consumer Electronics  |
 | Website               | https://www.microsoft.com | https://www.apple.com |
 | CEO                   | Mr. Satya  Nadella        | Mr. Timothy D. Cook   |
 | Sector                | Technology                | Technology            |
@@ -3091,7 +3079,7 @@ This returns a rather large DataFrame so to keep it concise, only the first 5 ti
 
 The Finance Toolkit MCP Server exposes 200+ financial metrics, models, and economic indicators directly to any AI assistant that supports the Model Context Protocol including Claude Desktop & Code, GitHub Copilot, Cursor and Windsurf.
 
-**Option 1 — Remote server (all clients, no installation):** Connect directly to the hosted server — nothing needs to be installed locally. On first connection your client opens an OAuth consent page asking for your FMP API key; enter it once and the server handles authentication from there.
+**Option 1: Remote server (all clients, no installation):** Connect directly to the hosted server. Nothing needs to be installed locally. On first connection your client opens an OAuth consent page asking for your FMP API key; enter it once and the server handles authentication from there.
 
 ___
 <b><div align="center">MCP Server URL: <code>https://financetoolkit.jeroenbouma.com/mcp</code></div></b>
@@ -3105,13 +3093,13 @@ claude mcp add --transport http finance-toolkit https://financetoolkit.jeroenbou
 
 For all other clients, add the URL as a remote HTTP MCP server in your client's settings or config file.
 
-**Option 2 — One-click install (Claude Desktop):** Download the MCP Bundle and open it with Claude Desktop. An installation dialog will appear and prompt you for your API key — no terminal required.
+**Option 2: One-click install (Claude Desktop):** Download the MCP Bundle and open it with Claude Desktop. An installation dialog will appear and prompt you for your API key. No terminal required.
 
 ___
 <b><div align="center">Download the Finance Toolkit MCP Bundle <a href="https://github.com/JerBouma/FinanceToolkit/releases/latest/download/financetoolkit.mcpb">here</a>.</div></b>
 ___
 
-**Option 3 — Setup wizard (all other clients):** Run the one-line setup wizard and it will configure your AI client automatically:
+**Option 3: Setup wizard (all other clients):** Run the one-line setup wizard and it will configure your AI client automatically:
 
 ```
 uvx --from "financetoolkit[mcp]" financetoolkit-mcp-setup
@@ -3187,12 +3175,12 @@ The Finance Toolkit has been mentioned in various blogposts, research papers, ne
 
 **Blogposts**
 - [A Deep Dive into EOY Financial Performance & Risk Measures of Big Five using the Finance Toolkit in Python](https://wire.insiderfinance.io/a-deep-dive-into-eoy-financial-performance-risk-measures-of-big-five-using-the-financetoolkit-in-ef93fddd11db)
-- [Discovering the Best Integrated Platforms for Big Tech Quantitative Finance — 1. Finance Toolkit](https://wire.insiderfinance.io/discovering-the-best-integrated-platforms-for-big-tech-quantitative-finance-1-finance-toolkit-2e29b67eb4ea)
-- [Investment Analysis — Finance Database](https://alpha2phi.medium.com/investment-analysis-finance-database-61f47ecfe7ca)
+- [Discovering the Best Integrated Platforms for Big Tech Quantitative Finance: 1. Finance Toolkit](https://wire.insiderfinance.io/discovering-the-best-integrated-platforms-for-big-tech-quantitative-finance-1-finance-toolkit-2e29b67eb4ea)
+- [Investment Analysis with the Finance Database](https://alpha2phi.medium.com/investment-analysis-finance-database-61f47ecfe7ca)
 - [Unlocking Financial Clarity: Introducing the Open-Source Finance Toolkit Powered by FMP](https://site.financialmodelingprep.com/education/ESG/unlocking-financial-clarity-introducing-the-open-source-finance-toolkit-powered-by-fmp)
 
 **Research**
-- [AI, Help Me Think—but for Myself: Assisting People in Complex Decision-Making by Providing Different Kinds of Cognitive Support](https://www.microsoft.com/en-us/research/wp-content/uploads/2025/03/AI-Help-Me-Think-CHI-2025.pdf)
+- [AI, Help Me Think, but for Myself: Assisting People in Complex Decision-Making by Providing Different Kinds of Cognitive Support](https://www.microsoft.com/en-us/research/wp-content/uploads/2025/03/AI-Help-Me-Think-CHI-2025.pdf)
 - [Fundamental Analysis using Muli-Agent System and Agentic RAG](https://connect.cfauk.org/HigherLogic/System/DownloadDocumentFile.ashx?DocumentFileKey=3ae6f3fc-593a-04ec-c3b8-be5643cab479&forceDialog=0)
 
 **Newsletters & Social Media**
