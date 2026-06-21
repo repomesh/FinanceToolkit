@@ -305,7 +305,7 @@ tool_groups:
   # ── Economics: Government & Fiscal ──────────────────────────────────────
   # All government debt, deficit, expenditure, revenue, tax, and trust metrics.
   - tool_name:       "economics_government"
-    display_name:    "Government & Fiscal Metrics"
+    display_name:    "Government and Fiscal Metrics"
     description:     "Government fiscal metrics by country (debt, deficit, expenditure, revenue, tax revenue, trust in government). Requires countries='United States' — use comma-separated values for multiple countries. Do NOT use tickers= for this tool. Supports start_date/end_date and quarterly=true."
     module_name:     "economics"
     category:        "standalone"
@@ -363,7 +363,7 @@ tool_groups:
   # ESG scores come from Toolkit (use tickers=). This is the only tool where
   # BOTH tickers= and countries= are accepted.
   - tool_name:       "economics_environment"
-    display_name:    "Environment & ESG"
+    display_name:    "Environment and ESG"
     description:     "Environmental and ESG data. For ESG scores (E, S, G ratings) use tickers='AAPL'. For carbon footprint and renewable energy data use countries='United States'. This is the only tool that accepts BOTH tickers= and countries= depending on the indicator."
     module_name:     "mixed"
     category:        "mixed"
@@ -386,7 +386,7 @@ tool_groups:
   # ── Economics: Jobs & Society ────────────────────────────────────────────
   # Unemployment, labour productivity, population, poverty, income inequality.
   - tool_name:       "economics_jobs"
-    display_name:    "Jobs & Society"
+    display_name:    "Jobs and Society"
     description:     "Labour and social metrics by country (unemployment rate, labour productivity, population statistics, poverty rate, income inequality). Requires countries='United States' — use comma-separated values for multiple countries. Do NOT use tickers= for this tool. Supports start_date/end_date and quarterly=true."
     module_name:     "economics"
     category:        "standalone"
@@ -460,7 +460,7 @@ tool_groups:
   # Computational valuation tools: bond duration, present value,
   # yield-to-maturity, and derivative pricing models.
   - tool_name:       "economics_fixed_income"
-    display_name:    "Bond & Derivative Valuations"
+    display_name:    "Bond and Derivative Valuations"
     description:     "Bond and derivative valuation calculations (bond duration, present value, yield-to-maturity, derivative pricing). No tickers or countries needed — provide bond/derivative parameters (e.g. face_value, coupon_rate, maturity) directly as arguments."
     module_name:     "fixedincome"
     category:        "standalone"
