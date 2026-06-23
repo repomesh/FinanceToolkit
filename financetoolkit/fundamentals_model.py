@@ -6,7 +6,6 @@ import time
 
 import numpy as np
 import pandas as pd
-from tqdm import tqdm
 
 from financetoolkit import fmp_model, normalization_model, yfinance_model
 from financetoolkit.utilities import error_model, logger_model
@@ -31,6 +30,7 @@ def collect_financial_statements(
     rounding: int | None = 4,
     fmp_statement_format: pd.DataFrame = pd.DataFrame(),
     fmp_statistics_format: pd.DataFrame = pd.DataFrame(),
+    fiscal_year_adjustments: dict | None = None,
     yf_statement_format: pd.DataFrame = pd.DataFrame(),
     sleep_timer: bool = True,
     progress_bar: bool = True,
@@ -90,6 +90,7 @@ def collect_financial_statements(
                 start_date=start_date,
                 sleep_timer=sleep_timer,
                 user_subscription=user_subscription,
+                fiscal_year_adjustments=fiscal_year_adjustments,
             )
 
             financial_statement_dict["FinancialModelingPrep"][
@@ -108,6 +109,7 @@ def collect_financial_statements(
                     statement=statement,
                     quarter=quarter,
                     fallback=attempted_fmp,
+                    fiscal_year_adjustments=fiscal_year_adjustments,
                 )
 
                 financial_statement_dict["YahooFinance"][
@@ -139,12 +141,7 @@ def collect_financial_statements(
             "For more information, look here: https://www.jeroenbouma.com/fmp"
         )
 
-    ticker_list_iterator = (
-        tqdm(ticker_list, desc=f"Obtaining {statement} data")
-        if progress_bar
-        else ticker_list
-    )
-
+    logger.info("Obtaining %s data for %d tickers", statement, len(ticker_list))
     financial_statement_dict: dict[str, pd.DataFrame] = {
         "FinancialModelingPrep": {},
         "YahooFinance": {},
@@ -154,7 +151,12 @@ def collect_financial_statements(
     no_data: list[str] = []
     threads = []
 
-    for ticker in ticker_list_iterator:
+    # Shared registry populated by worker threads (dict writes per unique ticker key are
+    # effectively atomic under the GIL, so no explicit lock is needed here).
+    if fiscal_year_adjustments is None:
+        fiscal_year_adjustments = {}
+
+    for ticker in ticker_list:
         # Introduce a sleep timer to prevent rate limit errors
         time.sleep(0.1)
 
@@ -167,6 +169,12 @@ def collect_financial_statements(
 
     for thread in threads:
         thread.join()
+
+    if fiscal_year_adjustments:
+        logger.info(
+            "Mapping fiscal year to calendar year for: %s",
+            ", ".join(fiscal_year_adjustments.keys()),
+        )
 
     fmp_financial_statements_total = pd.DataFrame()
     yf_financial_statements_total = pd.DataFrame()
@@ -300,4 +308,5 @@ def collect_financial_statements(
         financial_statement_total,
         financial_statement_statistics,
         no_data,
+        fiscal_year_adjustments,
     )

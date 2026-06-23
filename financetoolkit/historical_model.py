@@ -8,7 +8,6 @@ import time
 
 import numpy as np
 import pandas as pd
-from tqdm import tqdm
 
 from financetoolkit import fmp_model, yfinance_model
 from financetoolkit.utilities import error_model, logger_model
@@ -51,7 +50,7 @@ def get_historical_data(
     sleep_timer: bool = True,
     show_ticker_seperation: bool = True,
     show_errors: bool = False,
-    tqdm_message: str = "Obtaining historical data",
+    log_message: str = "Obtaining historical data",
     user_subscription: str = "Free",
 ):
     """
@@ -90,7 +89,7 @@ def get_historical_data(
         show_ticker_seperation (bool, optional): A boolean representing whether to show which tickers
         acquired data from FinancialModelingPrep and which tickers acquired data from YahooFinance.
         show_errors (bool, optional): A boolean representing whether to show errors. Defaults to True.
-        tqdm_message (str, optional): A string representing the message to show in the progress bar.
+        log_message (str, optional): A string representing the message to show in the log output.
 
     Raises:
         ValueError: If the start date is after the end date.
@@ -200,10 +199,7 @@ def get_historical_data(
     else:
         raise ValueError(f"Type for the tickers ({type(tickers)}) variable is invalid.")
 
-    ticker_list_iterator = (
-        tqdm(ticker_list, desc=tqdm_message) if progress_bar else ticker_list
-    )
-
+    logger.info("%s for %d tickers", log_message, len(ticker_list))
     historical_data_dict: dict[str, pd.DataFrame] = {}
     historical_data_error_dict: dict[str, pd.DataFrame] = {}
     fmp_tickers: list[str] = []
@@ -211,7 +207,7 @@ def get_historical_data(
     no_data: list[str] = []
     threads = []
 
-    for ticker in ticker_list_iterator:
+    for ticker in ticker_list:
         # Introduce a sleep timer to prevent rate limit errors
         time.sleep(0.1)
 
@@ -426,7 +422,7 @@ def get_historical_statistics(
     api_key: str | None = None,
     progress_bar: bool = True,
     show_errors: bool = False,
-    tqdm_message: str = "Obtaining historical statistics",
+    log_message: str = "Obtaining historical statistics",
     user_subscription: str = "Free",
 ):
     """
@@ -453,7 +449,7 @@ def get_historical_statistics(
         api_key (str, optional): The API key to use to retrieve the data from FinancialModelingPrep.
         progress_bar (bool, optional): A boolean representing whether to show a progress bar. Defaults to True.
         show_errors (bool, optional): A boolean representing whether to show errors. Defaults to True.
-        tqdm_message (str, optional): A string representing the message to show in the progress bar.
+        log_message (str, optional): A string representing the message to show in the log output.
 
     Returns:
         pd.DataFrame: A pandas DataFrame object containing the statistics for the given ticker(s).
@@ -487,15 +483,12 @@ def get_historical_statistics(
     else:
         raise ValueError(f"Type for the tickers ({type(tickers)}) variable is invalid.")
 
-    ticker_list_iterator = (
-        tqdm(ticker_list, desc=tqdm_message) if progress_bar else ticker_list
-    )
-
+    logger.info("%s for %d tickers", log_message, len(ticker_list))
     historical_statistics_dict: dict[str, pd.DataFrame] = {}
     no_data: list[str] = []
     threads = []
 
-    for ticker in ticker_list_iterator:
+    for ticker in ticker_list:
         # Introduce a sleep timer to prevent rate limit errors
         time.sleep(0.1)
 

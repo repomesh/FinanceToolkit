@@ -19,7 +19,11 @@ logger = logger_model.get_logger()
 
 
 def get_financial_statement(
-    ticker: str, statement: str, quarter: bool = False, fallback: bool = False
+    ticker: str,
+    statement: str,
+    quarter: bool = False,
+    fallback: bool = False,
+    fiscal_year_adjustments: dict | None = None,
 ):
     """
     Retrieves a specific financial statement (balance sheet, income statement, or cash flow statement)
@@ -104,6 +108,14 @@ def get_financial_statement(
         end_month = col_dates.month
         end_year = col_dates.year
         calendar_year = end_year - (end_month < 6).astype(int)  # noqa
+
+        shifted_mask = end_month < 6.0  # noqa
+        if shifted_mask.any() and fiscal_year_adjustments is not None:
+            fiscal_year_adjustments[ticker] = [
+                {"fiscal_year": int(fy), "calendar_year": int(cy)}
+                for fy, cy in zip(end_year[shifted_mask], calendar_year[shifted_mask])
+            ]
+
         financial_statement.columns = pd.PeriodIndex(
             calendar_year.astype(str), freq="Y"
         )

@@ -16,13 +16,6 @@ from financetoolkit.performance.helpers import (
 from financetoolkit.risk.risk_model import get_ui
 from financetoolkit.utilities.logger_model import get_logger
 
-try:
-    from tqdm import tqdm
-
-    ENABLE_TQDM = True
-except ImportError:
-    ENABLE_TQDM = False
-
 # Runtime errors are ignored on purpose given the nature of the calculations
 # sometimes leading to division by zero or other mathematical errors. This is however
 # for financial analysis purposes not an issue and should not be considered as a bug.
@@ -494,16 +487,8 @@ class Performance:
 
         factor_correlations: dict = {}
 
-        ticker_list_iterator = (
-            tqdm(
-                self._tickers_without_portfolio,
-                desc="Calculating Factor Asset Correlations",
-            )
-            if ENABLE_TQDM & self._progress_bar
-            else self._tickers_without_portfolio
-        )
-
-        for ticker in ticker_list_iterator:
+        logger.info("Calculating Factor Asset Correlations")
+        for ticker in self._tickers_without_portfolio:
             factor_correlations[ticker] = {}
             for dataset_period in merged_df.index.get_level_values(0):
                 factor_data = merged_df.loc[dataset_period][factors_to_calculate]
@@ -519,7 +504,6 @@ class Performance:
                             factors=factor_data, excess_return=excess_returns
                         )
                     )
-
         factor_asset_correlations = pd.DataFrame.from_dict(
             {
                 (ticker, dataset_period): value
@@ -760,16 +744,11 @@ class Performance:
         factor_scores: dict = {}
         daily_residuals: dict = {}
 
-        ticker_list_iterator = (
-            tqdm(
-                self._tickers_without_portfolio,
-                desc=f"Calculating {'Multi' if method == 'multi' else 'Individual'} Factor Exposures",
-            )
-            if ENABLE_TQDM & self._progress_bar
-            else self._tickers_without_portfolio
+        logger.info(
+            "Calculating %s Factor Exposures",
+            "Multi" if method == "multi" else "Individual",
         )
-
-        for ticker in ticker_list_iterator:
+        for ticker in self._tickers_without_portfolio:
             factor_scores[ticker] = {}
             daily_residuals[ticker] = {}
 

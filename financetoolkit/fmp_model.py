@@ -14,7 +14,6 @@ from urllib.error import HTTPError, URLError
 import numpy as np
 import pandas as pd
 import requests
-from tqdm import tqdm
 from urllib3.exceptions import MaxRetryError
 
 from financetoolkit import helpers
@@ -131,6 +130,7 @@ def get_financial_statement(
     start_date: str | None = None,
     sleep_timer: bool = True,
     user_subscription: str = "Free",
+    fiscal_year_adjustments: dict | None = None,
 ) -> pd.DataFrame:
     """
     Retrieves financial statements (balance, income, or cash flow statements) for a single company ticker.
@@ -226,6 +226,16 @@ def get_financial_statement(
             end_month = financial_statement["date"].dt.month
             end_year = financial_statement["date"].dt.year
             calendar_year = end_year - (end_month < 6).astype(int)  # noqa
+
+            shifted_mask = end_month < 6  # noqa
+            if shifted_mask.any() and fiscal_year_adjustments is not None:
+                fiscal_year_adjustments[ticker] = [
+                    {"fiscal_year": int(fy), "calendar_year": int(cy)}
+                    for fy, cy in zip(
+                        end_year[shifted_mask], calendar_year[shifted_mask]
+                    )
+                ]
+
             financial_statement["date"] = pd.PeriodIndex(
                 calendar_year.astype(str), freq="Y"
             )
@@ -748,13 +758,10 @@ def get_revenue_segmentation(
     no_data: list[str] = []
     threads = []
 
-    ticker_list_iterator = (
-        tqdm(ticker_list, desc=f"Obtaining {method} segmentation data")
-        if progress_bar
-        else ticker_list
+    logger.info(
+        "Obtaining %s segmentation data for %d tickers", method, len(ticker_list)
     )
-
-    for ticker in ticker_list_iterator:
+    for ticker in ticker_list:
         # Introduce a sleep timer to prevent rate limit errors
         time.sleep(0.1)
 
@@ -957,13 +964,8 @@ def get_analyst_estimates(
     no_data: list[str] = []
     threads = []
 
-    ticker_list_iterator = (
-        tqdm(ticker_list, desc="Obtaining analyst estimates")
-        if progress_bar
-        else ticker_list
-    )
-
-    for ticker in ticker_list_iterator:
+    logger.info("Obtaining analyst estimates for %d tickers", len(ticker_list))
+    for ticker in ticker_list:
         # Introduce a sleep timer to prevent rate limit errors
         time.sleep(0.1)
 
@@ -1101,13 +1103,8 @@ def get_profile(
     no_data: list[str] = []
     threads = []
 
-    ticker_list_iterator = (
-        tqdm(ticker_list, desc="Obtaining company profiles")
-        if progress_bar
-        else ticker_list
-    )
-
-    for ticker in ticker_list_iterator:
+    logger.info("Obtaining company profiles for %d tickers", len(ticker_list))
+    for ticker in ticker_list:
         # Introduce a sleep timer to prevent rate limit errors
         time.sleep(0.1)
 
@@ -1216,13 +1213,8 @@ def get_quote(
     no_data: list[str] = []
     threads = []
 
-    ticker_list_iterator = (
-        tqdm(ticker_list, desc="Obtaining company quotes")
-        if progress_bar
-        else ticker_list
-    )
-
-    for ticker in ticker_list_iterator:
+    logger.info("Obtaining company quotes for %d tickers", len(ticker_list))
+    for ticker in ticker_list:
         # Introduce a sleep timer to prevent rate limit errors
         time.sleep(0.1)
 
@@ -1312,13 +1304,8 @@ def get_rating(
     no_data: list[str] = []
     threads = []
 
-    ticker_list_iterator = (
-        tqdm(ticker_list, desc="Obtaining company ratings")
-        if progress_bar
-        else ticker_list
-    )
-
-    for ticker in ticker_list_iterator:
+    logger.info("Obtaining company ratings for %d tickers", len(ticker_list))
+    for ticker in ticker_list:
         # Introduce a sleep timer to prevent rate limit errors
         time.sleep(0.1)
 
@@ -1440,13 +1427,8 @@ def get_earnings_calendar(
     no_data: list[str] = []
     threads = []
 
-    ticker_list_iterator = (
-        tqdm(ticker_list, desc="Obtaining earnings calendars")
-        if progress_bar
-        else ticker_list
-    )
-
-    for ticker in ticker_list_iterator:
+    logger.info("Obtaining earnings calendars for %d tickers", len(ticker_list))
+    for ticker in ticker_list:
         # Introduce a sleep timer to prevent rate limit errors
         time.sleep(0.1)
 
@@ -1565,13 +1547,8 @@ def get_dividend_calendar(
     no_data: list[str] = []
     threads = []
 
-    ticker_list_iterator = (
-        tqdm(ticker_list, desc="Obtaining dividend calendars")
-        if progress_bar
-        else ticker_list
-    )
-
-    for ticker in ticker_list_iterator:
+    logger.info("Obtaining dividend calendars for %d tickers", len(ticker_list))
+    for ticker in ticker_list:
         # Introduce a sleep timer to prevent rate limit errors
         time.sleep(0.1)
 
@@ -1696,11 +1673,8 @@ def get_esg_scores(
     no_data: list[str] = []
     threads = []
 
-    ticker_list_iterator = (
-        tqdm(ticker_list, desc="Obtaining ESG scores") if progress_bar else ticker_list
-    )
-
-    for ticker in ticker_list_iterator:
+    logger.info("Obtaining ESG scores for %d tickers", len(ticker_list))
+    for ticker in ticker_list:
         # Introduce a sleep timer to prevent rate limit errors
         time.sleep(0.1)
 

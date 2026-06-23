@@ -60,13 +60,6 @@ warnings.filterwarnings("ignore", category=RuntimeWarning)
 
 TICKER_LIMIT = 20
 
-try:
-    from tqdm import tqdm
-
-    ENABLE_TQDM = True
-except ImportError:
-    ENABLE_TQDM = False
-
 # In case the user has set an API key as an environment variable,
 # this will be used as the default API key for the Toolkit.
 API_KEY: str = os.environ.get("FINANCIAL_MODELING_PREP_API_KEY", "")
@@ -556,6 +549,7 @@ class Toolkit:
         self._cash_flow_statement_growth: pd.DataFrame = pd.DataFrame()
         self._currencies: list = []
         self._statement_currencies: pd.Series = pd.Series()
+        self._fiscal_year_adjustments: dict[str, list[dict]] = {}
         self._convert_currency = (
             convert_currency
             if convert_currency is not None
@@ -663,13 +657,8 @@ class Toolkit:
             empty_data.append("Cash Flow Statement")
 
         if empty_data:
-            empty_data_iterator = (
-                tqdm(empty_data, desc="Obtaining financial statements")
-                if ENABLE_TQDM & self._progress_bar
-                else empty_data
-            )
-
-            for statement in empty_data_iterator:
+            logger.info("Obtaining financial statements")
+            for statement in empty_data:
                 if statement == "Balance Sheet Statement":
                     self.get_balance_sheet_statement(progress_bar=False)
                 if statement == "Income Statement":
@@ -786,13 +775,8 @@ class Toolkit:
             empty_data.append("Cash Flow Statement")
 
         if empty_data:
-            empty_data_iterator = (
-                tqdm(empty_data, desc="Obtaining financial statements")
-                if ENABLE_TQDM & self._progress_bar
-                else empty_data
-            )
-
-            for statement in empty_data_iterator:
+            logger.info("Obtaining financial statements")
+            for statement in empty_data:
                 if statement == "Balance Sheet Statement":
                     self.get_balance_sheet_statement(progress_bar=False)
                 if statement == "Income Statement":
@@ -2366,7 +2350,7 @@ class Toolkit:
                 rounding=rounding if rounding else self._rounding,
                 sleep_timer=self._sleep_timer,
                 show_errors=True,
-                tqdm_message="Obtaining intraday data",
+                log_message="Obtaining intraday data",
             )
 
             if self._use_cached_data:
@@ -2824,7 +2808,7 @@ class Toolkit:
                 show_errors=show_errors,
                 fill_nan=fill_nan,
                 sleep_timer=self._sleep_timer,
-                tqdm_message="Obtaining treasury data",
+                log_message="Obtaining treasury data",
             )
 
             if not self._daily_treasury_data.empty:
@@ -3038,7 +3022,7 @@ class Toolkit:
                     rounding=rounding if rounding else self._rounding,
                     sleep_timer=self._sleep_timer,
                     show_ticker_seperation=show_ticker_seperation,
-                    tqdm_message="Obtaining exchange data",
+                    log_message="Obtaining currency exchange data",
                 )
             else:
                 # In case there is no conversion needed, it should create a placeholder
@@ -3311,6 +3295,7 @@ class Toolkit:
                 self._balance_sheet_statement,
                 self._statistics_statement,
                 self._invalid_tickers,
+                _fy_adj,
             ) = collect_financial_statements(
                 tickers=ticker_list,
                 statement="balance",
@@ -3333,6 +3318,7 @@ class Toolkit:
                     else self._enforce_source
                 ),
             )
+            self._fiscal_year_adjustments.update(_fy_adj)
 
             if convert_currency:
                 self.get_exchange_rates(
@@ -3376,7 +3362,7 @@ class Toolkit:
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
                 axis="columns",
-            )
+            ).truncate(before=self._start_date, axis=1)
 
         balance_sheet_statement = balance_sheet_statement.round(
             rounding if rounding else self._rounding
@@ -3514,6 +3500,7 @@ class Toolkit:
                 self._income_statement,
                 self._statistics_statement,
                 self._invalid_tickers,
+                _fy_adj,
             ) = collect_financial_statements(
                 tickers=ticker_list,
                 statement="income",
@@ -3536,6 +3523,7 @@ class Toolkit:
                     else self._enforce_source
                 ),
             )
+            self._fiscal_year_adjustments.update(_fy_adj)
 
             if convert_currency:
                 self.get_exchange_rates(
@@ -3605,7 +3593,7 @@ class Toolkit:
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
                 axis="columns",
-            )
+            ).truncate(before=self._start_date, axis=1)
 
         income_statement = income_statement.round(
             rounding if rounding else self._rounding
@@ -3740,6 +3728,7 @@ class Toolkit:
                 self._cash_flow_statement,
                 self._statistics_statement,
                 self._invalid_tickers,
+                _fy_adj,
             ) = collect_financial_statements(
                 tickers=ticker_list,
                 statement="cashflow",
@@ -3762,6 +3751,7 @@ class Toolkit:
                     else self._enforce_source
                 ),
             )
+            self._fiscal_year_adjustments.update(_fy_adj)
 
             if convert_currency:
                 self.get_exchange_rates(
@@ -3808,7 +3798,7 @@ class Toolkit:
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
                 axis="columns",
-            )
+            ).truncate(before=self._start_date, axis=1)
 
         cash_flow_statement = cash_flow_statement.round(
             rounding if rounding else self._rounding
@@ -3905,6 +3895,7 @@ class Toolkit:
                 self._balance_sheet_statement,
                 self._statistics_statement,
                 self._invalid_tickers,
+                _fy_adj,
             ) = collect_financial_statements(
                 tickers=ticker_list,
                 statement="balance",
@@ -3927,6 +3918,7 @@ class Toolkit:
                     else self._enforce_source
                 ),
             )
+            self._fiscal_year_adjustments.update(_fy_adj)
 
             if self._use_cached_data:
                 cache_model.save_cached_data(

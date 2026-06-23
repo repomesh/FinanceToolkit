@@ -4,7 +4,6 @@ import os
 
 import numpy as np
 import pandas as pd
-from tqdm import tqdm
 
 from financetoolkit.portfolio import helpers
 from financetoolkit.utilities import logger_model
@@ -84,11 +83,8 @@ def read_portfolio_dataset(
 
     excel_location = excel_location + additional_files
 
-    for file in (
-        tqdm(excel_location, desc="Reading Portfolio Files")
-        if len(excel_location) > 1
-        else excel_location
-    ):
+    logger.info("Reading Portfolio Files")
+    for file in excel_location:
         portfolio_dataset = helpers.read_excel(file)
         portfolio_dataset.columns = portfolio_dataset.columns.str.lower()
 
