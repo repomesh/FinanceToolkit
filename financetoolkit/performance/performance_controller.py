@@ -6,7 +6,7 @@ import warnings
 
 import pandas as pd
 
-from financetoolkit.helpers import calculate_growth, handle_portfolio
+from financetoolkit.helpers import calculate_growth, filter_columns, handle_portfolio
 from financetoolkit.performance import performance_model
 from financetoolkit.performance.helpers import (
     determine_within_dataset,
@@ -420,6 +420,7 @@ class Performance:
         period: str | None = None,
         factors_to_calculate: list[str] | None = None,
         rounding: int | None = None,
+        show_columns: list[str] | None = None,
     ):
         """
         Calculates factor exposures for each asset.
@@ -540,7 +541,7 @@ class Performance:
             rounding if rounding else self._rounding
         ).loc[self._start_date : self._end_date]
 
-        return self._factor_asset_correlations
+        return filter_columns(self._factor_asset_correlations, show_columns)
 
     @handle_errors
     def get_factor_correlations(
@@ -635,6 +636,7 @@ class Performance:
         rounding: int | None = None,
         growth: bool = False,
         lag: int | list[int] = 1,
+        show_columns: list[str] | None = None,
     ):
         """
         Calculate Fama and French 5 Factor model scores and residuals for a set of financial assets.
@@ -923,17 +925,23 @@ class Performance:
                 rounding if rounding else self._rounding
             ).loc[self._start_date : self._end_date]
 
-            return self._fama_and_french_model, self._fama_and_french_residuals
-
-        if growth:
-            return calculate_growth(
-                self._fama_and_french_model,
-                lag=lag,
-                rounding=rounding if rounding else self._rounding,
-                axis="index",
+            return (
+                filter_columns(self._fama_and_french_model, show_columns),
+                self._fama_and_french_residuals,
             )
 
-        return self._fama_and_french_model
+        if growth:
+            return filter_columns(
+                calculate_growth(
+                    self._fama_and_french_model,
+                    lag=lag,
+                    rounding=rounding if rounding else self._rounding,
+                    axis="index",
+                ),
+                show_columns,
+            )
+
+        return filter_columns(self._fama_and_french_model, show_columns)
 
     @handle_portfolio
     @handle_errors

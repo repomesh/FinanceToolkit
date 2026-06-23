@@ -103,6 +103,7 @@ init_handled_params:
   - "end_date"
   - "quarterly"
   - "benchmark_ticker"
+  - "show_columns"
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Toolkit direct-method allowlist (exposed by get_toolkit_data)
