@@ -65,6 +65,9 @@ financetoolkit-mcp = "financetoolkit.mcp_server.mcp_controller:main"
 financetoolkit-mcp-inspector = "financetoolkit.mcp_server.mcp_controller:inspector"
 financetoolkit-mcp-setup = "financetoolkit.mcp_server.mcp_controller:setup"
 
+[tool.mcp]
+mcp-name = "io.github.JerBouma/financetoolkit"
+
 [dependency-groups]
 dev = [
     "pytest>=8.3",
