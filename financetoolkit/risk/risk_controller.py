@@ -40,6 +40,8 @@ class Risk:
         intraday_period: str | None = None,
         quarterly: bool = False,
         rounding: int | None = 4,
+        start_date: str | None = None,
+        end_date: str | None = None,
     ):
         """
         Initializes the Risk Controller Class.
@@ -85,6 +87,8 @@ class Risk:
         self._quarterly = quarterly
         self._rounding: int | None = rounding
         self._portfolio_weights: dict | None = None
+        self._start_date: str | None = start_date
+        self._end_date: str | None = end_date
 
         # Within Return Calculations
         daily_historical_data = self._historical_data["daily"].copy().fillna(0)
@@ -293,9 +297,11 @@ class Risk:
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
                 axis="index",
-            )
+            ).loc[self._start_date : self._end_date]
 
-        return value_at_risk.round(rounding if rounding else self._rounding)
+        return value_at_risk.round(rounding if rounding else self._rounding).loc[
+            self._start_date : self._end_date
+        ]
 
     @handle_portfolio
     @handle_errors
@@ -407,9 +413,11 @@ class Risk:
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
                 axis="index",
-            )
+            ).loc[self._start_date : self._end_date]
 
-        return conditional_value_at_risk.round(rounding if rounding else self._rounding)
+        return conditional_value_at_risk.round(
+            rounding if rounding else self._rounding
+        ).loc[self._start_date : self._end_date]
 
     @handle_portfolio
     @handle_errors
@@ -505,9 +513,11 @@ class Risk:
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
                 axis="index",
-            )
+            ).loc[self._start_date : self._end_date]
 
-        return entropic_value_at_risk.round(rounding if rounding else self._rounding)
+        return entropic_value_at_risk.round(
+            rounding if rounding else self._rounding
+        ).loc[self._start_date : self._end_date]
 
     @handle_portfolio
     @handle_errors
@@ -599,9 +609,11 @@ class Risk:
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
                 axis="index",
-            )
+            ).loc[self._start_date : self._end_date]
 
-        return maximum_drawdown.round(rounding if rounding else self._rounding)
+        return maximum_drawdown.round(rounding if rounding else self._rounding).loc[
+            self._start_date : self._end_date
+        ]
 
     @handle_portfolio
     @handle_errors
@@ -690,9 +702,11 @@ class Risk:
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
                 axis="index",
-            )
+            ).loc[self._start_date : self._end_date]
 
-        return ulcer_index.round(rounding if rounding else self._rounding)
+        return ulcer_index.round(rounding if rounding else self._rounding).loc[
+            self._start_date : self._end_date
+        ]
 
     @handle_portfolio
     @handle_errors
@@ -792,9 +806,11 @@ class Risk:
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
                 axis="index",
-            )
+            ).loc[self._start_date : self._end_date]
 
-        return garch_sigma_2.round(rounding if rounding else self._rounding)  # type: ignore
+        return garch_sigma_2.round(rounding if rounding else self._rounding).loc[
+            self._start_date : self._end_date
+        ]  # type: ignore
 
     @handle_portfolio
     @handle_errors
@@ -916,9 +932,11 @@ class Risk:
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
                 axis="index",
-            )
+            ).loc[self._start_date : self._end_date]
 
-        return sigma_2_forecast.round(rounding if rounding else self._rounding)
+        return sigma_2_forecast.round(rounding if rounding else self._rounding).loc[
+            self._start_date : self._end_date
+        ]
 
     @handle_portfolio
     @handle_errors
@@ -1006,9 +1024,11 @@ class Risk:
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
                 axis="index",
-            )
+            ).loc[self._start_date : self._end_date]
 
-        return skewness.round(rounding if rounding else self._rounding)
+        return skewness.round(rounding if rounding else self._rounding).loc[
+            self._start_date : self._end_date
+        ]
 
     @handle_portfolio
     @handle_errors
@@ -1101,6 +1121,8 @@ class Risk:
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
                 axis="index",
-            )
+            ).loc[self._start_date : self._end_date]
 
-        return kurtosis.round(rounding if rounding else self._rounding)
+        return kurtosis.round(rounding if rounding else self._rounding).loc[
+            self._start_date : self._end_date
+        ]

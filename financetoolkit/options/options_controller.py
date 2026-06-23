@@ -44,6 +44,8 @@ class Options:
         risk_free_rate: pd.DataFrame = pd.DataFrame(),
         quarterly: bool = False,
         rounding: int | None = 4,
+        start_date: str | None = None,
+        end_date: str | None = None,
     ):
         """
         Initializes the Options Controller Class. The Options module is meant to calculate important options
@@ -94,6 +96,8 @@ class Options:
         self._daily_historical = daily_historical
         self._quarterly = quarterly
         self._rounding: int | None = rounding
+        self._start_date: str | None = start_date
+        self._end_date: str | None = end_date
 
         # Option Statistics
         self._prices = self._daily_historical["Adj Close"]
