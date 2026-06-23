@@ -219,9 +219,16 @@ def get_financial_statement(
         if quarter:
             financial_statement["date"] = financial_statement["date"].dt.to_period("Q")
         else:
-            financial_statement["date"] = pd.to_datetime(
-                financial_statement["fiscalYear"].astype(str)
-            ).dt.to_period("Y")
+            # Derive the calendar year the fiscal period mostly represents.
+            # If the fiscal year ends in months 1-5 (Jan-May), more than half the period
+            # falls in the prior calendar year (e.g. NVDA Jan 31 end → label as prior year).
+            # Months 6-12 (Jun-Dec) stay as-is (current year is majority or tied).
+            end_month = financial_statement["date"].dt.month
+            end_year = financial_statement["date"].dt.year
+            calendar_year = end_year - (end_month < 6).astype(int)  # noqa
+            financial_statement["date"] = pd.PeriodIndex(
+                calendar_year.astype(str), freq="Y"
+            )
 
         financial_statement = financial_statement.set_index("date").T
 

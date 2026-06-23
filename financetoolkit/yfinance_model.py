@@ -91,9 +91,22 @@ def get_financial_statement(
 
     # yfinance returns the statements with dates as columns and items as rows
     # Convert dates to period format
-    financial_statement.columns = pd.PeriodIndex(
-        financial_statement.columns, freq="Q" if quarter else "Y"
-    )
+    if quarter:
+        financial_statement.columns = pd.PeriodIndex(
+            financial_statement.columns, freq="Q"
+        )
+    else:
+        # Derive the calendar year the fiscal period mostly represents.
+        # If the fiscal year ends in months 1-5 (Jan-May), more than half the period
+        # falls in the prior calendar year (e.g. NVDA Jan 31 end → label as prior year).
+        # Months 6-12 (Jun-Dec) stay as-is (current year is majority or tied).
+        col_dates = pd.DatetimeIndex(financial_statement.columns)
+        end_month = col_dates.month
+        end_year = col_dates.year
+        calendar_year = end_year - (end_month < 6).astype(int)  # noqa
+        financial_statement.columns = pd.PeriodIndex(
+            calendar_year.astype(str), freq="Y"
+        )
 
     if financial_statement.columns.duplicated().any():
         financial_statement = financial_statement.loc[
