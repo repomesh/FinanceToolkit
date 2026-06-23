@@ -5,6 +5,7 @@
 *.ipynb
 cached/
 debugging.py
+.planning/
 
 # Finance Toolkit Example Datasets
 !examples/*.ipynb
