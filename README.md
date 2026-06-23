@@ -21,7 +21,18 @@ Beyond Equities, it supports Options, Currencies, Cryptocurrencies, ETFs, Mutual
 
 Complementing this is the [Finance Database 🌎](https://github.com/JerBouma/FinanceDatabase), a database featuring 300.000+ symbols containing Equities, ETFs, Funds, Indices, Currencies, Cryptocurrencies and Money Markets. By utilising both, it is possible to do a fully-fledged competitive analysis with the tickers found from the FinanceDatabase inputted into the FinanceToolkit.
 
-**The Finance Toolkit is also available as a hosted [MCP Server](https://www.jeroenbouma.com/projects/financetoolkit/mcp).** Point any MCP-compatible AI assistant (Claude, GitHub Copilot, Cursor, Windsurf, and more) at `https://financetoolkit.jeroenbouma.com/mcp` and query 200+ financial metrics conversationally. **No local installation required**, the server runs in the cloud and authenticates via OAuth on first connection.
+> **🔌 The Finance Toolkit is also available as a hosted [MCP Server](https://www.jeroenbouma.com/projects/financetoolkit/mcp)**
+>
+> Simply point any MCP-compatible AI assistant (like *Claude, GitHub Copilot, Cursor, or Windsurf*) to:
+>
+> `https://financetoolkit.jeroenbouma.com/mcp`
+>
+> Key features:
+> * **⚡ No Local Installation Required:** The server runs completely in the cloud.
+> * **🔐 Secure OAuth:** Authenticates safely on your very first connection.
+> * **📊 Conversational Data:** Query over 200+ financial metrics naturally.
+>
+> Also available on [Smithery](https://smithery.ai/servers/jer-bouma/financetoolkit), [Glama](https://glama.ai/mcp/servers/JerBouma/FinanceToolkit),[ MCP Servers](https://mcpservers.org/servers/jerbouma/financetoolkit) and more.
 
 # Table of Contents
 
@@ -66,8 +77,6 @@ ___
 Through the link you are able to subscribe for the free plan and also premium plans at a **15% discount**. This is an affiliate link and thus supports the project at the same time. I have chosen FinancialModelingPrep as a source as I find it to be the most transparent, reliable and at an affordable price. I have yet to find a platform offering such low prices for the amount of data offered. When you notice that the data is inaccurate or have any other issue related to the data, note that I simply provide the means to access this data and I am not responsible for the accuracy of the data itself. For this, use [their contact form](https://site.financialmodelingprep.com/contact) or provide the data yourself.
 
 **By default, the Finance Toolkit prioritizes Financial Modeling Prep for data retrieval. If data acquisition from Financial Modeling Prep is unsuccessful (e.g., due to plan restrictions or API key issues), the toolkit automatically switches to Yahoo Finance as a secondary source.** To disable this fallback behavior and exclusively use Financial Modeling Prep, set `enforce_source="FinancialModelingPrep"` during Toolkit initialization. This configuration ensures that an error is raised if Financial Modeling Prep data cannot be accessed. Alternatively, you can set `enforce_source="YahooFinance"` to exclusively use Yahoo Finance as the data source.
-
-Prefer a conversational interface over writing Python? The Finance Toolkit MCP Server is hosted at `https://financetoolkit.jeroenbouma.com/mcp`. Connect any MCP-compatible client to that URL and you are up and running immediately, no Python or terminal required.
 
 # Basic Usage
 
