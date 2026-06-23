@@ -1,0 +1,37 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.JerBouma/financetoolkit",
+  "title": "Finance Toolkit",
+  "description": "200+ financial ratios, risk measures, performance indicators, valuation models, and economic data for equities, ETFs, currencies, options, and more powered by the open-source Finance Toolkit.",
+  "repository": {
+    "url": "https://github.com/JerBouma/FinanceToolkit",
+    "source": "github"
+  },
+  "version": "2.1.2",
+  "remotes": [
+    {
+      "transportType": "http",
+      "url": "https://financetoolkit.jeroenbouma.com/mcp"
+    }
+  ],
+  "packages": [
+    {
+      "registryType": "pypi",
+      "identifier": "financetoolkit",
+      "version": "2.1.2",
+      "transport": {
+        "type": "stdio",
+        "command": "financetoolkit-mcp"
+      },
+      "environmentVariables": [
+        {
+          "name": "FINANCIAL_MODELING_PREP_API_KEY",
+          "description": "Financial Modeling Prep API key, get a key over at https://www.jeroenbouma.com/fmp",
+          "isRequired": true,
+          "format": "string",
+          "isSecret": true
+        }
+      ]
+    }
+  ]
+}
