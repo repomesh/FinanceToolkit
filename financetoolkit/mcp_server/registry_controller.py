@@ -52,7 +52,6 @@ _PARAM_DESCRIPTIONS: dict[str, str] = {
     "growth": "Return period-over-period growth rates instead of absolute values.",
     "lag": "Number of periods to lag when computing growth rates.",
     "trailing": "Number of trailing periods for rolling-window calculations.",
-    "rounding": "Number of decimal places to round results to.",
     "days": "Number of calendar days used in day-count-based calculations.",
     "period": "Observation frequency, e.g. 'monthly', 'quarterly', or 'annual'.",
     "measure": "Sub-measure selector, e.g. 'M1', 'M2', or 'M3' for money supply.",

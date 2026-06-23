@@ -90,6 +90,7 @@ skip_params:
   - "self"
   - "progress_bar"
   - "overwrite"
+  - "rounding"
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Parameters handled at wrapper level (not forwarded to sub-methods)
