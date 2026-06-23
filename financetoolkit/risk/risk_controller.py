@@ -794,7 +794,7 @@ class Risk:
                 axis="index",
             )
 
-        return garch_sigma_2.round(rounding if rounding else self._rounding)  # type: ignore
+        return garch_sigma_2.round(rounding if rounding else self._rounding)
 
     @handle_portfolio
     @handle_errors

@@ -21,18 +21,20 @@ Beyond Equities, it supports Options, Currencies, Cryptocurrencies, ETFs, Mutual
 
 Complementing this is the [Finance Database 🌎](https://github.com/JerBouma/FinanceDatabase), a database featuring 300.000+ symbols containing Equities, ETFs, Funds, Indices, Currencies, Cryptocurrencies and Money Markets. By utilising both, it is possible to do a fully-fledged competitive analysis with the tickers found from the FinanceDatabase inputted into the FinanceToolkit.
 
-> **🔌 The Finance Toolkit is also available as a hosted [MCP Server](https://www.jeroenbouma.com/projects/financetoolkit/mcp)**
->
-> Simply point any MCP-compatible AI assistant (like *Claude, GitHub Copilot, Cursor, or Windsurf*) to:
->
-> `https://financetoolkit.jeroenbouma.com/mcp`
->
-> Key features:
-> * **⚡ No Local Installation Required:** The server runs completely in the cloud.
-> * **🔐 Secure OAuth:** Authenticates safely on your very first connection.
-> * **📊 Conversational Data:** Query over 200+ financial metrics naturally.
->
-> Also available on [Smithery](https://smithery.ai/servers/jer-bouma/financetoolkit), [Glama](https://glama.ai/mcp/servers/JerBouma/FinanceToolkit),[ MCP Servers](https://mcpservers.org/servers/jerbouma/financetoolkit) and more.
+___
+**🔌 The Finance Toolkit is also available as a hosted [MCP Server](https://www.jeroenbouma.com/projects/financetoolkit/mcp)**
+
+Simply point any MCP-compatible AI assistant (like *Claude, GitHub Copilot, Cursor, or Windsurf*) to:
+
+`https://financetoolkit.jeroenbouma.com/mcp`
+
+Key features:
+* **⚡ No Local Installation Required:** The server runs completely in the cloud.
+* **🔐 Secure OAuth:** Authenticates safely on your very first connection.
+* **📊 Conversational Data:** Query over 200+ financial metrics naturally.
+
+Also available on [Smithery](https://smithery.ai/servers/jer-bouma/financetoolkit), [Glama](https://glama.ai/mcp/servers/JerBouma/FinanceToolkit),[ MCP Servers](https://mcpservers.org/servers/jerbouma/financetoolkit) and more.
+___
 
 # Table of Contents
 

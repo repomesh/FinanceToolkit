@@ -60,13 +60,6 @@ warnings.filterwarnings("ignore", category=RuntimeWarning)
 
 TICKER_LIMIT = 20
 
-try:
-    from tqdm import tqdm
-
-    ENABLE_TQDM = True
-except ImportError:
-    ENABLE_TQDM = False
-
 # In case the user has set an API key as an environment variable,
 # this will be used as the default API key for the Toolkit.
 API_KEY: str = os.environ.get("FINANCIAL_MODELING_PREP_API_KEY", "")
@@ -259,6 +252,19 @@ class Toolkit:
         )
         self._end_date = end_date if end_date else datetime.now().strftime("%Y-%m-%d")
         self._quarterly = quarterly
+
+        # Fetch one extra period before the user's start date so that metrics
+        # averaging two consecutive periods (e.g. Return on Equity) always have
+        # a prior-period value and do not return NaN for the first requested year.
+        if quarterly:
+            _lookback_dt = datetime.strptime(self._start_date, "%Y-%m-%d") - timedelta(
+                days=92
+            )
+        else:
+            _lookback_dt = datetime.strptime(self._start_date, "%Y-%m-%d") - timedelta(
+                days=366
+            )
+        self._lookback_start_date = _lookback_dt.strftime("%Y-%m-%d")
 
         if use_cached_data:
             cached_configurations = cache_model.load_cached_data(
@@ -543,6 +549,7 @@ class Toolkit:
         self._cash_flow_statement_growth: pd.DataFrame = pd.DataFrame()
         self._currencies: list = []
         self._statement_currencies: pd.Series = pd.Series()
+        self._fiscal_year_adjustments: dict[str, list[dict]] = {}
         self._convert_currency = (
             convert_currency
             if convert_currency is not None
@@ -650,13 +657,8 @@ class Toolkit:
             empty_data.append("Cash Flow Statement")
 
         if empty_data:
-            empty_data_iterator = (
-                tqdm(empty_data, desc="Obtaining financial statements")
-                if ENABLE_TQDM & self._progress_bar
-                else empty_data
-            )
-
-            for statement in empty_data_iterator:
+            logger.info("Obtaining financial statements")
+            for statement in empty_data:
                 if statement == "Balance Sheet Statement":
                     self.get_balance_sheet_statement(progress_bar=False)
                 if statement == "Income Statement":
@@ -712,6 +714,8 @@ class Toolkit:
             cash=self._cash_flow_statement,
             quarterly=self._quarterly,
             rounding=self._rounding,
+            start_date=self._start_date,
+            end_date=self._end_date,
         )
 
         if self._portfolio_weights:
@@ -771,13 +775,8 @@ class Toolkit:
             empty_data.append("Cash Flow Statement")
 
         if empty_data:
-            empty_data_iterator = (
-                tqdm(empty_data, desc="Obtaining financial statements")
-                if ENABLE_TQDM & self._progress_bar
-                else empty_data
-            )
-
-            for statement in empty_data_iterator:
+            logger.info("Obtaining financial statements")
+            for statement in empty_data:
                 if statement == "Balance Sheet Statement":
                     self.get_balance_sheet_statement(progress_bar=False)
                 if statement == "Income Statement":
@@ -837,6 +836,8 @@ class Toolkit:
             cash=self._cash_flow_statement,
             quarterly=self._quarterly,
             rounding=self._rounding,
+            start_date=self._start_date,
+            end_date=self._end_date,
         )
 
     @property
@@ -910,6 +911,8 @@ class Toolkit:
             risk_free_rate=self._daily_risk_free_rate,
             quarterly=self._quarterly,
             rounding=self._rounding,
+            start_date=self._start_date,
+            end_date=self._end_date,
         )
 
     @property
@@ -1538,6 +1541,7 @@ class Toolkit:
         rounding: int | None = None,
         growth: bool = False,
         lag: int | list[int] = 1,
+        show_columns: list[str] | None = None,
         progress_bar: bool | None = None,
     ):
         """
@@ -1644,19 +1648,22 @@ class Toolkit:
             )
 
         if len(self._tickers) == 1 and not self._analyst_estimates.empty:
-            return (
+            result = (
                 self._analyst_estimates_growth.loc[self._tickers[0]]
                 if growth
                 else self._analyst_estimates.loc[self._tickers[0]]
             )
+            return helpers.filter_columns(result, show_columns)
 
-        return self._analyst_estimates_growth if growth else self._analyst_estimates
+        result = self._analyst_estimates_growth if growth else self._analyst_estimates
+        return helpers.filter_columns(result, show_columns)
 
     def get_earnings_calendar(
         self,
         actual_dates: bool = True,
         overwrite: bool = False,
         rounding: int | None = None,
+        show_columns: list[str] | None = None,
         progress_bar: bool | None = None,
     ):
         """
@@ -1750,12 +1757,17 @@ class Toolkit:
             ]
 
         if len(self._tickers) == 1 and not self._earnings_calendar.empty:
-            return earnings_calendar.loc[self._tickers[0]]
+            return helpers.filter_columns(
+                earnings_calendar.loc[self._tickers[0]], show_columns
+            )
 
-        return earnings_calendar
+        return helpers.filter_columns(earnings_calendar, show_columns)
 
     def get_revenue_geographic_segmentation(
-        self, overwrite: bool = False, progress_bar: bool | None = None
+        self,
+        overwrite: bool = False,
+        show_columns: list[str] | None = None,
+        progress_bar: bool | None = None,
     ):
         """
         Obtain revenue by geographic segmentation (e.g. United States, Europe, Asia).
@@ -1838,12 +1850,20 @@ class Toolkit:
             ]
 
         if len(self._tickers) == 1 and not self._revenue_geographic_segmentation.empty:
-            return self._revenue_geographic_segmentation.loc[self._tickers[0]]
+            return helpers.filter_columns(
+                self._revenue_geographic_segmentation.loc[self._tickers[0]],
+                show_columns,
+            )
 
-        return self._revenue_geographic_segmentation
+        return helpers.filter_columns(
+            self._revenue_geographic_segmentation, show_columns
+        )
 
     def get_revenue_product_segmentation(
-        self, overwrite: bool = False, progress_bar: bool | None = None
+        self,
+        overwrite: bool = False,
+        show_columns: list[str] | None = None,
+        progress_bar: bool | None = None,
     ):
         """
         Obtain revenue by product segmentation (e.g. iPad, Advertisement, Windows).
@@ -1930,9 +1950,11 @@ class Toolkit:
             ]
 
         if len(self._tickers) == 1 and not self._revenue_product_segmentation.empty:
-            return self._revenue_product_segmentation.loc[self._tickers[0]]
+            return helpers.filter_columns(
+                self._revenue_product_segmentation.loc[self._tickers[0]], show_columns
+            )
 
-        return self._revenue_product_segmentation
+        return helpers.filter_columns(self._revenue_product_segmentation, show_columns)
 
     def get_historical_data(
         self,
@@ -1944,6 +1966,7 @@ class Toolkit:
         overwrite: bool = False,
         rounding: int | None = None,
         show_ticker_seperation: bool = True,
+        show_columns: list[str] | None = None,
         progress_bar: bool | None = None,
     ):
         """
@@ -1991,6 +2014,10 @@ class Toolkit:
             rounding (int): Defines the number of decimal places to round the data to.
             show_ticker_seperation (bool, optional): A boolean representing whether to show which tickers
             acquired data from FinancialModelingPrep and which tickers acquired data from YahooFinance.
+            show_columns (list[str], optional): A list of columns to include in the output. Valid columns
+            are Open, High, Low, Close, Adj Close, Volume, Dividends, Return, Volatility, Excess Return,
+            Excess Volatility and Cumulative Return. Invalid column names are logged as warnings. If all
+            provided columns are invalid the full dataset is returned. Defaults to None (all columns).
             progress_bar (bool, optional): Whether to show a progress bar. Defaults to None.
 
         Raises:
@@ -2098,12 +2125,7 @@ class Toolkit:
             ].copy()
             historical_data.loc[historical_data.index[0], "Return"] = 0
 
-            if len(self._tickers) == 1 and not self._benchmark_ticker:
-                return historical_data.xs(self._tickers[0], level=1, axis="columns")
-
-            return historical_data
-
-        if period == "weekly":
+        elif period == "weekly":
             if self._weekly_risk_free_rate.empty or overwrite:
                 self.get_treasury_data(
                     period="weekly", risk_free_rate=self._risk_free_rate
@@ -2123,12 +2145,7 @@ class Toolkit:
             ].copy()
             historical_data.loc[historical_data.index[0], "Return"] = 0
 
-            if len(self._tickers) == 1 and not self._benchmark_ticker:
-                return historical_data.xs(self._tickers[0], level=1, axis="columns")
-
-            return historical_data
-
-        if period == "monthly":
+        elif period == "monthly":
             if self._monthly_risk_free_rate.empty or overwrite:
                 self.get_treasury_data(
                     period="monthly", risk_free_rate=self._risk_free_rate
@@ -2148,12 +2165,7 @@ class Toolkit:
             ].copy()
             historical_data.loc[historical_data.index[0], "Return"] = 0
 
-            if len(self._tickers) == 1 and not self._benchmark_ticker:
-                return historical_data.xs(self._tickers[0], level=1, axis="columns")
-
-            return historical_data
-
-        if period == "quarterly":
+        elif period == "quarterly":
             if self._quarterly_risk_free_rate.empty or overwrite:
                 self.get_treasury_data(
                     period="quarterly", risk_free_rate=self._risk_free_rate
@@ -2173,12 +2185,7 @@ class Toolkit:
             ].copy()
             historical_data.loc[historical_data.index[0], "Return"] = 0
 
-            if len(self._tickers) == 1 and not self._benchmark_ticker:
-                return historical_data.xs(self._tickers[0], level=1, axis="columns")
-
-            return historical_data
-
-        if period == "yearly":
+        elif period == "yearly":
             if self._yearly_risk_free_rate.empty or overwrite:
                 self.get_treasury_data(
                     period="yearly", risk_free_rate=self._risk_free_rate
@@ -2198,14 +2205,38 @@ class Toolkit:
             ].copy()
             historical_data.loc[historical_data.index[0], "Return"] = 0
 
-            if len(self._tickers) == 1 and not self._benchmark_ticker:
-                return historical_data.xs(self._tickers[0], level=1, axis="columns")
+        else:
+            raise ValueError(
+                "Please choose from daily, weekly, monthly, quarterly or yearly as period."
+            )
 
-            return historical_data
+        requested: list[str] = []
 
-        raise ValueError(
-            "Please choose from daily, weekly, monthly, quarterly or yearly as period."
-        )
+        if show_columns is not None:
+            valid_columns = (
+                historical_data.columns.get_level_values(0).unique().tolist()
+            )
+            invalid = [c for c in show_columns if c not in valid_columns]
+            for col in invalid:
+                logger.warning(
+                    f"Column '{col}' is not a valid column for get_historical_data. "
+                    f"Valid columns are: {valid_columns}"
+                )
+            requested = [c for c in show_columns if c in valid_columns]
+            if requested:
+                mask = historical_data.columns.get_level_values(0).isin(requested)
+                historical_data = historical_data.loc[:, mask]
+
+        if len(self._tickers) == 1 and not self._benchmark_ticker:
+            result = historical_data.xs(self._tickers[0], level=1, axis="columns")
+            if len(requested) == 1:
+                return result.iloc[:, 0]
+            return result
+
+        if len(requested) == 1:
+            return historical_data.droplevel(0, axis="columns")
+
+        return historical_data
 
     def get_intraday_data(
         self,
@@ -2213,6 +2244,7 @@ class Toolkit:
         return_column: str = "Close",
         fill_nan: bool = True,
         rounding: int | None = None,
+        show_columns: list[str] | None = None,
         progress_bar: bool | None = None,
     ):
         """
@@ -2318,7 +2350,7 @@ class Toolkit:
                 rounding=rounding if rounding else self._rounding,
                 sleep_timer=self._sleep_timer,
                 show_errors=True,
-                tqdm_message="Obtaining intraday data",
+                log_message="Obtaining intraday data",
             )
 
             if self._use_cached_data:
@@ -2352,6 +2384,9 @@ class Toolkit:
 
         historical_data.loc[historical_data.index[0], "Return"] = 0
 
+        if show_columns is not None:
+            historical_data = helpers.filter_columns(historical_data, show_columns)
+
         if len(self._tickers) == 1 and not self._benchmark_ticker:
             return historical_data.xs(self._tickers[0], level=1, axis="columns")
 
@@ -2361,6 +2396,7 @@ class Toolkit:
         self,
         overwrite: bool = False,
         rounding: int | None = None,
+        show_columns: list[str] | None = None,
         progress_bar: bool | None = None,
     ):
         """
@@ -2461,7 +2497,9 @@ class Toolkit:
             ]
 
         if len(self._tickers) == 1 and not self._dividend_calendar.empty:
-            return dividend_calendar.loc[self._tickers[0]]
+            return helpers.filter_columns(
+                dividend_calendar.loc[self._tickers[0]], show_columns
+            )
 
         if dividend_calendar.empty and self._fmp_plan == "Free":
             logger.warning(
@@ -2469,12 +2507,13 @@ class Toolkit:
                 "https://www.jeroenbouma.com/fmp"
             )
 
-        return dividend_calendar
+        return helpers.filter_columns(dividend_calendar, show_columns)
 
     def get_esg_scores(
         self,
         overwrite: bool = False,
         rounding: int | None = None,
+        show_columns: list[str] | None = None,
         progress_bar: bool | None = None,
     ):
         """
@@ -2575,6 +2614,9 @@ class Toolkit:
                 for ticker in self._tickers
                 if ticker not in self._invalid_tickers
             ]
+
+        if show_columns is not None:
+            esg_scores = helpers.filter_columns(esg_scores, show_columns)
 
         if len(self._tickers) == 1 and not self._esg_scores.empty:
             return esg_scores.xs(self._tickers[0], axis=1, level=1)
@@ -2766,7 +2808,7 @@ class Toolkit:
                 show_errors=show_errors,
                 fill_nan=fill_nan,
                 sleep_timer=self._sleep_timer,
-                tqdm_message="Obtaining treasury data",
+                log_message="Obtaining treasury data",
             )
 
             if not self._daily_treasury_data.empty:
@@ -2967,7 +3009,7 @@ class Toolkit:
                     tickers=currencies_to_collect_data_for,
                     api_key=self._api_key,
                     enforce_source=self._enforce_source,
-                    start=self._start_date,
+                    start=self._lookback_start_date,
                     end=self._end_date,
                     interval="1d",
                     return_column=return_column,
@@ -2980,7 +3022,7 @@ class Toolkit:
                     rounding=rounding if rounding else self._rounding,
                     sleep_timer=self._sleep_timer,
                     show_ticker_seperation=show_ticker_seperation,
-                    tqdm_message="Obtaining exchange data",
+                    log_message="Obtaining currency exchange data",
                 )
             else:
                 # In case there is no conversion needed, it should create a placeholder
@@ -2989,7 +3031,9 @@ class Toolkit:
                     data=1,
                     index=pd.PeriodIndex(
                         pd.date_range(
-                            start=self._start_date, end=self._end_date, freq="D"
+                            start=self._lookback_start_date,
+                            end=self._end_date,
+                            freq="D",
                         )
                     ),
                     columns=pd.MultiIndex.from_tuples(
@@ -3120,6 +3164,7 @@ class Toolkit:
         rounding: int | None = None,
         growth: bool = False,
         lag: int | list[int] = 1,
+        show_columns: list[str] | None = None,
         progress_bar: bool | None = None,
     ):
         """
@@ -3250,12 +3295,13 @@ class Toolkit:
                 self._balance_sheet_statement,
                 self._statistics_statement,
                 self._invalid_tickers,
+                _fy_adj,
             ) = collect_financial_statements(
                 tickers=ticker_list,
                 statement="balance",
                 api_key=self._api_key,
                 quarter=self._quarterly,
-                start_date=self._start_date,
+                start_date=self._lookback_start_date,
                 end_date=self._end_date,
                 rounding=rounding if rounding else self._rounding,
                 fmp_statement_format=self._fmp_balance_sheet_statement_generic,
@@ -3272,6 +3318,7 @@ class Toolkit:
                     else self._enforce_source
                 ),
             )
+            self._fiscal_year_adjustments.update(_fy_adj)
 
             if convert_currency:
                 self.get_exchange_rates(
@@ -3315,22 +3362,28 @@ class Toolkit:
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
                 axis="columns",
-            )
+            ).truncate(before=self._start_date, axis=1)
 
         balance_sheet_statement = balance_sheet_statement.round(
             rounding if rounding else self._rounding
         )
 
+        balance_sheet_statement = balance_sheet_statement.truncate(
+            before=self._start_date, axis=1
+        )
+
         if len(self._tickers) == 1 and not self._balance_sheet_statement.empty:
-            return (
+            result = (
                 self._balance_sheet_statement_growth.loc[self._tickers[0]]
                 if growth
                 else balance_sheet_statement.loc[self._tickers[0]]
             )
+            return helpers.filter_columns(result, show_columns)
 
-        return (
+        result = (
             self._balance_sheet_statement_growth if growth else balance_sheet_statement
         )
+        return helpers.filter_columns(result, show_columns)
 
     def get_income_statement(
         self,
@@ -3340,6 +3393,7 @@ class Toolkit:
         growth: bool = False,
         lag: int | list[int] = 1,
         trailing: int | None = None,
+        show_columns: list[str] | None = None,
         progress_bar: bool | None = None,
     ):
         """
@@ -3446,12 +3500,13 @@ class Toolkit:
                 self._income_statement,
                 self._statistics_statement,
                 self._invalid_tickers,
+                _fy_adj,
             ) = collect_financial_statements(
                 tickers=ticker_list,
                 statement="income",
                 api_key=self._api_key,
                 quarter=self._quarterly,
-                start_date=self._start_date,
+                start_date=self._lookback_start_date,
                 end_date=self._end_date,
                 rounding=rounding if rounding else self._rounding,
                 fmp_statement_format=self._fmp_income_statement_generic,
@@ -3468,6 +3523,7 @@ class Toolkit:
                     else self._enforce_source
                 ),
             )
+            self._fiscal_year_adjustments.update(_fy_adj)
 
             if convert_currency:
                 self.get_exchange_rates(
@@ -3537,20 +3593,24 @@ class Toolkit:
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
                 axis="columns",
-            )
+            ).truncate(before=self._start_date, axis=1)
 
         income_statement = income_statement.round(
             rounding if rounding else self._rounding
         )
 
+        income_statement = income_statement.truncate(before=self._start_date, axis=1)
+
         if len(self._tickers) == 1 and not self._income_statement.empty:
-            return (
+            result = (
                 self._income_statement_growth.loc[self._tickers[0]]
                 if growth
                 else income_statement.loc[self._tickers[0]]
             )
+            return helpers.filter_columns(result, show_columns)
 
-        return self._income_statement_growth if growth else income_statement
+        result = self._income_statement_growth if growth else income_statement
+        return helpers.filter_columns(result, show_columns)
 
     def get_cash_flow_statement(
         self,
@@ -3560,6 +3620,7 @@ class Toolkit:
         growth: bool = False,
         lag: int | list[int] = 1,
         trailing: int | None = None,
+        show_columns: list[str] | None = None,
         progress_bar: bool | None = None,
     ):
         """
@@ -3667,12 +3728,13 @@ class Toolkit:
                 self._cash_flow_statement,
                 self._statistics_statement,
                 self._invalid_tickers,
+                _fy_adj,
             ) = collect_financial_statements(
                 tickers=ticker_list,
                 statement="cashflow",
                 api_key=self._api_key,
                 quarter=self._quarterly,
-                start_date=self._start_date,
+                start_date=self._lookback_start_date,
                 end_date=self._end_date,
                 rounding=rounding if rounding else self._rounding,
                 fmp_statement_format=self._fmp_cash_flow_statement_generic,
@@ -3689,6 +3751,7 @@ class Toolkit:
                     else self._enforce_source
                 ),
             )
+            self._fiscal_year_adjustments.update(_fy_adj)
 
             if convert_currency:
                 self.get_exchange_rates(
@@ -3735,19 +3798,26 @@ class Toolkit:
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
                 axis="columns",
-            )
+            ).truncate(before=self._start_date, axis=1)
 
         cash_flow_statement = cash_flow_statement.round(
             rounding if rounding else self._rounding
         )
 
+        cash_flow_statement = cash_flow_statement.truncate(
+            before=self._start_date, axis=1
+        )
+
         if len(self._tickers) == 1 and not self._cash_flow_statement.empty:
-            return (
+            result = (
                 self._cash_flow_statement_growth.loc[self._tickers[0]]
                 if growth
                 else cash_flow_statement.loc[self._tickers[0]]
             )
-        return self._cash_flow_statement_growth if growth else cash_flow_statement
+            return helpers.filter_columns(result, show_columns)
+
+        result = self._cash_flow_statement_growth if growth else cash_flow_statement
+        return helpers.filter_columns(result, show_columns)
 
     def get_statistics_statement(
         self,
@@ -3755,6 +3825,7 @@ class Toolkit:
         overwrite: bool = False,
         progress_bar: bool | None = None,
         rounding: int | None = None,
+        show_columns: list[str] | None = None,
     ):
         """
         Retrieves the balance, cash and income statistics for the company(s) from the specified source.
@@ -3824,12 +3895,13 @@ class Toolkit:
                 self._balance_sheet_statement,
                 self._statistics_statement,
                 self._invalid_tickers,
+                _fy_adj,
             ) = collect_financial_statements(
                 tickers=ticker_list,
                 statement="balance",
                 api_key=self._api_key,
                 quarter=self._quarterly,
-                start_date=self._start_date,
+                start_date=self._lookback_start_date,
                 end_date=self._end_date,
                 rounding=rounding if rounding else self._rounding,
                 fmp_statement_format=self._fmp_balance_sheet_statement_generic,
@@ -3846,6 +3918,7 @@ class Toolkit:
                     else self._enforce_source
                 ),
             )
+            self._fiscal_year_adjustments.update(_fy_adj)
 
             if self._use_cached_data:
                 cache_model.save_cached_data(
@@ -3862,9 +3935,11 @@ class Toolkit:
             ]
 
         if len(self._tickers) == 1 and not self._statistics_statement.empty:
-            return self._statistics_statement.loc[self._tickers[0]]
+            return helpers.filter_columns(
+                self._statistics_statement.loc[self._tickers[0]], show_columns
+            )
 
-        return self._statistics_statement
+        return helpers.filter_columns(self._statistics_statement, show_columns)
 
     def get_normalization_files(self, path: str = ""):
         """

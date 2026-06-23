@@ -47,6 +47,8 @@ class Ratios:
         cash: pd.DataFrame,
         quarterly: bool = False,
         rounding: int | None = 4,
+        start_date: str | None = None,
+        end_date: str | None = None,
     ):
         """
         Initializes the Ratios Controller Class.
@@ -108,6 +110,8 @@ class Ratios:
         self._rounding: int | None = rounding
         self._quarterly: bool = quarterly
         self._portfolio_weights: dict | None = None
+        self._start_date: str | None = start_date
+        self._end_date: str | None = end_date
 
         # Initialization of Historical Data
         self._historical_data: pd.DataFrame = historical["period"]
@@ -222,9 +226,11 @@ class Ratios:
                 self._all_ratios_growth.loc[self._tickers[0]]
                 if growth
                 else self._all_ratios.loc[self._tickers[0]]
-            )
+            ).loc[:, self._start_date : self._end_date]
 
-        return self._all_ratios_growth if growth else self._all_ratios
+        return (self._all_ratios_growth if growth else self._all_ratios).loc[
+            :, self._start_date : self._end_date
+        ]
 
     def collect_custom_ratios(
         self,
@@ -446,9 +452,11 @@ class Ratios:
                 self._custom_ratios_growth[self._tickers[0]]
                 if growth
                 else self._custom_ratios.loc[self._tickers[0]]
-            )
+            ).loc[:, self._start_date : self._end_date]
 
-        return self._custom_ratios_growth if growth else self._custom_ratios
+        return (self._custom_ratios_growth if growth else self._custom_ratios).loc[
+            :, self._start_date : self._end_date
+        ]
 
     @handle_errors
     def collect_efficiency_ratios(
@@ -571,9 +579,11 @@ class Ratios:
                 self._efficiency_ratios_growth[self._tickers[0]]
                 if growth
                 else self._efficiency_ratios.loc[self._tickers[0]]
-            )
+            ).loc[:, self._start_date : self._end_date]
 
-        return self._efficiency_ratios_growth if growth else self._efficiency_ratios
+        return (
+            self._efficiency_ratios_growth if growth else self._efficiency_ratios
+        ).loc[:, self._start_date : self._end_date]
 
     @handle_portfolio
     @handle_errors
@@ -648,9 +658,11 @@ class Ratios:
                 asset_turnover_ratio,
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
-            )
+            ).loc[:, self._start_date : self._end_date]
 
-        return asset_turnover_ratio.round(rounding if rounding else self._rounding)
+        return asset_turnover_ratio.round(rounding if rounding else self._rounding).loc[
+            :, self._start_date : self._end_date
+        ]
 
     @handle_portfolio
     @handle_errors
@@ -728,9 +740,11 @@ class Ratios:
                 inventory_turnover_ratio,
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
-            )
+            ).loc[:, self._start_date : self._end_date]
 
-        return inventory_turnover_ratio.round(rounding if rounding else self._rounding)
+        return inventory_turnover_ratio.round(
+            rounding if rounding else self._rounding
+        ).loc[:, self._start_date : self._end_date]
 
     @handle_portfolio
     @handle_errors
@@ -818,11 +832,11 @@ class Ratios:
                 days_of_inventory_outstanding,
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
-            )
+            ).loc[:, self._start_date : self._end_date]
 
         return days_of_inventory_outstanding.round(
             rounding if rounding else self._rounding
-        )
+        ).loc[:, self._start_date : self._end_date]
 
     @handle_portfolio
     @handle_errors
@@ -904,9 +918,11 @@ class Ratios:
                 days_of_sales_outstanding,
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
-            )
+            ).loc[:, self._start_date : self._end_date]
 
-        return days_of_sales_outstanding.round(rounding if rounding else self._rounding)
+        return days_of_sales_outstanding.round(
+            rounding if rounding else self._rounding
+        ).loc[:, self._start_date : self._end_date]
 
     @handle_portfolio
     @handle_errors
@@ -1012,9 +1028,11 @@ class Ratios:
                 operating_cycle,
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
-            )
+            ).loc[:, self._start_date : self._end_date]
 
-        return operating_cycle.round(rounding if rounding else self._rounding)
+        return operating_cycle.round(rounding if rounding else self._rounding).loc[
+            :, self._start_date : self._end_date
+        ]
 
     @handle_portfolio
     @handle_errors
@@ -1095,11 +1113,11 @@ class Ratios:
                 accounts_payables_turnover_ratio,
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
-            )
+            ).loc[:, self._start_date : self._end_date]
 
         return accounts_payables_turnover_ratio.round(
             rounding if rounding else self._rounding
-        )
+        ).loc[:, self._start_date : self._end_date]
 
     @handle_portfolio
     @handle_errors
@@ -1187,11 +1205,11 @@ class Ratios:
                 days_of_accounts_payable_outstanding,
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
-            )
+            ).loc[:, self._start_date : self._end_date]
 
         return days_of_accounts_payable_outstanding.round(
             rounding if rounding else self._rounding
-        )
+        ).loc[:, self._start_date : self._end_date]
 
     @handle_portfolio
     @handle_errors
@@ -1321,9 +1339,11 @@ class Ratios:
                 cash_conversion_cycle,
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
-            )
+            ).loc[:, self._start_date : self._end_date]
 
-        return cash_conversion_cycle.round(rounding if rounding else self._rounding)
+        return cash_conversion_cycle.round(
+            rounding if rounding else self._rounding
+        ).loc[:, self._start_date : self._end_date]
 
     @handle_portfolio
     @handle_errors
@@ -1402,11 +1422,11 @@ class Ratios:
                 cash_conversion_efficiency,
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
-            )
+            ).loc[:, self._start_date : self._end_date]
 
         return cash_conversion_efficiency.round(
             rounding if rounding else self._rounding
-        )
+        ).loc[:, self._start_date : self._end_date]
 
     @handle_portfolio
     @handle_errors
@@ -1479,9 +1499,11 @@ class Ratios:
                 receivables_turnover,
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
-            )
+            ).loc[:, self._start_date : self._end_date]
 
-        return receivables_turnover.round(rounding if rounding else self._rounding)
+        return receivables_turnover.round(rounding if rounding else self._rounding).loc[
+            :, self._start_date : self._end_date
+        ]
 
     @handle_portfolio
     @handle_errors
@@ -1556,9 +1578,11 @@ class Ratios:
                 sga_to_revenue_ratio,
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
-            )
+            ).loc[:, self._start_date : self._end_date]
 
-        return sga_to_revenue_ratio.round(rounding if rounding else self._rounding)
+        return sga_to_revenue_ratio.round(rounding if rounding else self._rounding).loc[
+            :, self._start_date : self._end_date
+        ]
 
     @handle_portfolio
     @handle_errors
@@ -1632,9 +1656,11 @@ class Ratios:
                 fixed_asset_turnover,
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
-            )
+            ).loc[:, self._start_date : self._end_date]
 
-        return fixed_asset_turnover.round(rounding if rounding else self._rounding)
+        return fixed_asset_turnover.round(rounding if rounding else self._rounding).loc[
+            :, self._start_date : self._end_date
+        ]
 
     @handle_portfolio
     @handle_errors
@@ -1709,9 +1735,11 @@ class Ratios:
                 operating_ratio,
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
-            )
+            ).loc[:, self._start_date : self._end_date]
 
-        return operating_ratio.round(rounding if rounding else self._rounding)
+        return operating_ratio.round(rounding if rounding else self._rounding).loc[
+            :, self._start_date : self._end_date
+        ]
 
     def collect_liquidity_ratios(
         self,
@@ -1803,9 +1831,11 @@ class Ratios:
                 self._liquidity_ratios_growth[self._tickers[0]]
                 if growth
                 else self._liquidity_ratios.loc[self._tickers[0]]
-            )
+            ).loc[:, self._start_date : self._end_date]
 
-        return self._liquidity_ratios_growth if growth else self._liquidity_ratios
+        return (
+            self._liquidity_ratios_growth if growth else self._liquidity_ratios
+        ).loc[:, self._start_date : self._end_date]
 
     @handle_portfolio
     @handle_errors
@@ -1878,9 +1908,11 @@ class Ratios:
                 current_ratio,
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
-            )
+            ).loc[:, self._start_date : self._end_date]
 
-        return current_ratio.round(rounding if rounding else self._rounding)
+        return current_ratio.round(rounding if rounding else self._rounding).loc[
+            :, self._start_date : self._end_date
+        ]
 
     @handle_portfolio
     @handle_errors
@@ -1963,9 +1995,11 @@ class Ratios:
         if growth:
             return calculate_growth(
                 quick_ratio, lag=lag, rounding=rounding if rounding else self._rounding
-            )
+            ).loc[:, self._start_date : self._end_date]
 
-        return quick_ratio.round(rounding if rounding else self._rounding)
+        return quick_ratio.round(rounding if rounding else self._rounding).loc[
+            :, self._start_date : self._end_date
+        ]
 
     @handle_portfolio
     @handle_errors
@@ -2041,9 +2075,11 @@ class Ratios:
         if growth:
             return calculate_growth(
                 cash_ratio, lag=lag, rounding=rounding if rounding else self._rounding
-            )
+            ).loc[:, self._start_date : self._end_date]
 
-        return cash_ratio.round(rounding if rounding else self._rounding)
+        return cash_ratio.round(rounding if rounding else self._rounding).loc[
+            :, self._start_date : self._end_date
+        ]
 
     @handle_portfolio
     @handle_errors
@@ -2116,9 +2152,11 @@ class Ratios:
                 working_capital,
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
-            )
+            ).loc[:, self._start_date : self._end_date]
 
-        return working_capital.round(rounding if rounding else self._rounding)
+        return working_capital.round(rounding if rounding else self._rounding).loc[
+            :, self._start_date : self._end_date
+        ]
 
     @handle_portfolio
     @handle_errors
@@ -2191,9 +2229,11 @@ class Ratios:
                 operating_cash_flow_ratio,
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
-            )
+            ).loc[:, self._start_date : self._end_date]
 
-        return operating_cash_flow_ratio.round(rounding if rounding else self._rounding)
+        return operating_cash_flow_ratio.round(
+            rounding if rounding else self._rounding
+        ).loc[:, self._start_date : self._end_date]
 
     @handle_portfolio
     @handle_errors
@@ -2270,11 +2310,11 @@ class Ratios:
                 operating_cash_flow_sales_ratio,
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
-            )
+            ).loc[:, self._start_date : self._end_date]
 
         return operating_cash_flow_sales_ratio.round(
             rounding if rounding else self._rounding
-        )
+        ).loc[:, self._start_date : self._end_date]
 
     @handle_portfolio
     @handle_errors
@@ -2347,9 +2387,11 @@ class Ratios:
                 short_term_coverage_ratio,
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
-            )
+            ).loc[:, self._start_date : self._end_date]
 
-        return short_term_coverage_ratio.round(rounding if rounding else self._rounding)
+        return short_term_coverage_ratio.round(
+            rounding if rounding else self._rounding
+        ).loc[:, self._start_date : self._end_date]
 
     def collect_profitability_ratios(
         self,
@@ -2472,11 +2514,11 @@ class Ratios:
                 self._profitability_ratios_growth[self._tickers[0]]
                 if growth
                 else self._profitability_ratios.loc[self._tickers[0]]
-            )
+            ).loc[:, self._start_date : self._end_date]
 
         return (
             self._profitability_ratios_growth if growth else self._profitability_ratios
-        )
+        ).loc[:, self._start_date : self._end_date]
 
     @handle_portfolio
     @handle_errors
@@ -2544,9 +2586,11 @@ class Ratios:
         if growth:
             return calculate_growth(
                 gross_margin, lag=lag, rounding=rounding if rounding else self._rounding
-            )
+            ).loc[:, self._start_date : self._end_date]
 
-        return gross_margin.round(rounding if rounding else self._rounding)
+        return gross_margin.round(rounding if rounding else self._rounding).loc[
+            :, self._start_date : self._end_date
+        ]
 
     @handle_portfolio
     @handle_errors
@@ -2616,9 +2660,11 @@ class Ratios:
                 operating_margin,
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
-            )
+            ).loc[:, self._start_date : self._end_date]
 
-        return operating_margin.round(rounding if rounding else self._rounding)
+        return operating_margin.round(rounding if rounding else self._rounding).loc[
+            :, self._start_date : self._end_date
+        ]
 
     @handle_portfolio
     @handle_errors
@@ -2688,9 +2734,11 @@ class Ratios:
                 net_profit_margin,
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
-            )
+            ).loc[:, self._start_date : self._end_date]
 
-        return net_profit_margin.round(rounding if rounding else self._rounding)
+        return net_profit_margin.round(rounding if rounding else self._rounding).loc[
+            :, self._start_date : self._end_date
+        ]
 
     @handle_portfolio
     @handle_errors
@@ -2767,9 +2815,11 @@ class Ratios:
                 interest_burden_ratio,
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
-            )
+            ).loc[:, self._start_date : self._end_date]
 
-        return interest_burden_ratio.round(rounding if rounding else self._rounding)
+        return interest_burden_ratio.round(
+            rounding if rounding else self._rounding
+        ).loc[:, self._start_date : self._end_date]
 
     @handle_portfolio
     @handle_errors
@@ -2845,11 +2895,11 @@ class Ratios:
                 income_before_tax_profit_margin,
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
-            )
+            ).loc[:, self._start_date : self._end_date]
 
         return income_before_tax_profit_margin.round(
             rounding if rounding else self._rounding
-        )
+        ).loc[:, self._start_date : self._end_date]
 
     @handle_portfolio
     @handle_errors
@@ -2921,9 +2971,11 @@ class Ratios:
                 effective_tax_rate,
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
-            )
+            ).loc[:, self._start_date : self._end_date]
 
-        return effective_tax_rate.round(rounding if rounding else self._rounding)
+        return effective_tax_rate.round(rounding if rounding else self._rounding).loc[
+            :, self._start_date : self._end_date
+        ]
 
     @handle_portfolio
     @handle_errors
@@ -2999,9 +3051,11 @@ class Ratios:
                 return_on_assets,
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
-            )
+            ).loc[:, self._start_date : self._end_date]
 
-        return return_on_assets.round(rounding if rounding else self._rounding)
+        return return_on_assets.round(rounding if rounding else self._rounding).loc[
+            :, self._start_date : self._end_date
+        ]
 
     @handle_portfolio
     @handle_errors
@@ -3081,9 +3135,11 @@ class Ratios:
                 return_on_equity,
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
-            )
+            ).loc[:, self._start_date : self._end_date]
 
-        return return_on_equity.round(rounding if rounding else self._rounding)
+        return return_on_equity.round(rounding if rounding else self._rounding).loc[
+            :, self._start_date : self._end_date
+        ]
 
     @handle_portfolio
     @handle_errors
@@ -3185,11 +3241,11 @@ class Ratios:
                 return_on_invested_capital,
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
-            )
+            ).loc[:, self._start_date : self._end_date]
 
         return return_on_invested_capital.round(
             rounding if rounding else self._rounding
-        )
+        ).loc[:, self._start_date : self._end_date]
 
     @handle_portfolio
     @handle_errors
@@ -3262,9 +3318,11 @@ class Ratios:
                 income_quality_ratio,
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
-            )
+            ).loc[:, self._start_date : self._end_date]
 
-        return income_quality_ratio.round(rounding if rounding else self._rounding)
+        return income_quality_ratio.round(rounding if rounding else self._rounding).loc[
+            :, self._start_date : self._end_date
+        ]
 
     @handle_portfolio
     @handle_errors
@@ -3359,9 +3417,11 @@ class Ratios:
                 return_on_tangible_assets,
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
-            )
+            ).loc[:, self._start_date : self._end_date]
 
-        return return_on_tangible_assets.round(rounding if rounding else self._rounding)
+        return return_on_tangible_assets.round(
+            rounding if rounding else self._rounding
+        ).loc[:, self._start_date : self._end_date]
 
     @handle_portfolio
     @handle_errors
@@ -3453,11 +3513,11 @@ class Ratios:
                 return_on_capital_employed,
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
-            )
+            ).loc[:, self._start_date : self._end_date]
 
         return return_on_capital_employed.round(
             rounding if rounding else self._rounding
-        )
+        ).loc[:, self._start_date : self._end_date]
 
     @handle_portfolio
     @handle_errors
@@ -3530,9 +3590,11 @@ class Ratios:
                 net_income_per_ebt,
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
-            )
+            ).loc[:, self._start_date : self._end_date]
 
-        return net_income_per_ebt.round(rounding if rounding else self._rounding)
+        return net_income_per_ebt.round(rounding if rounding else self._rounding).loc[
+            :, self._start_date : self._end_date
+        ]
 
     @handle_portfolio
     @handle_errors
@@ -3608,11 +3670,11 @@ class Ratios:
                 free_cash_flow_operating_cash_flow_ratio,
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
-            )
+            ).loc[:, self._start_date : self._end_date]
 
         return free_cash_flow_operating_cash_flow_ratio.round(
             rounding if rounding else self._rounding
-        )
+        ).loc[:, self._start_date : self._end_date]
 
     @handle_portfolio
     @handle_errors
@@ -3686,9 +3748,11 @@ class Ratios:
                 tax_burden_ratio,
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
-            )
+            ).loc[:, self._start_date : self._end_date]
 
-        return tax_burden_ratio.round(rounding if rounding else self._rounding)
+        return tax_burden_ratio.round(rounding if rounding else self._rounding).loc[
+            :, self._start_date : self._end_date
+        ]
 
     @handle_portfolio
     @handle_errors
@@ -3775,9 +3839,11 @@ class Ratios:
         if growth:
             return calculate_growth(
                 EBT_to_EBIT, lag=lag, rounding=rounding if rounding else self._rounding
-            )
+            ).loc[:, self._start_date : self._end_date]
 
-        return EBT_to_EBIT.round(rounding if rounding else self._rounding)
+        return EBT_to_EBIT.round(rounding if rounding else self._rounding).loc[
+            :, self._start_date : self._end_date
+        ]
 
     @handle_portfolio
     @handle_errors
@@ -3859,9 +3925,11 @@ class Ratios:
                 EBIT_to_revenue,
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
-            )
+            ).loc[:, self._start_date : self._end_date]
 
-        return EBIT_to_revenue.round(rounding if rounding else self._rounding)
+        return EBIT_to_revenue.round(rounding if rounding else self._rounding).loc[
+            :, self._start_date : self._end_date
+        ]
 
     def collect_solvency_ratios(
         self,
@@ -3965,9 +4033,11 @@ class Ratios:
                 self._solvency_ratios_growth[self._tickers[0]]
                 if growth
                 else self._solvency_ratios.loc[self._tickers[0]]
-            )
+            ).loc[:, self._start_date : self._end_date]
 
-        return self._solvency_ratios_growth if growth else self._solvency_ratios
+        return (self._solvency_ratios_growth if growth else self._solvency_ratios).loc[
+            :, self._start_date : self._end_date
+        ]
 
     @handle_portfolio
     @handle_errors
@@ -4040,9 +4110,11 @@ class Ratios:
                 debt_to_assets_ratio,
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
-            )
+            ).loc[:, self._start_date : self._end_date]
 
-        return debt_to_assets_ratio.round(rounding if rounding else self._rounding)
+        return debt_to_assets_ratio.round(rounding if rounding else self._rounding).loc[
+            :, self._start_date : self._end_date
+        ]
 
     @handle_portfolio
     @handle_errors
@@ -4116,9 +4188,11 @@ class Ratios:
                 debt_to_equity_ratio,
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
-            )
+            ).loc[:, self._start_date : self._end_date]
 
-        return debt_to_equity_ratio.round(rounding if rounding else self._rounding)
+        return debt_to_equity_ratio.round(rounding if rounding else self._rounding).loc[
+            :, self._start_date : self._end_date
+        ]
 
     @handle_portfolio
     @handle_errors
@@ -4196,9 +4270,11 @@ class Ratios:
                 interest_coverage_ratio,
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
-            )
+            ).loc[:, self._start_date : self._end_date]
 
-        return interest_coverage_ratio.round(rounding if rounding else self._rounding)
+        return interest_coverage_ratio.round(
+            rounding if rounding else self._rounding
+        ).loc[:, self._start_date : self._end_date]
 
     @handle_portfolio
     @handle_errors
@@ -4277,9 +4353,11 @@ class Ratios:
                 equity_multiplier,
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
-            )
+            ).loc[:, self._start_date : self._end_date]
 
-        return equity_multiplier.round(rounding if rounding else self._rounding)
+        return equity_multiplier.round(rounding if rounding else self._rounding).loc[
+            :, self._start_date : self._end_date
+        ]
 
     @handle_portfolio
     @handle_errors
@@ -4357,11 +4435,11 @@ class Ratios:
                 debt_service_coverage_ratio,
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
-            )
+            ).loc[:, self._start_date : self._end_date]
 
         return debt_service_coverage_ratio.round(
             rounding if rounding else self._rounding
-        )
+        ).loc[:, self._start_date : self._end_date]
 
     @handle_portfolio
     @handle_errors
@@ -4469,9 +4547,11 @@ class Ratios:
                 free_cash_flow_yield,
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
-            )
+            ).loc[:, self._start_date : self._end_date]
 
-        return free_cash_flow_yield.round(rounding if rounding else self._rounding)
+        return free_cash_flow_yield.round(rounding if rounding else self._rounding).loc[
+            :, self._start_date : self._end_date
+        ]
 
     @handle_portfolio
     @handle_errors
@@ -4545,9 +4625,11 @@ class Ratios:
                 net_debt_to_ebitda_ratio,
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
-            )
+            ).loc[:, self._start_date : self._end_date]
 
-        return net_debt_to_ebitda_ratio.round(rounding if rounding else self._rounding)
+        return net_debt_to_ebitda_ratio.round(
+            rounding if rounding else self._rounding
+        ).loc[:, self._start_date : self._end_date]
 
     @handle_portfolio
     @handle_errors
@@ -4616,9 +4698,11 @@ class Ratios:
                 cash_flow_coverage_ratio,
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
-            )
+            ).loc[:, self._start_date : self._end_date]
 
-        return cash_flow_coverage_ratio.round(rounding if rounding else self._rounding)
+        return cash_flow_coverage_ratio.round(
+            rounding if rounding else self._rounding
+        ).loc[:, self._start_date : self._end_date]
 
     @handle_portfolio
     @handle_errors
@@ -4691,9 +4775,11 @@ class Ratios:
                 capex_coverage_ratio,
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
-            )
+            ).loc[:, self._start_date : self._end_date]
 
-        return capex_coverage_ratio.round(rounding if rounding else self._rounding)
+        return capex_coverage_ratio.round(rounding if rounding else self._rounding).loc[
+            :, self._start_date : self._end_date
+        ]
 
     @handle_portfolio
     @handle_errors
@@ -4777,11 +4863,11 @@ class Ratios:
                 dividend_capex_coverage_ratio,
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
-            )
+            ).loc[:, self._start_date : self._end_date]
 
         return dividend_capex_coverage_ratio.round(
             rounding if rounding else self._rounding
-        )
+        ).loc[:, self._start_date : self._end_date]
 
     def collect_valuation_ratios(
         self,
@@ -4938,9 +5024,11 @@ class Ratios:
                 self._valuation_ratios_growth[self._tickers[0]]
                 if growth
                 else self._valuation_ratios.loc[self._tickers[0]]
-            )
+            ).loc[:, self._start_date : self._end_date]
 
-        return self._valuation_ratios_growth if growth else self._valuation_ratios
+        return (
+            self._valuation_ratios_growth if growth else self._valuation_ratios
+        ).loc[:, self._start_date : self._end_date]
 
     @handle_portfolio
     @handle_errors
@@ -5037,9 +5125,11 @@ class Ratios:
                 earnings_per_share,
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
-            )
+            ).loc[:, self._start_date : self._end_date]
 
-        return earnings_per_share.round(rounding if rounding else self._rounding)
+        return earnings_per_share.round(rounding if rounding else self._rounding).loc[
+            :, self._start_date : self._end_date
+        ]
 
     @handle_portfolio
     @handle_errors
@@ -5113,9 +5203,11 @@ class Ratios:
                 revenue_per_share,
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
-            )
+            ).loc[:, self._start_date : self._end_date]
 
-        return revenue_per_share.round(rounding if rounding else self._rounding)
+        return revenue_per_share.round(rounding if rounding else self._rounding).loc[
+            :, self._start_date : self._end_date
+        ]
 
     @handle_portfolio
     @handle_errors
@@ -5198,9 +5290,11 @@ class Ratios:
                 price_to_earnings_ratio,
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
-            )
+            ).loc[:, self._start_date : self._end_date]
 
-        return price_to_earnings_ratio.round(rounding if rounding else self._rounding)
+        return price_to_earnings_ratio.round(
+            rounding if rounding else self._rounding
+        ).loc[:, self._start_date : self._end_date]
 
     @handle_portfolio
     @handle_errors
@@ -5290,11 +5384,11 @@ class Ratios:
                 price_to_earnings_growth_ratio,
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
-            )
+            ).loc[:, self._start_date : self._end_date]
 
         return price_to_earnings_growth_ratio.round(
             rounding if rounding else self._rounding
-        )
+        ).loc[:, self._start_date : self._end_date]
 
     @handle_portfolio
     @handle_errors
@@ -5376,9 +5470,11 @@ class Ratios:
                 book_value_per_share,
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
-            )
+            ).loc[:, self._start_date : self._end_date]
 
-        return book_value_per_share.round(rounding if rounding else self._rounding)
+        return book_value_per_share.round(rounding if rounding else self._rounding).loc[
+            :, self._start_date : self._end_date
+        ]
 
     @handle_portfolio
     @handle_errors
@@ -5463,9 +5559,11 @@ class Ratios:
                 price_to_book_ratio,
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
-            )
+            ).loc[:, self._start_date : self._end_date]
 
-        return price_to_book_ratio.round(rounding if rounding else self._rounding)
+        return price_to_book_ratio.round(rounding if rounding else self._rounding).loc[
+            :, self._start_date : self._end_date
+        ]
 
     @handle_portfolio
     @handle_errors
@@ -5546,9 +5644,11 @@ class Ratios:
                 interest_debt_per_share,
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
-            )
+            ).loc[:, self._start_date : self._end_date]
 
-        return interest_debt_per_share.round(rounding if rounding else self._rounding)
+        return interest_debt_per_share.round(
+            rounding if rounding else self._rounding
+        ).loc[:, self._start_date : self._end_date]
 
     @handle_portfolio
     @handle_errors
@@ -5626,9 +5726,11 @@ class Ratios:
                 capex_per_share,
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
-            )
+            ).loc[:, self._start_date : self._end_date]
 
-        return capex_per_share.round(rounding if rounding else self._rounding)
+        return capex_per_share.round(rounding if rounding else self._rounding).loc[
+            :, self._start_date : self._end_date
+        ]
 
     @handle_portfolio
     @handle_errors
@@ -5706,9 +5808,11 @@ class Ratios:
                 dividend_yield,
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
-            )
+            ).loc[:, self._start_date : self._end_date]
 
-        return dividend_yield.round(rounding if rounding else self._rounding)
+        return dividend_yield.round(rounding if rounding else self._rounding).loc[
+            :, self._start_date : self._end_date
+        ]
 
     @handle_portfolio
     @handle_errors
@@ -5813,9 +5917,11 @@ class Ratios:
                 weighted_dividend_yield,
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
-            )
+            ).loc[:, self._start_date : self._end_date]
 
-        return weighted_dividend_yield.round(rounding if rounding else self._rounding)
+        return weighted_dividend_yield.round(
+            rounding if rounding else self._rounding
+        ).loc[:, self._start_date : self._end_date]
 
     @handle_portfolio
     @handle_errors
@@ -5921,9 +6027,11 @@ class Ratios:
                 price_to_cash_flow_ratio,
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
-            )
+            ).loc[:, self._start_date : self._end_date]
 
-        return price_to_cash_flow_ratio.round(rounding if rounding else self._rounding)
+        return price_to_cash_flow_ratio.round(
+            rounding if rounding else self._rounding
+        ).loc[:, self._start_date : self._end_date]
 
     @handle_portfolio
     @handle_errors
@@ -6010,11 +6118,11 @@ class Ratios:
                 price_to_free_cash_flow_ratio,
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
-            )
+            ).loc[:, self._start_date : self._end_date]
 
         return price_to_free_cash_flow_ratio.round(
             rounding if rounding else self._rounding
-        )
+        ).loc[:, self._start_date : self._end_date]
 
     @handle_portfolio
     @handle_errors
@@ -6097,9 +6205,11 @@ class Ratios:
         if growth:
             return calculate_growth(
                 market_cap, lag=lag, rounding=rounding if rounding else self._rounding
-            )
+            ).loc[:, self._start_date : self._end_date]
 
-        return market_cap.round(rounding if rounding else self._rounding)
+        return market_cap.round(rounding if rounding else self._rounding).loc[
+            :, self._start_date : self._end_date
+        ]
 
     @handle_portfolio
     @handle_errors
@@ -6208,9 +6318,11 @@ class Ratios:
                 enterprise_value,
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
-            )
+            ).loc[:, self._start_date : self._end_date]
 
-        return enterprise_value.round(rounding if rounding else self._rounding)
+        return enterprise_value.round(rounding if rounding else self._rounding).loc[
+            :, self._start_date : self._end_date
+        ]
 
     @handle_portfolio
     @handle_errors
@@ -6289,9 +6401,11 @@ class Ratios:
                 ev_to_sales_ratio,
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
-            )
+            ).loc[:, self._start_date : self._end_date]
 
-        return ev_to_sales_ratio.round(rounding if rounding else self._rounding)
+        return ev_to_sales_ratio.round(rounding if rounding else self._rounding).loc[
+            :, self._start_date : self._end_date
+        ]
 
     @handle_portfolio
     @handle_errors
@@ -6378,9 +6492,11 @@ class Ratios:
                 ev_to_ebitda_ratio,
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
-            )
+            ).loc[:, self._start_date : self._end_date]
 
-        return ev_to_ebitda_ratio.round(rounding if rounding else self._rounding)
+        return ev_to_ebitda_ratio.round(rounding if rounding else self._rounding).loc[
+            :, self._start_date : self._end_date
+        ]
 
     @handle_portfolio
     @handle_errors
@@ -6464,11 +6580,11 @@ class Ratios:
                 ev_to_operating_cashflow_ratio,
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
-            )
+            ).loc[:, self._start_date : self._end_date]
 
         return ev_to_operating_cashflow_ratio.round(
             rounding if rounding else self._rounding
-        )
+        ).loc[:, self._start_date : self._end_date]
 
     @handle_portfolio
     @handle_errors
@@ -6549,9 +6665,11 @@ class Ratios:
                 earnings_yield,
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
-            )
+            ).loc[:, self._start_date : self._end_date]
 
-        return earnings_yield.round(rounding if rounding else self._rounding)
+        return earnings_yield.round(rounding if rounding else self._rounding).loc[
+            :, self._start_date : self._end_date
+        ]
 
     @handle_portfolio
     @handle_errors
@@ -6618,9 +6736,11 @@ class Ratios:
         if growth:
             return calculate_growth(
                 payout_ratio, lag=lag, rounding=rounding if rounding else self._rounding
-            )
+            ).loc[:, self._start_date : self._end_date]
 
-        return payout_ratio.round(rounding if rounding else self._rounding)
+        return payout_ratio.round(rounding if rounding else self._rounding).loc[
+            :, self._start_date : self._end_date
+        ]
 
     @handle_portfolio
     @handle_errors
@@ -6683,9 +6803,11 @@ class Ratios:
                 reinvestment_ratio,
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
-            )
+            ).loc[:, self._start_date : self._end_date]
 
-        return reinvestment_ratio.round(rounding if rounding else self._rounding)
+        return reinvestment_ratio.round(rounding if rounding else self._rounding).loc[
+            :, self._start_date : self._end_date
+        ]
 
     @handle_portfolio
     @handle_errors
@@ -6754,9 +6876,11 @@ class Ratios:
                 tangible_asset_value,
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
-            )
+            ).loc[:, self._start_date : self._end_date]
 
-        return tangible_asset_value.round(rounding if rounding else self._rounding)
+        return tangible_asset_value.round(rounding if rounding else self._rounding).loc[
+            :, self._start_date : self._end_date
+        ]
 
     @handle_portfolio
     @handle_errors
@@ -6820,9 +6944,11 @@ class Ratios:
                 net_current_asset_value,
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
-            )
+            ).loc[:, self._start_date : self._end_date]
 
-        return net_current_asset_value.round(rounding if rounding else self._rounding)
+        return net_current_asset_value.round(
+            rounding if rounding else self._rounding
+        ).loc[:, self._start_date : self._end_date]
 
     @handle_portfolio
     @handle_errors
@@ -6896,6 +7022,8 @@ class Ratios:
         if growth:
             return calculate_growth(
                 ev_to_ebit, lag=lag, rounding=rounding if rounding else self._rounding
-            )
+            ).loc[:, self._start_date : self._end_date]
 
-        return ev_to_ebit.round(rounding if rounding else self._rounding)
+        return ev_to_ebit.round(rounding if rounding else self._rounding).loc[
+            :, self._start_date : self._end_date
+        ]

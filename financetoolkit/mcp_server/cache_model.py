@@ -5,6 +5,8 @@ as it should be reusable across different types of data and providers.
 
 from __future__ import annotations
 
+import ast
+import contextlib
 import hashlib
 import json
 import sqlite3
@@ -19,6 +21,50 @@ import pandas as pd
 from financetoolkit.utilities.logger_model import get_logger
 
 logger = get_logger()
+
+
+_CACHE_ENVELOPE_KEY = "__ft_cache_v1__"
+
+
+def _restore_multiindex_columns(df: pd.DataFrame) -> pd.DataFrame:
+    """Restore MultiIndex columns collapsed to stringified tuples by JSON serialization."""
+    with contextlib.suppress(Exception):
+        parsed = [
+            ast.literal_eval(c) if isinstance(c, str) and c.startswith("(") else c
+            for c in df.columns
+        ]
+        if any(isinstance(p, tuple) for p in parsed):
+            df.columns = pd.MultiIndex.from_tuples(parsed)
+    return df
+
+
+def _serialize_df(df: pd.DataFrame) -> str:
+    """Serialize a DataFrame to JSON, preserving index name in a metadata envelope."""
+    return json.dumps(
+        {
+            _CACHE_ENVELOPE_KEY: True,
+            "data": df.to_json(),
+            "index_name": df.index.name,
+        }
+    )
+
+
+def _deserialize_df(value_json: str) -> pd.DataFrame:
+    """Deserialize a DataFrame, restoring index name and MultiIndex columns."""
+    try:
+        wrapper = json.loads(value_json)
+    except json.JSONDecodeError:
+        wrapper = {}
+
+    if isinstance(wrapper, dict) and _CACHE_ENVELOPE_KEY in wrapper:
+        df = pd.read_json(StringIO(wrapper["data"]), dtype=False)
+        if wrapper.get("index_name") is not None:
+            df.index.name = wrapper["index_name"]
+    else:
+        # Legacy format: plain df.to_json() string stored directly.
+        df = pd.read_json(StringIO(value_json), dtype=False)
+
+    return _restore_multiindex_columns(df)
 
 
 class SQLiteCache:
@@ -107,7 +153,7 @@ class SQLiteCache:
         if time.time() - ts > ttl:
             return None
         try:
-            return pd.read_json(StringIO(value_json), dtype=False)
+            return _deserialize_df(value_json)
         except Exception:
             return None
 
@@ -127,7 +173,7 @@ class SQLiteCache:
         """
         key = self.create_unique_key(namespace, params)
         try:
-            value_json = df.to_json()
+            value_json = _serialize_df(df)
         except Exception:
             return
         with self._lock, sqlite3.connect(self._database_location) as conn:

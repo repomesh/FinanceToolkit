@@ -228,6 +228,64 @@ class ToolkitProvider:
 
         return result
 
+    def get_transformation_notes(
+        self,
+        tickers: list[str],
+        start_date: str,
+        end_date: str,
+        quarterly: bool,
+        benchmark_ticker: str,
+        api_key: str = "",
+    ) -> list[str]:
+        """Return human-readable notes describing data transformations applied to
+        the most recent result for the given Toolkit instance (fiscal-year
+        relabelling and currency conversion).
+
+        Returns an empty list when no transformations were applied or when the
+        Toolkit instance has not yet fetched any financial statements.
+        """
+        notes: list[str] = []
+        try:
+            effective_key = resolve_api_key() or api_key or self._api_key
+            toolkit = self.get_toolkit_instance(
+                tickers=tickers,
+                start_date=start_date,
+                end_date=end_date,
+                quarterly=quarterly,
+                benchmark_ticker=benchmark_ticker,
+                api_key=effective_key,
+            )
+        except Exception:
+            return notes
+
+        fy_adj: dict = getattr(toolkit, "_fiscal_year_adjustments", {})
+        fy_tickers = [
+            ticker
+            for ticker, adjustments in fy_adj.items()
+            if any(a.get("fiscal_year") != a.get("calendar_year") for a in adjustments)
+        ]
+        if fy_tickers:
+            notes.append(
+                f"Fiscal Year to Calendar Year mapped for: {', '.join(fy_tickers)}"
+            )
+
+        stmt_currencies: pd.Series = getattr(
+            toolkit, "_statement_currencies", pd.Series()
+        )
+        convert_currency: bool = bool(getattr(toolkit, "_convert_currency", False))
+        if convert_currency and not stmt_currencies.empty:
+            converted_currencies = []
+            for ticker, pair in stmt_currencies.items():
+                src, dst = str(pair)[:3], str(pair)[3:6]
+                if src != dst:
+                    converted_currencies.append(f"{ticker} ({src} to {dst})")
+            if converted_currencies:
+                notes.append(
+                    f"Aligned Financial Statements with OHLC for: {', '.join(converted_currencies)}"
+                )
+
+        return notes
+
     def get_toolkit_instance(
         self,
         tickers: list[str],

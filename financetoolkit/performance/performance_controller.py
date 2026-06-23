@@ -6,7 +6,7 @@ import warnings
 
 import pandas as pd
 
-from financetoolkit.helpers import calculate_growth, handle_portfolio
+from financetoolkit.helpers import calculate_growth, filter_columns, handle_portfolio
 from financetoolkit.performance import performance_model
 from financetoolkit.performance.helpers import (
     determine_within_dataset,
@@ -15,13 +15,6 @@ from financetoolkit.performance.helpers import (
 )
 from financetoolkit.risk.risk_model import get_ui
 from financetoolkit.utilities.logger_model import get_logger
-
-try:
-    from tqdm import tqdm
-
-    ENABLE_TQDM = True
-except ImportError:
-    ENABLE_TQDM = False
 
 # Runtime errors are ignored on purpose given the nature of the calculations
 # sometimes leading to division by zero or other mathematical errors. This is however
@@ -420,6 +413,7 @@ class Performance:
         period: str | None = None,
         factors_to_calculate: list[str] | None = None,
         rounding: int | None = None,
+        show_columns: list[str] | None = None,
     ):
         """
         Calculates factor exposures for each asset.
@@ -493,16 +487,8 @@ class Performance:
 
         factor_correlations: dict = {}
 
-        ticker_list_iterator = (
-            tqdm(
-                self._tickers_without_portfolio,
-                desc="Calculating Factor Asset Correlations",
-            )
-            if ENABLE_TQDM & self._progress_bar
-            else self._tickers_without_portfolio
-        )
-
-        for ticker in ticker_list_iterator:
+        logger.info("Calculating Factor Asset Correlations")
+        for ticker in self._tickers_without_portfolio:
             factor_correlations[ticker] = {}
             for dataset_period in merged_df.index.get_level_values(0):
                 factor_data = merged_df.loc[dataset_period][factors_to_calculate]
@@ -518,7 +504,6 @@ class Performance:
                             factors=factor_data, excess_return=excess_returns
                         )
                     )
-
         factor_asset_correlations = pd.DataFrame.from_dict(
             {
                 (ticker, dataset_period): value
@@ -530,7 +515,7 @@ class Performance:
         factor_order = factor_asset_correlations.index
 
         factor_asset_correlations = (
-            factor_asset_correlations.stack(level=1, future_stack=True)
+            factor_asset_correlations.stack(level=1)
             .unstack(level=0)
             .reindex(factor_order, level=1, axis=1)
             .reindex(self._tickers_without_portfolio, level=0, axis=1)
@@ -540,7 +525,7 @@ class Performance:
             rounding if rounding else self._rounding
         ).loc[self._start_date : self._end_date]
 
-        return self._factor_asset_correlations
+        return filter_columns(self._factor_asset_correlations, show_columns)
 
     @handle_errors
     def get_factor_correlations(
@@ -635,6 +620,7 @@ class Performance:
         rounding: int | None = None,
         growth: bool = False,
         lag: int | list[int] = 1,
+        show_columns: list[str] | None = None,
     ):
         """
         Calculate Fama and French 5 Factor model scores and residuals for a set of financial assets.
@@ -758,16 +744,11 @@ class Performance:
         factor_scores: dict = {}
         daily_residuals: dict = {}
 
-        ticker_list_iterator = (
-            tqdm(
-                self._tickers_without_portfolio,
-                desc=f"Calculating {'Multi' if method == 'multi' else 'Individual'} Factor Exposures",
-            )
-            if ENABLE_TQDM & self._progress_bar
-            else self._tickers_without_portfolio
+        logger.info(
+            "Calculating %s Factor Exposures",
+            "Multi" if method == "multi" else "Individual",
         )
-
-        for ticker in ticker_list_iterator:
+        for ticker in self._tickers_without_portfolio:
             factor_scores[ticker] = {}
             daily_residuals[ticker] = {}
 
@@ -868,9 +849,9 @@ class Performance:
                     2
                 ).unique()
 
-                fama_and_french_model = fama_and_french_model.stack(
-                    future_stack=True
-                ).unstack(level=[2, 1, 3])
+                fama_and_french_model = fama_and_french_model.stack().unstack(
+                    level=[2, 1, 3]
+                )
 
                 fama_and_french_model = (
                     fama_and_french_model.sort_index(axis=1)
@@ -923,17 +904,23 @@ class Performance:
                 rounding if rounding else self._rounding
             ).loc[self._start_date : self._end_date]
 
-            return self._fama_and_french_model, self._fama_and_french_residuals
-
-        if growth:
-            return calculate_growth(
-                self._fama_and_french_model,
-                lag=lag,
-                rounding=rounding if rounding else self._rounding,
-                axis="index",
+            return (
+                filter_columns(self._fama_and_french_model, show_columns),
+                self._fama_and_french_residuals,
             )
 
-        return self._fama_and_french_model
+        if growth:
+            return filter_columns(
+                calculate_growth(
+                    self._fama_and_french_model,
+                    lag=lag,
+                    rounding=rounding if rounding else self._rounding,
+                    axis="index",
+                ),
+                show_columns,
+            )
+
+        return filter_columns(self._fama_and_french_model, show_columns)
 
     @handle_portfolio
     @handle_errors

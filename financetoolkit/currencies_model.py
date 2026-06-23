@@ -143,12 +143,8 @@ def convert_currencies(
 
     if currencies_text:
         logger.info(
-            "The %s from the following tickers are converted: %s",
-            (
-                financial_statement_name
-                if financial_statement_name
-                else "financial statement"
-            ),
+            "Converting %s currency to match OHLC for: %s",
+            financial_statement_name or "financial statement",
             ", ".join(currencies_text),
         )
 

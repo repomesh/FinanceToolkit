@@ -4,7 +4,7 @@ __docformat__ = "google"
 
 import pandas as pd
 
-from financetoolkit.helpers import calculate_growth
+from financetoolkit.helpers import calculate_growth, filter_columns
 from financetoolkit.models import (
     altman_model,
     dupont_model,
@@ -40,6 +40,8 @@ class Models:
         cash: pd.DataFrame,
         quarterly: bool = False,
         rounding: int | None = 4,
+        start_date: str | None = None,
+        end_date: str | None = None,
     ):
         """
         Initializes the Models Controller Class.
@@ -85,6 +87,8 @@ class Models:
         self._cash_flow_statement: pd.DataFrame = cash
         self._quarterly = quarterly
         self._rounding = rounding
+        self._start_date: str | None = start_date
+        self._end_date: str | None = end_date
 
         # Historical Data
         self._historical_data = historical_data
@@ -119,6 +123,7 @@ class Models:
         growth: bool = False,
         lag: int | list[int] = 1,
         trailing: int | None = None,
+        show_columns: list[str] | None = None,
     ) -> pd.DataFrame:
         """
         Perform a Dupont analysis to breakdown the return on equity (ROE) into its components.
@@ -207,13 +212,19 @@ class Models:
         )
 
         if len(self._tickers) == 1:
-            return (
+            result = (
                 self._dupont_analysis_growth.droplevel(level=0)
                 if growth
                 else self._dupont_analysis.droplevel(level=0)
             )
+            return filter_columns(
+                result.loc[:, self._start_date : self._end_date], show_columns
+            )
 
-        return self._dupont_analysis_growth if growth else self._dupont_analysis
+        result = self._dupont_analysis_growth if growth else self._dupont_analysis
+        return filter_columns(
+            result.loc[:, self._start_date : self._end_date], show_columns
+        )
 
     @handle_errors
     def get_extended_dupont_analysis(
@@ -222,6 +233,7 @@ class Models:
         growth: bool = False,
         lag: int | list[int] = 1,
         trailing: int | None = None,
+        show_columns: list[str] | None = None,
     ) -> pd.DataFrame:
         """
         Perform an Extended Dupont analysis to breakdown the return on equity (ROE) into its components,
@@ -327,16 +339,22 @@ class Models:
         )
 
         if len(self._tickers) == 1:
-            return (
+            result = (
                 self._extended_dupont_analysis_growth.droplevel(level=0)
                 if growth
                 else self._extended_dupont_analysis.droplevel(level=0)
             )
+            return filter_columns(
+                result.loc[:, self._start_date : self._end_date], show_columns
+            )
 
-        return (
+        result = (
             self._extended_dupont_analysis_growth
             if growth
             else self._extended_dupont_analysis
+        )
+        return filter_columns(
+            result.loc[:, self._start_date : self._end_date], show_columns
         )
 
     @handle_errors
@@ -346,6 +364,7 @@ class Models:
         rounding: int | None = None,
         growth: bool = False,
         lag: int | list[int] = 1,
+        show_columns: list[str] | None = None,
     ) -> pd.DataFrame:
         """
         Calculate the Enterprise Value (EV) breakdown, providing a detailed view of its components.
@@ -437,16 +456,22 @@ class Models:
         )
 
         if len(self._tickers) == 1:
-            return (
+            result = (
                 self._enterprise_value_breakdown_growth.droplevel(level=0)
                 if growth
                 else self._enterprise_value_breakdown.droplevel(level=0)
             )
+            return filter_columns(
+                result.loc[:, self._start_date : self._end_date], show_columns
+            )
 
-        return (
+        result = (
             self._enterprise_value_breakdown_growth
             if growth
             else self._enterprise_value_breakdown
+        )
+        return filter_columns(
+            result.loc[:, self._start_date : self._end_date], show_columns
         )
 
     @handle_errors
@@ -457,6 +482,7 @@ class Models:
         rounding: int | None = None,
         growth: bool = False,
         lag: int | list[int] = 1,
+        show_columns: list[str] | None = None,
     ) -> pd.DataFrame:
         """
         The Weighted Average Cost of Capital (WACC) is a financial metric used to estimate
@@ -589,20 +615,26 @@ class Models:
         )
 
         if len(self._tickers) == 1:
-            return (
+            result = (
                 self._weighted_average_cost_of_capital_growth.droplevel(level=0)
                 if growth
                 else self._weighted_average_cost_of_capital.droplevel(level=0)
             )
+            return filter_columns(
+                result.loc[:, self._start_date : self._end_date], show_columns
+            )
 
         if show_full_results:
-            return (
+            result = (
                 self._weighted_average_cost_of_capital_growth
                 if growth
                 else self._weighted_average_cost_of_capital
             )
+            return filter_columns(
+                result.loc[:, self._start_date : self._end_date], show_columns
+            )
 
-        return (
+        result = (
             self._weighted_average_cost_of_capital_growth.loc[
                 :, "Weighted Average Cost of Capital", :
             ]
@@ -610,6 +642,9 @@ class Models:
             else self._weighted_average_cost_of_capital.loc[
                 :, "Weighted Average Cost of Capital", :
             ]
+        )
+        return filter_columns(
+            result.loc[:, self._start_date : self._end_date], show_columns
         )
 
     def get_intrinsic_valuation(
@@ -779,7 +814,7 @@ class Models:
 
         self._intrinsic_values = pd.concat(intrinsic_values_dict)
 
-        return self._intrinsic_values
+        return self._intrinsic_values.loc[:, self._start_date :]
 
     def get_gorden_growth_model(
         self,
@@ -885,7 +920,7 @@ class Models:
             rounding if rounding else self._rounding
         )
 
-        return gorden_growth_model_df
+        return gorden_growth_model_df.loc[self._start_date :]
 
     @handle_errors
     def get_altman_z_score(
@@ -894,6 +929,7 @@ class Models:
         rounding: int | None = None,
         growth: bool = False,
         lag: int | list[int] = 1,
+        show_columns: list[str] | None = None,
     ) -> pd.DataFrame:
         """
         Calculates the Altman Z-Score, a financial metric used to predict the likelihood of a company going bankrupt.
@@ -1033,19 +1069,26 @@ class Models:
         )
 
         if growth:
-            return calculate_growth(
-                altman_results,
-                lag=lag,
-                rounding=rounding if rounding else self._rounding,
-                axis="columns",
+            return filter_columns(
+                calculate_growth(
+                    altman_results,
+                    lag=lag,
+                    rounding=rounding if rounding else self._rounding,
+                    axis="columns",
+                ).loc[:, self._start_date : self._end_date],
+                show_columns,
             )
 
         altman_results = altman_results.round(rounding if rounding else self._rounding)
 
-        return altman_results
+        return filter_columns(
+            altman_results.loc[:, self._start_date : self._end_date], show_columns
+        )
 
     @handle_errors
-    def get_piotroski_score(self) -> pd.DataFrame:
+    def get_piotroski_score(
+        self, show_columns: list[str] | None = None
+    ) -> pd.DataFrame:
         """
         Calculate the Piotroski Score, a comprehensive financial assessment tool that helps investors and analysts
         evaluate a company's financial health and fundamental strength.
@@ -1216,7 +1259,9 @@ class Models:
         # result for the analysis
         piotroski_results = piotroski_results[piotroski_results.columns[1:]]
 
-        return piotroski_results
+        return filter_columns(
+            piotroski_results.loc[:, self._start_date : self._end_date], show_columns
+        )
 
     @handle_errors
     def get_present_value_of_growth_opportunities(
@@ -1303,11 +1348,11 @@ class Models:
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
                 axis="index",
-            )
+            ).loc[self._start_date :]
 
         pvgo = pvgo.round(rounding if rounding else self._rounding)
 
         # When there is no data found for any ticker, drop the row
         pvgo = pvgo.dropna(how="all", axis=0)
 
-        return pvgo
+        return pvgo.loc[self._start_date :]

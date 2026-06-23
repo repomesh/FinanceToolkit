@@ -20,6 +20,7 @@ from mcp.server.fastmcp import FastMCP
 from mcp.types import ToolAnnotations
 from pydantic import Field as PydanticField
 
+from financetoolkit.helpers import filter_columns as _filter_columns
 from financetoolkit.mcp_server.coercion_model import (
     coerce_value,
     to_boolean,
@@ -51,7 +52,6 @@ _PARAM_DESCRIPTIONS: dict[str, str] = {
     "growth": "Return period-over-period growth rates instead of absolute values.",
     "lag": "Number of periods to lag when computing growth rates.",
     "trailing": "Number of trailing periods for rolling-window calculations.",
-    "rounding": "Number of decimal places to round results to.",
     "days": "Number of calendar days used in day-count-based calculations.",
     "period": "Observation frequency, e.g. 'monthly', 'quarterly', or 'annual'.",
     "measure": "Sub-measure selector, e.g. 'M1', 'M2', or 'M3' for money supply.",
@@ -66,6 +66,15 @@ _PARAM_DESCRIPTIONS: dict[str, str] = {
     "growth_rate": "Assumed constant growth rate as a decimal.",
     "perpetual_growth_rate": "Terminal (perpetual) growth rate used in DCF models.",
     "weighted_average_cost_of_capital": "WACC as a decimal, e.g. 0.09 for 9 %.",
+    "show_columns": (
+        "Comma-separated names to filter the output. "
+        "For historical data use the key names visible in any response record "
+        "(e.g. 'Close,Volume,Return'). "
+        "For financial statements use the 'metric' field values from the response "
+        "(e.g. 'Revenue,Net Income,EBITDA'). "
+        "Call the tool once without this parameter to see all available names, "
+        "then repeat with show_columns to reduce response size and token usage."
+    ),
 }
 
 
@@ -450,6 +459,14 @@ class ToolRegistry:
                 "benchmark_ticker", inspector.benchmark_ticker
             )
 
+            # show_columns is handled entirely here — never forwarded to methods
+            raw_show_columns = kwargs.pop("show_columns", None)
+            show_columns = (
+                [c.strip() for c in str(raw_show_columns).split(",") if c.strip()]
+                if raw_show_columns
+                else None
+            )
+
             accepted_params = method_param_names.get(method_name, set())
             method_kwargs = {}
             for pname, pann, _ in param_meta:
@@ -457,6 +474,14 @@ class ToolRegistry:
                     val = kwargs.pop(pname)
                     if pname in accepted_params:
                         method_kwargs[pname] = coerce_value(val, pann)
+
+            if kwargs:
+                logger.warning(
+                    "Unknown parameter(s) passed to %s (%s) and ignored: %s",
+                    tool_name,
+                    method_name,
+                    ", ".join(kwargs.keys()),
+                )
 
             # Validate that the requested period (if any) is not blocked for this tool
             if blocked_periods_for_tool and "period" in method_kwargs:
@@ -487,7 +512,19 @@ class ToolRegistry:
                     benchmark_ticker=benchmark_ticker,
                     **method_kwargs,
                 )
-                formatted = format_result(result)
+                if show_columns is not None:
+                    result = _filter_columns(result, show_columns)
+                notes: list[str] = []
+                if dispatch_category in ("ticker", "toolkit") and tickers:
+                    notes = provider.get_transformation_notes(
+                        tickers=tickers,
+                        start_date=start_date,
+                        end_date=end_date,
+                        quarterly=quarterly,
+                        benchmark_ticker=benchmark_ticker,
+                        api_key=provider._api_key,
+                    )
+                formatted = format_result(result, notes=notes or None)
                 return formatted
             except (ValueError, KeyError) as exc:
                 return f"Invalid input for `{tool_name}` (`{method_name}`): {exc}"
@@ -554,6 +591,17 @@ class ToolRegistry:
                     annotation=_annotate_with_description(p.name, ann),
                 )
             )
+
+        # Universal show_columns parameter — appended last so it doesn't
+        # interfere with positional argument ordering of method-specific params.
+        sig_params.append(
+            P(
+                "show_columns",
+                POS,
+                default=None,
+                annotation=_annotate_with_description("show_columns", str | None),
+            )
+        )
 
         wrapper.__signature__ = inspect.Signature(sig_params, return_annotation=str)
         wrapper.__annotations__ = {p.name: p.annotation for p in sig_params}

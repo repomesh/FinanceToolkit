@@ -16,17 +16,13 @@ from financetoolkit.options import (
     options_model,
 )
 from financetoolkit.ratios import valuation_model
+from financetoolkit.utilities import logger_model
 
 # pylint: disable=too-many-instance-attributes,too-few-public-methods,too-many-lines,too-many-locals,cell-var-from-loop
 # pylint: disable=line-too-long,too-many-public-methods
 # ruff: noqa: E501
 
-try:
-    from tqdm import tqdm
-
-    ENABLE_TQDM = True
-except ImportError:
-    ENABLE_TQDM = False
+logger = logger_model.get_logger()
 
 
 class Options:
@@ -44,6 +40,8 @@ class Options:
         risk_free_rate: pd.DataFrame = pd.DataFrame(),
         quarterly: bool = False,
         rounding: int | None = 4,
+        start_date: str | None = None,
+        end_date: str | None = None,
     ):
         """
         Initializes the Options Controller Class. The Options module is meant to calculate important options
@@ -94,6 +92,8 @@ class Options:
         self._daily_historical = daily_historical
         self._quarterly = quarterly
         self._rounding: int | None = rounding
+        self._start_date: str | None = start_date
+        self._end_date: str | None = end_date
 
         # Option Statistics
         self._prices = self._daily_historical["Adj Close"]
@@ -705,14 +705,10 @@ class Options:
             "Risk Neutral Probability": {},
         }
 
-        iterator = (
-            tqdm(strike_prices_per_ticker.items(), desc="Calculating Binomial Trees")
-            if ENABLE_TQDM
-            else strike_prices_per_ticker.items()
-        )
+        logger.info("Calculating Binomial Trees")
         dividend_yield_value: dict[str, float] = {}
 
-        for ticker, strike_prices in iterator:
+        for ticker, strike_prices in strike_prices_per_ticker.items():
             binomial_trees[ticker] = {}
 
             for strike_price in strike_prices:
@@ -895,13 +891,8 @@ class Options:
             "Down Movement": {},
         }
 
-        iterator = (
-            tqdm(self._tickers, desc="Simulating Stock Prices")
-            if ENABLE_TQDM
-            else self._tickers
-        )
-
-        for ticker in iterator:
+        logger.info("Simulating Stock Prices")
+        for ticker in self._tickers:
             stock_price_simulation[ticker] = {}
 
             (

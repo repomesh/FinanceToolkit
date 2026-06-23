@@ -498,7 +498,7 @@ def create_portfolio_performance(
         - The function aggregates data at the specified frequency using the `.asfreq()` method.
         - Missing values in the resulting dataset are filled with zeros.
     """
-    positions_dataset_stacked = positions_dataset.stack(future_stack=True)  # noqa
+    positions_dataset_stacked = positions_dataset.stack()
     positions_dataset_stacked.index.names = [date_column, ticker_column]
 
     dates = positions_dataset_stacked.index.get_level_values(date_column).asfreq(
