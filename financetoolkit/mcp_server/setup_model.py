@@ -11,7 +11,6 @@ import json
 import os
 import pathlib
 import platform
-import shutil
 from contextlib import suppress
 
 from dotenv import dotenv_values
@@ -184,7 +183,7 @@ def _uvx_server_entry(api_key: str | None = None) -> dict:
 
 # Maps the canonical --client name to
 #   (config_path_fn, outer_json_key, display_name)
-# Used by write_client_config_uvx() and get_skill_dest_for_client().
+# Used by write_client_config_uvx().
 _CLIENT_CONFIG: dict[str, tuple] = {
     "claude-desktop": (get_claude_config_path, "mcpServers", "Claude Desktop"),
     "claude-code": (get_claude_code_config_path, "mcpServers", "Claude Code"),
@@ -450,22 +449,7 @@ def remove_all_configs(target_dir: pathlib.Path) -> None:
     global_env = get_global_env_path()
     has_global_env = global_env.exists()
 
-    # Collect skill files installed under target_dir for all known clients.
-    skill_clients = ["claude-code", "vscode", "cursor", "gemini", "windsurf"]
-    skill_files_found = [
-        get_skill_dest_for_client(c, target_dir)
-        for c in skill_clients
-        if get_skill_dest_for_client(c, target_dir).exists()
-    ]
-    # Deduplicate (vscode and cursor share the same path).
-    seen: set[pathlib.Path] = set()
-    unique_skill_files: list[pathlib.Path] = []
-    for p in skill_files_found:
-        if p not in seen:
-            seen.add(p)
-            unique_skill_files.append(p)
-
-    if not found and not has_global_env and not unique_skill_files:
+    if not found and not has_global_env:
         console.print()
         info("No Finance Toolkit configuration found — nothing to remove.")
         console.print()
@@ -481,13 +465,6 @@ def remove_all_configs(target_dir: pathlib.Path) -> None:
         summary.append("  ·  ", style="yellow")
         summary.append("Global env file  ", style="bold")
         summary.append(f"{global_env}\n", style="dim cyan")
-    if unique_skill_files:
-        if found or has_global_env:
-            summary.append("\n", style="")
-        summary.append("Skill files:\n", style="bold")
-        for sf in unique_skill_files:
-            summary.append("  ·  ", style="yellow")
-            summary.append(f"{sf}\n", style="dim cyan")
 
     console.print()
     console.print(
@@ -509,15 +486,6 @@ def remove_all_configs(target_dir: pathlib.Path) -> None:
         _remove_entry_from_config(path, outer_key=key)
     if has_global_env:
         remove_global_env_key()
-    for sf in unique_skill_files:
-        try:
-            sf.unlink()
-            ok(f"Removed skill file [dim cyan]{sf}[/]")
-            # Remove the parent directory if it is now empty.
-            with suppress(OSError):
-                sf.parent.rmdir()
-        except OSError as exc:
-            err(f"Could not remove {sf}: {exc}")
 
     console.print()
     ok("[bold]Removal complete.[/]  Restart your client(s) to apply.")
@@ -621,77 +589,6 @@ def remove_windsurf_config() -> None:
         get_windsurf_config_path(),
         outer_key="mcpServers",
     )
-
-
-def get_skill_dest_for_client(client: str, target_dir: pathlib.Path) -> pathlib.Path:
-    """Return the destination path where SKILL.md should be written for *client*.
-
-    Args:
-        client: Canonical client name (``"claude-code"``, ``"vscode"``, etc.).
-        target_dir: Workspace root / cwd used as the base for relative paths.
-
-    Returns:
-        pathlib.Path: Absolute path including filename.
-    """
-    destinations = {
-        "claude-code": target_dir / ".claude" / "skills" / "finance_toolkit.md",
-        "vscode": target_dir
-        / ".agents"
-        / "skills"
-        / "finance-toolkit-analyst"
-        / "SKILL.md",
-        "cursor": target_dir
-        / ".agents"
-        / "skills"
-        / "finance-toolkit-analyst"
-        / "SKILL.md",
-        "gemini": target_dir / ".gemini" / "skills" / "finance_toolkit.md",
-        "windsurf": target_dir / ".windsurf" / "skills" / "finance_toolkit.md",
-    }
-    return destinations.get(client, target_dir / "SKILL.md")
-
-
-def write_skill_for_client(
-    client: str,
-    target_dir: pathlib.Path,
-    overwrite: bool = False,
-) -> bool:
-    """Copy the bundled SKILL.md to the correct location for *client*.
-
-    Used by the non-interactive ``--include-skills`` CLI path.  The destination
-    directory is created automatically.  When *overwrite* is ``False`` and the
-    destination already exists, the function prints a warning and returns
-    ``False`` without touching the file.
-
-    Args:
-        client: Canonical client name (e.g. ``"claude-code"``, ``"cursor"``).
-        target_dir: Workspace root used as the base for the destination path.
-        overwrite: When ``True``, silently replace an existing file.
-
-    Returns:
-        bool: ``True`` on success, ``False`` on skip or failure.
-    """
-    source = pathlib.Path(__file__).parent / "SKILL.md"
-    if not source.exists():
-        err(f"Skill source file not found at [dim cyan]{source}[/] — skipping.")
-        return False
-
-    dest = get_skill_dest_for_client(client, target_dir)
-
-    if dest.exists() and not overwrite:
-        warn(
-            f"Skill file already exists at [dim cyan]{dest}[/]  — use --overwrite to replace."
-        )
-        return False
-
-    try:
-        dest.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(source, dest)
-        ok(f"Skill file written to [dim cyan]{dest}[/]")
-        return True
-    except OSError as exc:
-        err(f"Failed to write skill file: {exc}")
-        return False
 
 
 def write_client_config_uvx(
@@ -828,47 +725,6 @@ def remove_claude_code_config() -> None:
         get_claude_code_config_path(),
         outer_key="mcpServers",
     )
-
-
-def write_claude_skill_file(target_dir: pathlib.Path) -> bool:
-    """Copy the bundled SKILL.md to ``.claude/skills/`` in the target directory.
-
-    Claude Code looks for skill/instruction files inside the project-level
-    ``.claude/skills/`` directory. The file is placed at
-    ``.claude/skills/finance-toolkit-analyst.md``.
-
-    If the file already exists the user is asked to confirm before overwriting.
-
-    Args:
-        target_dir (pathlib.Path): Workspace root directory in which
-            ``.claude/skills/`` should be created.
-
-    Returns:
-        bool: True on success, False on failure.
-    """
-    source = pathlib.Path(__file__).parent / "SKILL.md"
-    if not source.exists():
-        err(f"Skill source file not found at [dim cyan]{source}[/] — skipping.")
-        return False
-
-    dest = get_skill_dest_for_client("claude-code", target_dir)
-
-    if dest.exists():
-        console.print()
-        warn(f"Existing Claude skill file found at [dim cyan]{dest}[/]")
-        console.print()
-        if not Confirm.ask("  Overwrite this skill file?", default=False):
-            info("Skipped — existing skill file left unchanged.")
-            return False
-
-    try:
-        dest.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(source, dest)
-        ok(f"Claude Code skill file written to [dim cyan]{dest}[/]")
-        return True
-    except OSError as exc:
-        err(f"Failed to write Claude skill file: {exc}")
-        return False
 
 
 def write_vscode_config(api_key: str, target_dir: pathlib.Path) -> None:
@@ -1008,73 +864,3 @@ def write_claude_config(api_key: str) -> None:
 
     config_path.write_text(json.dumps(existing, indent=2) + "\n", encoding="utf-8")
     ok(f"Claude Desktop config written to [dim cyan]{config_path}[/]")
-
-
-def write_skill_file(target_dir: pathlib.Path) -> None:
-    """Copy the bundled SKILL.md to the correct location in the target directory.
-
-    The skill file is placed at ``.agents/skills/finance-toolkit-analyst/SKILL.md``
-    relative to *target_dir*, which is the convention used by VS Code Copilot and
-    Cursor for custom skill definitions.
-
-    If the file already exists the user is asked to confirm before overwriting.
-    The source file is the ``finance-toolkit-analyst/SKILL.md`` that ships with
-    this package.
-
-    Args:
-        target_dir (pathlib.Path): Workspace root directory in which the skill
-            file should be installed.
-    """
-    source = pathlib.Path(__file__).parent / "SKILL.md"
-    if not source.exists():
-        err(f"Skill source file not found at [dim cyan]{source}[/] — skipping.")
-        return
-
-    dest = target_dir / ".agents" / "skills" / "finance-toolkit-analyst" / "SKILL.md"
-
-    if dest.exists():
-        console.print()
-        warn(f"Existing skill file found at [dim cyan]{dest}[/]")
-        console.print()
-        if not Confirm.ask("  Overwrite this skill file?", default=False):
-            info("Skipped — existing skill file left unchanged.")
-            return
-
-    try:
-        dest.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(source, dest)
-        ok(f"Skill file written to [dim cyan]{dest}[/]")
-        return True
-    except OSError as exc:
-        err(f"Failed to write skill file: {exc}")
-        return False
-
-
-def copy_skill_file_to_cwd(target_dir: pathlib.Path) -> None:
-    """Copy the bundled SKILL.md to *target_dir* directly so the user can move it.
-
-    Used as a fallback when the standard ``.agents/skills/`` path cannot be
-    written, or when Claude Desktop is selected (which has no native skill
-    concept).
-
-    Args:
-        target_dir (pathlib.Path): Directory to copy SKILL.md into.
-    """
-    source = pathlib.Path(__file__).parent / "SKILL.md"
-    if not source.exists():
-        err(f"Skill source file not found at [dim cyan]{source}[/] — skipping.")
-        return
-
-    dest = target_dir / "SKILL.md"
-    if dest.exists():
-        console.print()
-        warn(f"Existing SKILL.md found at [dim cyan]{dest}[/]")
-        console.print()
-        if not Confirm.ask("  Overwrite this file?", default=False):
-            info("Skipped — existing file left unchanged.")
-            return
-
-    shutil.copy2(source, dest)
-    ok(
-        f"SKILL.md copied to [dim cyan]{dest}[/]  — move it to the correct location for your client."
-    )

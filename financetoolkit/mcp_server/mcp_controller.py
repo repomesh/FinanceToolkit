@@ -264,9 +264,6 @@ def setup() -> None:
 
     --client {claude-desktop,claude-code,vscode,cursor,gemini,windsurf}
         Configure a single client without opening the interactive menu.
-    --include-skills
-        Also copy the SKILL.md analyst instructions to the appropriate
-        location for the chosen client.
     --overwrite
         Silently overwrite an existing configuration.  Without this flag the
         command exits with a warning if the target already contains a
@@ -294,11 +291,6 @@ def setup() -> None:
         ),
     )
     parser.add_argument(
-        "--include-skills",
-        action="store_true",
-        help="Also install the SKILL.md analyst instructions for the chosen client.",
-    )
-    parser.add_argument(
         "--overwrite",
         action="store_true",
         help="Overwrite existing configuration without prompting.",
@@ -307,12 +299,12 @@ def setup() -> None:
     args = parser.parse_args()
 
     if args.client:
-        _setup_cli(args.client, args.include_skills, args.overwrite)
+        _setup_cli(args.client, args.overwrite)
     else:
         _setup_interactive()
 
 
-def _setup_cli(client: str, include_skills: bool, overwrite: bool) -> None:
+def _setup_cli(client: str, overwrite: bool) -> None:
     """Non-interactive setup: write uvx-based config for *client*."""
     setup_model.print_banner()
 
@@ -348,9 +340,6 @@ def _setup_cli(client: str, include_skills: bool, overwrite: bool) -> None:
     setup_model.write_client_config_uvx(
         client, pathlib.Path.cwd(), overwrite, api_key=api_key
     )
-
-    if include_skills:
-        setup_model.write_skill_for_client(client, pathlib.Path.cwd(), overwrite)
 
     setup_model.console.print()
 
@@ -444,83 +433,6 @@ def _setup_interactive() -> None:
             func(api_key)
         except Exception as e:
             setup_model.err(f"Error configuring {name}: {e}")
-
-    # Offer SKILL.md installation for clients that support file-based skills.
-    # Claude Desktop has no equivalent concept, so it is offered separately as a
-    # cwd copy the user can move into place themselves.
-    skill_clients = {"3": "VS Code", "4": "Cursor"}
-    claude_code_selected = "2" in to_process
-    claude_desktop_selected = "1" in to_process
-    gemini_selected = "5" in to_process
-    windsurf_selected = "6" in to_process
-    if any(c in to_process for c in skill_clients):
-        client_names = " / ".join(
-            skill_clients[c] for c in to_process if c in skill_clients
-        )
-        setup_model.console.print()
-        if setup_model.Confirm.ask(
-            f"  Install the SKILL.md analyst instructions for {client_names}?",
-            default=True,
-        ):
-            success = setup_model.write_skill_file(cwd)
-            if not success:
-                setup_model.console.print()
-                setup_model.warn("Could not write to the standard skill location.")
-                if setup_model.Confirm.ask(
-                    "  Copy SKILL.md to current directory so you can move it yourself?",
-                    default=True,
-                ):
-                    setup_model.copy_skill_file_to_cwd(cwd)
-
-    if claude_code_selected:
-        setup_model.console.print()
-        if setup_model.Confirm.ask(
-            "  Install the SKILL.md analyst instructions for Claude Code (.claude/skills/)?",
-            default=True,
-        ):
-            success = setup_model.write_claude_skill_file(cwd)
-            if not success:
-                setup_model.console.print()
-                setup_model.warn("Could not write to .claude/skills/.")
-                if setup_model.Confirm.ask(
-                    "  Copy SKILL.md to current directory so you can move it yourself?",
-                    default=True,
-                ):
-                    setup_model.copy_skill_file_to_cwd(cwd)
-
-    for flag, label, client_key in [
-        (gemini_selected, "Gemini", "gemini"),
-        (windsurf_selected, "Windsurf", "windsurf"),
-    ]:
-        if flag:
-            setup_model.console.print()
-            if setup_model.Confirm.ask(
-                f"  Install the SKILL.md analyst instructions for {label}?",
-                default=True,
-            ):
-                success = setup_model.write_skill_for_client(
-                    client_key, cwd, overwrite=False
-                )
-                if not success:
-                    setup_model.console.print()
-                    if setup_model.Confirm.ask(
-                        "  Copy SKILL.md to current directory so you can move it yourself?",
-                        default=True,
-                    ):
-                        setup_model.copy_skill_file_to_cwd(cwd)
-
-    if (
-        claude_desktop_selected
-        and not any(c in to_process for c in skill_clients)
-        and not claude_code_selected
-    ):
-        setup_model.console.print()
-        setup_model.info("Claude Desktop does not support file-based skills natively.")
-        if setup_model.Confirm.ask(
-            "  Copy SKILL.md to current directory so you can move it yourself?",
-            default=True,
-        ):
-            setup_model.copy_skill_file_to_cwd(cwd)
 
     # Final summary
     setup_model.console.print()
