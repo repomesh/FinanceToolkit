@@ -1186,8 +1186,6 @@ class Toolkit:
             intraday_period=self._intraday_period,
             quarterly=self._quarterly,
             rounding=self._rounding,
-            start_date=self._start_date,
-            end_date=self._end_date,
         )
 
         if self._portfolio_weights:
