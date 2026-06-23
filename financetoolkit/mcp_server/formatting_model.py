@@ -154,11 +154,15 @@ def _df_to_records(df: pd.DataFrame) -> list[dict]:
 
 def format_result(
     dataset: dict | pd.Series | pd.DataFrame | int | float | str | None,
+    notes: list[str] | None = None,
 ) -> str:
     """Format a Finance Toolkit result as a compact JSON string for LLM consumption.
 
     Args:
         dataset: The value returned by a controller ``get_*`` method.
+        notes: Optional list of strings describing data transformations applied
+            (e.g. currency conversion, fiscal-year relabelling). When provided
+            they are included under a ``"_notes"`` key in the top-level object.
 
     Returns:
         A JSON string.  DataFrames become lists of flat records; dicts of
@@ -166,6 +170,18 @@ def format_result(
         scalars become ``{"value": <scalar>}``; missing data becomes
         ``{"error": "No data available."}``.
     """
+
+    def _inject(payload: Any) -> Any:
+        """Wrap payload in a dict with ``_notes`` when notes are present."""
+        if not notes:
+            return payload
+        if isinstance(payload, list):
+            return {"data": payload, "_notes": notes}
+        if isinstance(payload, dict):
+            payload["_notes"] = notes
+            return payload
+        return payload
+
     if dataset is None:
         return json.dumps({"error": "No data available."})
 
@@ -175,7 +191,7 @@ def format_result(
     if isinstance(dataset, pd.DataFrame):
         if dataset.empty or not int(dataset.notna().to_numpy().sum()):
             return json.dumps({"error": "No data available."})
-        return json.dumps(_df_to_records(dataset), default=str)
+        return json.dumps(_inject(_df_to_records(dataset)), default=str)
 
     if isinstance(dataset, dict):
         out: dict[str, Any] = {}
@@ -187,10 +203,10 @@ def format_result(
                     out[str(key)] = []
             else:
                 out[str(key)] = _clean(value)
-        return json.dumps(out, default=str)
+        return json.dumps(_inject(out), default=str)
 
     if isinstance(dataset, (int, float, str)):
-        return json.dumps({"value": _clean(dataset)})
+        return json.dumps(_inject({"value": _clean(dataset)}))
 
     logger.warning("Unexpected result type: %s. Returning raw string.", type(dataset))
-    return json.dumps({"value": str(dataset)})
+    return json.dumps(_inject({"value": str(dataset)}))

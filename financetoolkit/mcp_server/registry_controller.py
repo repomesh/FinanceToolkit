@@ -507,7 +507,17 @@ class ToolRegistry:
                 )
                 if show_columns is not None:
                     result = _filter_columns(result, show_columns)
-                formatted = format_result(result)
+                notes: list[str] = []
+                if dispatch_category in ("ticker", "toolkit") and tickers:
+                    notes = provider.get_transformation_notes(
+                        tickers=tickers,
+                        start_date=start_date,
+                        end_date=end_date,
+                        quarterly=quarterly,
+                        benchmark_ticker=benchmark_ticker,
+                        api_key=provider._api_key,
+                    )
+                formatted = format_result(result, notes=notes or None)
                 return formatted
             except (ValueError, KeyError) as exc:
                 return f"Invalid input for `{tool_name}` (`{method_name}`): {exc}"
