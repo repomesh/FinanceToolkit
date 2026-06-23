@@ -87,7 +87,7 @@ def _df_to_records(df: pd.DataFrame) -> list[dict]:
         orig_name = _idx_key(df.index)
         ticker_name = df.columns.names[-1] or "ticker"
 
-        stacked = df.stack(level=-1, dropna=False)
+        stacked = df.stack(level=-1)
         stacked.index.names = [orig_name, ticker_name]
 
         flat = stacked.reset_index()

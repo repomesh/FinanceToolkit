@@ -475,6 +475,14 @@ class ToolRegistry:
                     if pname in accepted_params:
                         method_kwargs[pname] = coerce_value(val, pann)
 
+            if kwargs:
+                logger.warning(
+                    "Unknown parameter(s) passed to %s (%s) and ignored: %s",
+                    tool_name,
+                    method_name,
+                    ", ".join(kwargs.keys()),
+                )
+
             # Validate that the requested period (if any) is not blocked for this tool
             if blocked_periods_for_tool and "period" in method_kwargs:
                 requested_period = str(method_kwargs["period"]).lower()
