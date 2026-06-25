@@ -24,7 +24,7 @@ Beyond Equities, it supports Options, Currencies, Cryptocurrencies, ETFs, Mutual
 Complementing this is the [Finance Database 🌎](https://github.com/JerBouma/FinanceDatabase), a database featuring 300.000+ symbols containing Equities, ETFs, Funds, Indices, Currencies, Cryptocurrencies and Money Markets. By utilising both, it is possible to do a fully-fledged competitive analysis with the tickers found from the FinanceDatabase inputted into the FinanceToolkit.
 
 ___
-**🔌 The Finance Toolkit is also available as an [MCP Server](https://www.jeroenbouma.com/projects/financetoolkit/mcp)** — query 200+ metrics from Claude, Copilot, Cursor, Windsurf or any MCP-compatible client without writing code. Requires a [FMP API key](https://www.jeroenbouma.com/fmp).
+**🔌 The Finance Toolkit is also available as an [MCP Server](https://www.jeroenbouma.com/projects/financetoolkit/mcp)!** Query 200+ metrics from Claude, Copilot, Cursor, Windsurf or any MCP-compatible client without writing code.
 
 - **Hosted:** connect to `https://financetoolkit.jeroenbouma.com/mcp` — OAuth handles the rest on first use.
 - **Local:** `uvx --from "financetoolkit[mcp]" financetoolkit-mcp-setup` — sets up your client config and API key automatically. See [MCP Server Documentation](https://www.jeroenbouma.com/projects/financetoolkit/mcp#local-clients) for manual setup.
@@ -3092,7 +3092,7 @@ https://github.com/user-attachments/assets/96ad5288-d83d-4497-a345-1841c48c29d5
 
 ### Remote server
 
-Connect directly to the hosted server at `https://financetoolkit.jeroenbouma.com/mcp`. Nothing needs to be installed locally. On first connection your client opens an OAuth consent page asking for your [FMP API key](https://www.jeroenbouma.com/fmp); enter it once and the server handles authentication from there.
+Connect directly to the hosted server at `https://financetoolkit.jeroenbouma.com/mcp`. Nothing needs to be installed locally. On first connection your client opens an OAuth consent page asking for your FMP API key; enter it once and the server handles authentication from there.
 
 | Client | Steps |
 |:---|:---|
@@ -3125,7 +3125,7 @@ For manual config, add the following to your client's MCP config file (e.g. `cla
 }
 ```
 
-Alternatively, download the [Finance Toolkit MCPB bundle](https://github.com/JerBouma/FinanceToolkit/releases/latest/download/financetoolkit.mcpb) and open it with Claude Desktop. An installation dialog will prompt for your [FMP API key](https://www.jeroenbouma.com/fmp). No terminal required.
+Alternatively, download the [Finance Toolkit MCPB bundle](https://github.com/JerBouma/FinanceToolkit/releases/latest/download/financetoolkit.mcpb) and open it with Claude Desktop. An installation dialog will prompt for your FMP API key.
 
 # Questions & Answers
 
