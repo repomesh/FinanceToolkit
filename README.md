@@ -24,18 +24,12 @@ Beyond Equities, it supports Options, Currencies, Cryptocurrencies, ETFs, Mutual
 Complementing this is the [Finance Database 🌎](https://github.com/JerBouma/FinanceDatabase), a database featuring 300.000+ symbols containing Equities, ETFs, Funds, Indices, Currencies, Cryptocurrencies and Money Markets. By utilising both, it is possible to do a fully-fledged competitive analysis with the tickers found from the FinanceDatabase inputted into the FinanceToolkit.
 
 ___
-**🔌 The Finance Toolkit is also available as a hosted [MCP Server](https://www.jeroenbouma.com/projects/financetoolkit/mcp)**
+**🔌 The Finance Toolkit is also available as an [MCP Server](https://www.jeroenbouma.com/projects/financetoolkit/mcp)** — query 200+ metrics from Claude, Copilot, Cursor, Windsurf or any MCP-compatible client without writing code. Requires a [FMP API key](https://www.jeroenbouma.com/fmp).
 
-Simply point any MCP-compatible AI assistant (like *Claude, GitHub Copilot, Cursor, or Windsurf*) to:
+- **Hosted:** connect to `https://financetoolkit.jeroenbouma.com/mcp` — OAuth handles the rest on first use.
+- **Local:** `uvx --from "financetoolkit[mcp]" financetoolkit-mcp-setup` — sets up your client config and API key automatically. See [MCP Server Documentation](https://www.jeroenbouma.com/projects/financetoolkit/mcp#local-clients) for manual setup.
 
-`https://financetoolkit.jeroenbouma.com/mcp`
-
-Key features:
-* **⚡ No Local Installation Required:** The server runs completely in the cloud.
-* **🔐 Secure OAuth:** Authenticates safely on your very first connection.
-* **📊 Conversational Data:** Query over 200+ financial metrics naturally.
-
-Also available on [Smithery](https://smithery.ai/servers/jer-bouma/financetoolkit), [Glama](https://glama.ai/mcp/servers/JerBouma/FinanceToolkit),[ MCP Servers](https://mcpservers.org/servers/jerbouma/financetoolkit) and more.
+Also on [Smithery](https://smithery.ai/servers/jer-bouma/financetoolkit), [Glama](https://glama.ai/mcp/servers/JerBouma/FinanceToolkit), [MCP Servers](https://mcpservers.org/servers/jerbouma/financetoolkit) and more.
 ___
 
 # Table of Contents
@@ -3090,32 +3084,48 @@ This returns a rather large DataFrame so to keep it concise, only the first 5 ti
 
 # MCP Server
 
-The Finance Toolkit MCP Server exposes 200+ financial metrics, models, and economic indicators directly to any AI assistant that supports the Model Context Protocol including Claude Desktop & Code, GitHub Copilot, Cursor and Windsurf.
-
-**Option 1: Remote server (all clients, no installation):** Connect directly to the hosted server. Nothing needs to be installed locally. On first connection your client opens an OAuth consent page asking for your FMP API key; enter it once and the server handles authentication from there. Add the URL as a remote HTTP MCP server in your client's settings or config file.
-
-___
-<b><div align="center">MCP Server URL: <code>https://financetoolkit.jeroenbouma.com/mcp</code></div></b>
-___
-
-
-**Option 2: One-click install (Claude Desktop):** Download the MCP Bundle and open it with Claude Desktop. An installation dialog will appear and prompt you for your API key. No terminal required.
-
-___
-<b><div align="center">Download the Finance Toolkit MCP Bundle <a href="https://github.com/JerBouma/FinanceToolkit/releases/latest/download/financetoolkit.mcpb">here</a>.</div></b>
-___
-
-**Option 3: Local installation (all clients):** Run the one-line setup wizard and it will configure your AI client automatically:
-
-```
-uvx --from "financetoolkit[mcp]" financetoolkit-mcp-setup
-```
-
-After running this command the wizard will launch and walk you through the rest of the setup interactively. For more information, see the [MCP Documentation](https://www.jeroenbouma.com/projects/financetoolkit/mcp) which also contains example prompts to get you started.
+The Finance Toolkit MCP Server exposes 200+ financial metrics, models, and economic indicators directly to any AI assistant that supports the [Model Context Protocol](https://modelcontextprotocol.io) (MCP). Ask questions in plain English — the AI fetches live financial data on your behalf, backed by the transparent, open-source calculation methods of the Finance Toolkit.
 
 See an example of the Finance Toolkit MCP server in action in Claude Desktop below:
 
 https://github.com/user-attachments/assets/96ad5288-d83d-4497-a345-1841c48c29d5
+
+### Remote server
+
+Connect directly to the hosted server at `https://financetoolkit.jeroenbouma.com/mcp`. Nothing needs to be installed locally. On first connection your client opens an OAuth consent page asking for your [FMP API key](https://www.jeroenbouma.com/fmp); enter it once and the server handles authentication from there.
+
+| Client | Steps |
+|:---|:---|
+| **Claude Desktop** | Customize → Connectors → Add custom connector → paste the URL |
+| **Claude.ai** | Customize → Connectors → Add custom connector → paste the URL |
+| **Claude Code** | `claude mcp add --transport http finance-toolkit https://financetoolkit.jeroenbouma.com/mcp` |
+| **VS Code** | Command Palette → MCP: Add Server → HTTP → paste the URL |
+| **Cursor** | Settings → Features → MCP Servers → Add new → http → paste the URL |
+| **Windsurf** | Settings → MCP Servers → Add Server → Remote/HTTP → paste the URL |
+
+### Local installation
+
+Run the setup wizard — it locates your client's config file and writes the MCP entry automatically, including the API key:
+
+```bash
+uvx --from "financetoolkit[mcp]" financetoolkit-mcp-setup
+```
+
+For manual config, add the following to your client's MCP config file (e.g. `claude_desktop_config.json`, `.cursor/mcp.json`, `.vscode/mcp.json`):
+
+```json
+{
+  "mcpServers": {
+    "finance-toolkit": {
+      "command": "uvx",
+      "args": ["--from", "financetoolkit[mcp]", "financetoolkit-mcp"],
+      "env": { "FINANCIAL_MODELING_PREP_API_KEY": "YOUR_API_KEY_HERE" }
+    }
+  }
+}
+```
+
+Alternatively, download the [Finance Toolkit MCPB bundle](https://github.com/JerBouma/FinanceToolkit/releases/latest/download/financetoolkit.mcpb) and open it with Claude Desktop. An installation dialog will prompt for your [FMP API key](https://www.jeroenbouma.com/fmp). No terminal required.
 
 # Questions & Answers
 
