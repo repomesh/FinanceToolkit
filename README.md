@@ -24,7 +24,9 @@ Beyond Equities, it supports Options, Currencies, Cryptocurrencies, ETFs, Mutual
 Complementing this is the [Finance Database 🌎](https://github.com/JerBouma/FinanceDatabase), a database featuring 300.000+ symbols containing Equities, ETFs, Funds, Indices, Currencies, Cryptocurrencies and Money Markets. By utilising both, it is possible to do a fully-fledged competitive analysis with the tickers found from the FinanceDatabase inputted into the FinanceToolkit.
 
 ___
-**🔌 The Finance Toolkit is also available as an [MCP Server](https://www.jeroenbouma.com/projects/financetoolkit/mcp)!** Query 200+ metrics from Claude, Copilot, Cursor, Windsurf or any MCP-compatible client without writing code.
+**🔌 The Finance Toolkit is also available as an [MCP Server](https://www.jeroenbouma.com/projects/financetoolkit/mcp)**
+
+Query 200+ metrics from Claude, Copilot, Cursor, Windsurf or any MCP-compatible client without writing code.
 
 - **Hosted:** connect to `https://financetoolkit.jeroenbouma.com/mcp` — OAuth handles the rest on first use.
 - **Local:** `uvx --from "financetoolkit[mcp]" financetoolkit-mcp-setup` — sets up your client config and API key automatically. See [MCP Server Documentation](https://www.jeroenbouma.com/projects/financetoolkit/mcp#local-clients) for manual setup.
