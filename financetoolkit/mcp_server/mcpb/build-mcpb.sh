@@ -17,14 +17,7 @@ echo "Version: $VERSION"
 
 OUTPUT_FILE="$OUTPUT_DIR/financetoolkit.mcpb"
 
-# Stamp version into the bundle files.
-python3 -c "
-import json, pathlib
-p = pathlib.Path('$BUNDLE_DIR/manifest.json')
-m = json.loads(p.read_text())
-m['version'] = '$VERSION'
-p.write_text(json.dumps(m, indent=2) + '\n')
-"
+# Stamp version into pyproject.toml (package version + pinned dependency).
 python3 -c "
 import re, pathlib
 p = pathlib.Path('$BUNDLE_DIR/pyproject.toml')
@@ -33,6 +26,34 @@ content = re.sub(r'(?m)^version = \".*\"', 'version = \"$VERSION\"', content)
 content = re.sub(r'\"financetoolkit\[mcp\]==.*\"', '\"financetoolkit[mcp]==$VERSION\"', content)
 p.write_text(content)
 "
+
+# Regenerate manifest.json from config.yaml — single source of truth.
+# Reads tool_groups and utility_tools; stamps version; writes manifest.json.
+echo "Syncing manifest.json from config.yaml..."
+CONFIG_YAML="$REPO_ROOT/financetoolkit/mcp_server/config.yaml" \
+MANIFEST_JSON="$BUNDLE_DIR/manifest.json" \
+VERSION="$VERSION" \
+uv run --with pyyaml --no-project python3 << 'PYEOF'
+import json, os, pathlib, yaml
+
+config  = yaml.safe_load(pathlib.Path(os.environ["CONFIG_YAML"]).read_text())
+mpath   = pathlib.Path(os.environ["MANIFEST_JSON"])
+manifest = json.loads(mpath.read_text())
+
+def _entry(group):
+    return {
+        "name": group["tool_name"],
+        "description": group.get("summary", group["description"]),
+    }
+
+tools  = [_entry(g) for g in config.get("tool_groups", [])]
+tools += [_entry(u) for u in config.get("utility_tools", [])]
+
+manifest["version"] = os.environ["VERSION"]
+manifest["tools"]   = tools
+mpath.write_text(json.dumps(manifest, indent=2) + "\n")
+print(f"  {len(tools)} tools written, version {os.environ['VERSION']}.")
+PYEOF
 
 mkdir -p "$OUTPUT_DIR"
 

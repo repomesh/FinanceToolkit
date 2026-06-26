@@ -62,88 +62,88 @@
   },
   "tools": [
     {
-      "name": "valuation",
-      "description": "Pre-computed valuation ratios (P/E, EPS, EV/EBITDA, EV/EBIT, P/B, P/S, PEG, dividend yield, FCF yield, market cap). Requires tickers."
-    },
-    {
-      "name": "profitability",
-      "description": "Pre-computed profitability ratios (gross margin, operating margin, net margin, ROE, ROA, ROIC, ROCE). Requires tickers."
+      "name": "efficiency",
+      "description": "Pre-computed efficiency ratios (asset turnover, inventory turnover, days sales outstanding, days payable outstanding, cash conversion cycle). Requires tickers='AAPL' \u2014 use comma-separated values for multiple tickers. Use instead of raw financial statements. Supports quarterly=true and start_date/end_date."
     },
     {
       "name": "liquidity",
-      "description": "Pre-computed liquidity ratios (current ratio, quick ratio, cash ratio, working capital). Requires tickers."
+      "description": "Pre-computed liquidity ratios (current ratio, quick ratio, cash ratio, working capital). Requires tickers='AAPL' \u2014 use comma-separated values for multiple tickers. Use instead of raw financial statements. Supports quarterly=true and start_date/end_date."
+    },
+    {
+      "name": "profitability",
+      "description": "Pre-computed profitability ratios (gross margin, operating margin, net margin, ROE, ROA, ROIC, ROCE). Requires tickers='AAPL' \u2014 use comma-separated values for multiple tickers. Use instead of raw financial statements. Supports quarterly=true and start_date/end_date."
     },
     {
       "name": "solvency",
-      "description": "Pre-computed solvency ratios (debt-to-equity, interest coverage, debt-to-assets, net debt to EBITDA). Requires tickers."
+      "description": "Pre-computed solvency ratios (debt-to-equity, interest coverage, debt-to-assets, net debt to EBITDA). Requires tickers='AAPL' \u2014 use comma-separated values for multiple tickers. Use instead of raw financial statements. Supports quarterly=true and start_date/end_date."
     },
     {
-      "name": "efficiency",
-      "description": "Pre-computed efficiency ratios (asset turnover, inventory turnover, days sales outstanding, days payable outstanding, cash conversion cycle). Requires tickers."
-    },
-    {
-      "name": "momentum",
-      "description": "Momentum technical indicators (RSI, MACD, Stochastic Oscillator, Williams %R, Aroon). Applied to price data automatically. Requires tickers."
-    },
-    {
-      "name": "overlap",
-      "description": "Overlap technical indicators (SMA, EMA, Bollinger Bands, Keltner Channels). Applied to price data automatically. Requires tickers."
-    },
-    {
-      "name": "volatility",
-      "description": "Volatility technical indicators (ATR, True Range). Applied to price data automatically. Requires tickers."
+      "name": "valuation",
+      "description": "Pre-computed valuation ratios (P/E, EPS, EV/EBITDA, EV/EBIT, P/B, P/S, PEG, dividend yield, FCF yield, market cap). Requires tickers='AAPL' \u2014 use comma-separated values for multiple tickers. Use instead of raw financial statements. Supports quarterly=true and start_date/end_date."
     },
     {
       "name": "breadth",
-      "description": "Market breadth technical indicators (McClellan Oscillator, OBV, Advance/Decline Line, Chaikin). Applied to price data automatically. Requires tickers."
+      "description": "Market breadth technical indicators (McClellan Oscillator, OBV, Advance/Decline Line, Chaikin). Applied to price data automatically \u2014 no need to fetch prices first. Requires tickers='AAPL' \u2014 use comma-separated values for multiple tickers."
+    },
+    {
+      "name": "momentum",
+      "description": "Momentum technical indicators (RSI, MACD, Stochastic Oscillator, Williams %R, Aroon). Applied to price data automatically \u2014 no need to fetch prices first. Requires tickers='AAPL' \u2014 use comma-separated values for multiple tickers."
+    },
+    {
+      "name": "overlap",
+      "description": "Overlap technical indicators (SMA, EMA, Bollinger Bands, Keltner Channels). Applied to price data automatically \u2014 no need to fetch prices first. Requires tickers='AAPL' \u2014 use comma-separated values for multiple tickers."
+    },
+    {
+      "name": "volatility",
+      "description": "Volatility technical indicators (ATR, True Range). Applied to price data automatically \u2014 no need to fetch prices first. Requires tickers='AAPL' \u2014 use comma-separated values for multiple tickers."
     },
     {
       "name": "models",
-      "description": "Pre-computed financial models (WACC, DuPont analysis, Altman Z-Score, Piotroski F-Score, intrinsic value/DCF). Requires tickers."
+      "description": "Pre-computed financial models (WACC, DuPont analysis, Altman Z-Score, Piotroski F-Score, intrinsic value/DCF). Requires tickers='AAPL' \u2014 use comma-separated values for multiple tickers. Supports quarterly=true and start_date/end_date."
     },
     {
       "name": "performance",
-      "description": "Pre-computed risk-adjusted performance metrics (Sharpe ratio, Sortino ratio, Alpha, Beta, CAPM, Fama-French factors). Requires tickers."
+      "description": "Pre-computed risk-adjusted performance metrics (Sharpe ratio, Sortino ratio, Alpha, Beta, CAPM, Fama-French factors). Requires tickers='AAPL' \u2014 use comma-separated values for multiple tickers. Does NOT support period='daily'; use weekly, monthly, quarterly, or yearly instead."
     },
     {
       "name": "risk",
-      "description": "Pre-computed risk metrics (VaR, CVaR, GARCH volatility, max drawdown, skewness, kurtosis). Requires tickers."
+      "description": "Pre-computed risk metrics (VaR, CVaR, GARCH volatility, max drawdown, skewness, kurtosis). Requires tickers='AAPL' \u2014 use comma-separated values for multiple tickers. Does NOT support period='daily'; use weekly, monthly, quarterly, or yearly instead."
     },
     {
       "name": "options",
-      "description": "Option pricing and Greeks (Black-Scholes model, binomial tree, delta, gamma, theta, vega, rho, implied volatility). Requires tickers."
-    },
-    {
-      "name": "fixed_income",
-      "description": "Bond and derivative valuation calculations (bond duration, present value, yield-to-maturity, derivative pricing). No tickers needed."
-    },
-    {
-      "name": "rates",
-      "description": "Interest rate data (central bank policy rates, short/long-term rates, government bond yields, ICE BofA series, EURIBOR, ECB, Fed rates). Requires countries."
-    },
-    {
-      "name": "macroeconomics",
-      "description": "Macroeconomic indicators by country (GDP, CPI, inflation rate, trade balance, investment, consumption, confidence indices, house/rent prices). Requires countries."
+      "description": "Option pricing and Greeks (Black-Scholes model, binomial tree, delta, gamma, theta, vega, rho, implied volatility). Requires tickers='AAPL' \u2014 use comma-separated values for multiple tickers."
     },
     {
       "name": "government",
-      "description": "Government fiscal metrics by country (debt, deficit, expenditure, revenue, tax revenue, trust in government). Requires countries."
+      "description": "Government fiscal metrics by country (debt, deficit, expenditure, revenue, tax revenue, trust in government). Requires countries='United States' \u2014 use comma-separated values for multiple countries. Do NOT use tickers= for this tool. Supports start_date/end_date and quarterly=true."
     },
     {
-      "name": "jobs",
-      "description": "Labour and social metrics by country (unemployment rate, labour productivity, population statistics, poverty rate, income inequality). Requires countries."
+      "name": "macroeconomics",
+      "description": "Macroeconomic indicators by country (GDP, CPI, inflation rate, trade balance, imports, exports, investment, consumption, business/consumer confidence, house prices, rent prices, exchange rates). Requires countries='United States' \u2014 use comma-separated values for multiple countries. Do NOT use tickers= for this tool. Supports start_date/end_date and quarterly=true."
     },
     {
       "name": "environment",
-      "description": "Environmental and ESG data. ESG scores use tickers; carbon footprint and renewable energy use countries. Accepts both."
+      "description": "Environmental and ESG data. For ESG scores (E, S, G ratings) use tickers='AAPL'. For carbon footprint and renewable energy data use countries='United States'. This is the only tool that accepts BOTH tickers= and countries= depending on the indicator."
     },
     {
-      "name": "market_data",
-      "description": "Raw financial data (historical prices, income statement, balance sheet, cash flow statement, company profile, quotes, analyst estimates). Requires tickers."
+      "name": "jobs",
+      "description": "Labour and social metrics by country (unemployment rate, labour productivity, population statistics, poverty rate, income inequality). Requires countries='United States' \u2014 use comma-separated values for multiple countries. Do NOT use tickers= for this tool. Supports start_date/end_date and quarterly=true."
+    },
+    {
+      "name": "rates",
+      "description": "Interest rate data (central bank policy rates, short/long-term rates, government bond yields, ICE BofA corporate bond series, EURIBOR, ECB rates, Federal Reserve rates). Requires countries='United States' \u2014 use comma-separated values for multiple countries. Do NOT use tickers= for this tool. Supports start_date/end_date and quarterly=true."
+    },
+    {
+      "name": "fixed_income",
+      "description": "Bond and derivative valuation calculations (bond duration, present value, yield-to-maturity, derivative pricing). No tickers or countries needed \u2014 provide bond/derivative parameters (e.g. face_value, coupon_rate, maturity) directly as arguments."
     },
     {
       "name": "discovery",
-      "description": "Market discovery tools (lists of stocks/ETFs/cryptocurrencies, stock screener, gainers, losers, sector performance). No tickers needed."
+      "description": "Market discovery tools (lists of stocks/ETFs/cryptocurrencies, stock screener, gainers, losers, sector performance, earnings/dividend calendars). No tickers or countries needed."
+    },
+    {
+      "name": "market_data",
+      "description": "Raw financial data (historical prices, income statement, balance sheet, cash flow statement, company profile, quotes, analyst estimates, dividend/earnings calendars, statistics). Use this ONLY for raw data needs \u2014 for pre-computed ratios, performance, risk, or model metrics use the dedicated tools instead. Requires tickers='AAPL' \u2014 use comma-separated values for multiple tickers."
     },
     {
       "name": "search_categories",
