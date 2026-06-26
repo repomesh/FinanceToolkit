@@ -4,7 +4,7 @@ import pandas as pd
 
 
 def map_period_data_to_daily_data(
-    period_data: pd.DataFrame, daily_dates: pd.PeriodIndex, quarterly: bool = False
+    period_data: pd.DataFrame, daily_dates: pd.DatetimeIndex, quarterly: bool = False
 ):
     """
     Maps period data to daily dates and fills missing values.

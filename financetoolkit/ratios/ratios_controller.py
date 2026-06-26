@@ -4526,12 +4526,20 @@ class Ratios:
 
         if trailing:
             market_cap = valuation_model.get_market_cap(
-                share_prices.T.rolling(trailing).sum().T,
+                (
+                    share_prices.rolling(trailing).sum()
+                    if show_daily
+                    else share_prices.T.rolling(trailing).sum().T
+                ),
                 average_shares,
             )
 
             free_cash_flow_yield = solvency_model.get_free_cash_flow_yield(
-                free_cash_flow.T.rolling(trailing).sum().T,
+                (
+                    free_cash_flow.rolling(trailing).sum()
+                    if show_daily
+                    else free_cash_flow.T.rolling(trailing).sum().T
+                ),
                 market_cap,
             )
         else:
@@ -4543,15 +4551,19 @@ class Ratios:
             )
 
         if growth:
-            return calculate_growth(
+            free_cash_flow_yield = calculate_growth(
                 free_cash_flow_yield,
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
-            ).loc[:, self._start_date : self._end_date]
+            )
+        else:
+            free_cash_flow_yield = free_cash_flow_yield.round(
+                rounding if rounding else self._rounding
+            )
 
-        return free_cash_flow_yield.round(rounding if rounding else self._rounding).loc[
-            :, self._start_date : self._end_date
-        ]
+        if show_daily:
+            return free_cash_flow_yield.loc[self._start_date : self._end_date]
+        return free_cash_flow_yield.loc[:, self._start_date : self._end_date]
 
     @handle_portfolio
     @handle_errors
@@ -5219,6 +5231,7 @@ class Ratios:
         rounding: int | None = None,
         growth: bool = False,
         lag: int | list[int] = 1,
+        trailing: int | None = None,
     ):
         """
         Calculate the price earnings ratio (P/E), a valuation ratio that compares a
@@ -5241,6 +5254,8 @@ class Ratios:
             rounding (int, optional): The number of decimals to round the results to. Defaults to 4.
             growth (bool, optional): Whether to calculate the growth of the ratios. Defaults to False.
             lag (int | str, optional): The lag to use for the growth calculation. Defaults to 1.
+            trailing (int, optional): Defines whether to select a trailing period.
+            E.g. when selecting 4 with quarterly data, the TTM is calculated.
 
         Returns:
             pd.DataFrame: Price earnings ratio (P/E) values.
@@ -5260,7 +5275,11 @@ class Ratios:
         ```
         """
         eps = self.get_earnings_per_share(
-            include_dividends, diluted, trailing=4 if self._quarterly else None
+            include_dividends,
+            diluted,
+            trailing=(
+                trailing if trailing is not None else (4 if self._quarterly else None)
+            ),
         )
 
         years = eps.columns
@@ -5286,15 +5305,19 @@ class Ratios:
         )
 
         if growth:
-            return calculate_growth(
+            price_to_earnings_ratio = calculate_growth(
                 price_to_earnings_ratio,
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
-            ).loc[:, self._start_date : self._end_date]
+            )
+        else:
+            price_to_earnings_ratio = price_to_earnings_ratio.round(
+                rounding if rounding else self._rounding
+            )
 
-        return price_to_earnings_ratio.round(
-            rounding if rounding else self._rounding
-        ).loc[:, self._start_date : self._end_date]
+        if show_daily:
+            return price_to_earnings_ratio.loc[self._start_date : self._end_date]
+        return price_to_earnings_ratio.loc[:, self._start_date : self._end_date]
 
     @handle_portfolio
     @handle_errors
@@ -5555,15 +5578,19 @@ class Ratios:
         )
 
         if growth:
-            return calculate_growth(
+            price_to_book_ratio = calculate_growth(
                 price_to_book_ratio,
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
-            ).loc[:, self._start_date : self._end_date]
+            )
+        else:
+            price_to_book_ratio = price_to_book_ratio.round(
+                rounding if rounding else self._rounding
+            )
 
-        return price_to_book_ratio.round(rounding if rounding else self._rounding).loc[
-            :, self._start_date : self._end_date
-        ]
+        if show_daily:
+            return price_to_book_ratio.loc[self._start_date : self._end_date]
+        return price_to_book_ratio.loc[:, self._start_date : self._end_date]
 
     @handle_portfolio
     @handle_errors
@@ -5799,20 +5826,32 @@ class Ratios:
             ].T
 
         dividend_yield = valuation_model.get_dividend_yield(
-            dividends.T.rolling(trailing).sum().T if trailing else dividends,
+            (
+                (
+                    dividends.rolling(trailing).sum()
+                    if show_daily
+                    else dividends.T.rolling(trailing).sum().T
+                )
+                if trailing
+                else dividends
+            ),
             share_prices,
         )
 
         if growth:
-            return calculate_growth(
+            dividend_yield = calculate_growth(
                 dividend_yield,
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
-            ).loc[:, self._start_date : self._end_date]
+            )
+        else:
+            dividend_yield = dividend_yield.round(
+                rounding if rounding else self._rounding
+            )
 
-        return dividend_yield.round(rounding if rounding else self._rounding).loc[
-            :, self._start_date : self._end_date
-        ]
+        if show_daily:
+            return dividend_yield.loc[self._start_date : self._end_date]
+        return dividend_yield.loc[:, self._start_date : self._end_date]
 
     @handle_portfolio
     @handle_errors
@@ -5901,7 +5940,11 @@ class Ratios:
 
         if trailing:
             weighted_dividend_yield = valuation_model.get_weighted_dividend_yield(
-                dividends_paid.T.rolling(trailing).sum().T,
+                (
+                    dividends_paid.rolling(trailing).sum()
+                    if show_daily
+                    else dividends_paid.T.rolling(trailing).sum().T
+                ),
                 average_shares,
                 share_prices,
             )
@@ -5913,15 +5956,19 @@ class Ratios:
             )
 
         if growth:
-            return calculate_growth(
+            weighted_dividend_yield = calculate_growth(
                 weighted_dividend_yield,
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
-            ).loc[:, self._start_date : self._end_date]
+            )
+        else:
+            weighted_dividend_yield = weighted_dividend_yield.round(
+                rounding if rounding else self._rounding
+            )
 
-        return weighted_dividend_yield.round(
-            rounding if rounding else self._rounding
-        ).loc[:, self._start_date : self._end_date]
+        if show_daily:
+            return weighted_dividend_yield.loc[self._start_date : self._end_date]
+        return weighted_dividend_yield.loc[:, self._start_date : self._end_date]
 
     @handle_portfolio
     @handle_errors
@@ -6015,7 +6062,11 @@ class Ratios:
         if trailing:
             price_to_cash_flow_ratio = valuation_model.get_price_to_cash_flow_ratio(
                 market_cap,
-                cash_flow_from_operations.T.rolling(trailing).sum().T,
+                (
+                    cash_flow_from_operations.rolling(trailing).sum()
+                    if show_daily
+                    else cash_flow_from_operations.T.rolling(trailing).sum().T
+                ),
             )
         else:
             price_to_cash_flow_ratio = valuation_model.get_price_to_cash_flow_ratio(
@@ -6023,15 +6074,19 @@ class Ratios:
             )
 
         if growth:
-            return calculate_growth(
+            price_to_cash_flow_ratio = calculate_growth(
                 price_to_cash_flow_ratio,
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
-            ).loc[:, self._start_date : self._end_date]
+            )
+        else:
+            price_to_cash_flow_ratio = price_to_cash_flow_ratio.round(
+                rounding if rounding else self._rounding
+            )
 
-        return price_to_cash_flow_ratio.round(
-            rounding if rounding else self._rounding
-        ).loc[:, self._start_date : self._end_date]
+        if show_daily:
+            return price_to_cash_flow_ratio.loc[self._start_date : self._end_date]
+        return price_to_cash_flow_ratio.loc[:, self._start_date : self._end_date]
 
     @handle_portfolio
     @handle_errors
@@ -6103,7 +6158,11 @@ class Ratios:
             price_to_free_cash_flow_ratio = (
                 valuation_model.get_price_to_free_cash_flow_ratio(
                     market_cap,
-                    free_cash_flow.T.rolling(trailing).sum().T,
+                    (
+                        free_cash_flow.rolling(trailing).sum()
+                        if show_daily
+                        else free_cash_flow.T.rolling(trailing).sum().T
+                    ),
                 )
             )
         else:
@@ -6114,15 +6173,19 @@ class Ratios:
             )
 
         if growth:
-            return calculate_growth(
+            price_to_free_cash_flow_ratio = calculate_growth(
                 price_to_free_cash_flow_ratio,
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
-            ).loc[:, self._start_date : self._end_date]
+            )
+        else:
+            price_to_free_cash_flow_ratio = price_to_free_cash_flow_ratio.round(
+                rounding if rounding else self._rounding
+            )
 
-        return price_to_free_cash_flow_ratio.round(
-            rounding if rounding else self._rounding
-        ).loc[:, self._start_date : self._end_date]
+        if show_daily:
+            return price_to_free_cash_flow_ratio.loc[self._start_date : self._end_date]
+        return price_to_free_cash_flow_ratio.loc[:, self._start_date : self._end_date]
 
     @handle_portfolio
     @handle_errors
@@ -6203,13 +6266,15 @@ class Ratios:
             market_cap = valuation_model.get_market_cap(share_prices, average_shares)
 
         if growth:
-            return calculate_growth(
+            market_cap = calculate_growth(
                 market_cap, lag=lag, rounding=rounding if rounding else self._rounding
-            ).loc[:, self._start_date : self._end_date]
+            )
+        else:
+            market_cap = market_cap.round(rounding if rounding else self._rounding)
 
-        return market_cap.round(rounding if rounding else self._rounding).loc[
-            :, self._start_date : self._end_date
-        ]
+        if show_daily:
+            return market_cap.loc[self._start_date : self._end_date]
+        return market_cap.loc[:, self._start_date : self._end_date]
 
     @handle_portfolio
     @handle_errors
@@ -6314,15 +6379,19 @@ class Ratios:
             )
 
         if growth:
-            return calculate_growth(
+            enterprise_value = calculate_growth(
                 enterprise_value,
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
-            ).loc[:, self._start_date : self._end_date]
+            )
+        else:
+            enterprise_value = enterprise_value.round(
+                rounding if rounding else self._rounding
+            )
 
-        return enterprise_value.round(rounding if rounding else self._rounding).loc[
-            :, self._start_date : self._end_date
-        ]
+        if show_daily:
+            return enterprise_value.loc[self._start_date : self._end_date]
+        return enterprise_value.loc[:, self._start_date : self._end_date]
 
     @handle_portfolio
     @handle_errors
@@ -6389,7 +6458,11 @@ class Ratios:
         if trailing:
             ev_to_sales_ratio = valuation_model.get_ev_to_sales_ratio(
                 enterprise_value,
-                revenue.T.rolling(trailing).sum().T,
+                (
+                    revenue.rolling(trailing).sum()
+                    if show_daily
+                    else revenue.T.rolling(trailing).sum().T
+                ),
             )
         else:
             ev_to_sales_ratio = valuation_model.get_ev_to_sales_ratio(
@@ -6397,15 +6470,19 @@ class Ratios:
             )
 
         if growth:
-            return calculate_growth(
+            ev_to_sales_ratio = calculate_growth(
                 ev_to_sales_ratio,
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
-            ).loc[:, self._start_date : self._end_date]
+            )
+        else:
+            ev_to_sales_ratio = ev_to_sales_ratio.round(
+                rounding if rounding else self._rounding
+            )
 
-        return ev_to_sales_ratio.round(rounding if rounding else self._rounding).loc[
-            :, self._start_date : self._end_date
-        ]
+        if show_daily:
+            return ev_to_sales_ratio.loc[self._start_date : self._end_date]
+        return ev_to_sales_ratio.loc[:, self._start_date : self._end_date]
 
     @handle_portfolio
     @handle_errors
@@ -6479,8 +6556,16 @@ class Ratios:
         if trailing:
             ev_to_ebitda_ratio = valuation_model.get_ev_to_ebitda_ratio(
                 enterprise_value,
-                operating_income.T.rolling(trailing).sum().T,
-                depreciation_and_amortization.T.rolling(trailing).sum().T,
+                (
+                    operating_income.rolling(trailing).sum()
+                    if show_daily
+                    else operating_income.T.rolling(trailing).sum().T
+                ),
+                (
+                    depreciation_and_amortization.rolling(trailing).sum()
+                    if show_daily
+                    else depreciation_and_amortization.T.rolling(trailing).sum().T
+                ),
             )
         else:
             ev_to_ebitda_ratio = valuation_model.get_ev_to_ebitda_ratio(
@@ -6488,15 +6573,19 @@ class Ratios:
             )
 
         if growth:
-            return calculate_growth(
+            ev_to_ebitda_ratio = calculate_growth(
                 ev_to_ebitda_ratio,
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
-            ).loc[:, self._start_date : self._end_date]
+            )
+        else:
+            ev_to_ebitda_ratio = ev_to_ebitda_ratio.round(
+                rounding if rounding else self._rounding
+            )
 
-        return ev_to_ebitda_ratio.round(rounding if rounding else self._rounding).loc[
-            :, self._start_date : self._end_date
-        ]
+        if show_daily:
+            return ev_to_ebitda_ratio.loc[self._start_date : self._end_date]
+        return ev_to_ebitda_ratio.loc[:, self._start_date : self._end_date]
 
     @handle_portfolio
     @handle_errors
@@ -6565,7 +6654,11 @@ class Ratios:
             ev_to_operating_cashflow_ratio = (
                 valuation_model.get_ev_to_operating_cashflow_ratio(
                     enterprise_value,
-                    cash_flow_from_operations.T.rolling(trailing).sum().T,
+                    (
+                        cash_flow_from_operations.rolling(trailing).sum()
+                        if show_daily
+                        else cash_flow_from_operations.T.rolling(trailing).sum().T
+                    ),
                 )
             )
         else:
@@ -6576,15 +6669,19 @@ class Ratios:
             )
 
         if growth:
-            return calculate_growth(
+            ev_to_operating_cashflow_ratio = calculate_growth(
                 ev_to_operating_cashflow_ratio,
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
-            ).loc[:, self._start_date : self._end_date]
+            )
+        else:
+            ev_to_operating_cashflow_ratio = ev_to_operating_cashflow_ratio.round(
+                rounding if rounding else self._rounding
+            )
 
-        return ev_to_operating_cashflow_ratio.round(
-            rounding if rounding else self._rounding
-        ).loc[:, self._start_date : self._end_date]
+        if show_daily:
+            return ev_to_operating_cashflow_ratio.loc[self._start_date : self._end_date]
+        return ev_to_operating_cashflow_ratio.loc[:, self._start_date : self._end_date]
 
     @handle_portfolio
     @handle_errors
@@ -6661,15 +6758,19 @@ class Ratios:
         earnings_yield = valuation_model.get_earnings_yield(eps, share_prices)
 
         if growth:
-            return calculate_growth(
+            earnings_yield = calculate_growth(
                 earnings_yield,
                 lag=lag,
                 rounding=rounding if rounding else self._rounding,
-            ).loc[:, self._start_date : self._end_date]
+            )
+        else:
+            earnings_yield = earnings_yield.round(
+                rounding if rounding else self._rounding
+            )
 
-        return earnings_yield.round(rounding if rounding else self._rounding).loc[
-            :, self._start_date : self._end_date
-        ]
+        if show_daily:
+            return earnings_yield.loc[self._start_date : self._end_date]
+        return earnings_yield.loc[:, self._start_date : self._end_date]
 
     @handle_portfolio
     @handle_errors
@@ -7014,16 +7115,22 @@ class Ratios:
         if trailing:
             ev_to_ebit = valuation_model.get_ev_to_ebit(
                 enterprise_value,
-                ebit.T.rolling(trailing).sum().T,
+                (
+                    ebit.rolling(trailing).sum()
+                    if show_daily
+                    else ebit.T.rolling(trailing).sum().T
+                ),
             )
         else:
             ev_to_ebit = valuation_model.get_ev_to_ebit(enterprise_value, ebit)
 
         if growth:
-            return calculate_growth(
+            ev_to_ebit = calculate_growth(
                 ev_to_ebit, lag=lag, rounding=rounding if rounding else self._rounding
-            ).loc[:, self._start_date : self._end_date]
+            )
+        else:
+            ev_to_ebit = ev_to_ebit.round(rounding if rounding else self._rounding)
 
-        return ev_to_ebit.round(rounding if rounding else self._rounding).loc[
-            :, self._start_date : self._end_date
-        ]
+        if show_daily:
+            return ev_to_ebit.loc[self._start_date : self._end_date]
+        return ev_to_ebit.loc[:, self._start_date : self._end_date]
