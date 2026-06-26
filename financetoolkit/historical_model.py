@@ -374,7 +374,7 @@ def convert_daily_to_other_period(
             period_historical_data["Adj Close"]
             / period_historical_data["Adj Close"].shift()
             - 1
-        )
+        ).replace([np.inf, -np.inf], np.nan)
 
         # Volatility is calculated as the daily volatility multiplied by the
         # square root of the number of trading days (252)
@@ -404,7 +404,9 @@ def convert_daily_to_other_period(
         adjusted_return = period_historical_data.loc[start:end, "Return"].copy()
         adjusted_return.iloc[0] = 0
 
-        period_historical_data["Cumulative Return"] = (1 + adjusted_return).cumprod()
+        period_historical_data["Cumulative Return"] = (
+            1 + adjusted_return.fillna(0)
+        ).cumprod()
         period_historical_data["Cumulative Return"] = period_historical_data[
             "Cumulative Return"
         ].fillna(1)
