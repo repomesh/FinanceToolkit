@@ -42,7 +42,7 @@ def get_max_drawdown(
 
         return max_drawdown.T
 
-    cum_returns = (1 + returns).cumprod()  # type: ignore
+    cum_returns = (1 + returns.fillna(0)).cumprod()  # type: ignore
 
     return (cum_returns / cum_returns.cummax() - 1).min()
 
@@ -87,7 +87,7 @@ def get_ui(
         return returns.aggregate(get_ui)
 
     if isinstance(returns, pd.Series):
-        cumulative_returns = (1 + returns).cumprod()
+        cumulative_returns = (1 + returns.fillna(0)).cumprod()
         cumulative_max = cumulative_returns.rolling(window=rolling).max()
         drawdowns = (cumulative_returns - cumulative_max) / cumulative_max
 
