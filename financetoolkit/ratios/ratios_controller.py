@@ -6259,7 +6259,11 @@ class Ratios:
 
         if trailing:
             market_cap = valuation_model.get_market_cap(
-                share_prices,
+                (
+                    share_prices.rolling(trailing).mean()
+                    if show_daily
+                    else share_prices.T.rolling(trailing).mean().T
+                ),
                 average_shares,
             )
         else:
@@ -6364,10 +6368,26 @@ class Ratios:
         if trailing:
             enterprise_value = valuation_model.get_enterprise_value(
                 market_cap,
-                total_debt.T.rolling(trailing).mean().T,
-                minority_interest.T.rolling(trailing).mean().T,
-                preferred_stock.T.rolling(trailing).mean().T,
-                cash_and_cash_equivalents.T.rolling(trailing).mean().T,
+                (
+                    total_debt.rolling(trailing).mean()
+                    if show_daily
+                    else total_debt.T.rolling(trailing).mean().T
+                ),
+                (
+                    minority_interest.rolling(trailing).mean()
+                    if show_daily
+                    else minority_interest.T.rolling(trailing).mean().T
+                ),
+                (
+                    preferred_stock.rolling(trailing).mean()
+                    if show_daily
+                    else preferred_stock.T.rolling(trailing).mean().T
+                ),
+                (
+                    cash_and_cash_equivalents.rolling(trailing).mean()
+                    if show_daily
+                    else cash_and_cash_equivalents.T.rolling(trailing).mean().T
+                ),
             )
         else:
             enterprise_value = valuation_model.get_enterprise_value(
