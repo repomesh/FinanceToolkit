@@ -482,6 +482,7 @@ class Models:
         rounding: int | None = None,
         growth: bool = False,
         lag: int | list[int] = 1,
+        trailing: int | None = None,
         show_columns: list[str] | None = None,
     ) -> pd.DataFrame:
         """
@@ -534,6 +535,7 @@ class Models:
             rounding (int, optional): The number of decimals to round the results to. Defaults to 4.
             growth (bool, optional): Whether to calculate the growth of the values. Defaults to False.
             lag (int | str, optional): The lag to use for the growth calculation. Defaults to 1.
+            trailing (int | None, optional): The trailing period to use for the calculation. Defaults to None.
 
         Returns:
             pd.DataFrame: DataFrame containing the WACC values.
@@ -584,21 +586,60 @@ class Models:
             "quarterly" if self._quarterly else "yearly"
         ].loc[begin:end, "Return"][self._benchmark_name]
 
-        self._weighted_average_cost_of_capital = (
-            wacc_model.get_weighted_average_cost_of_capital(
-                share_price=share_prices,
-                total_shares_outstanding=average_shares,
-                interest_expense=self._income_statement.loc[:, "Interest Expense", :],
-                total_debt=self._balance_sheet_statement.loc[:, "Total Debt", :],
-                risk_free_rate=risk_free_rate,
-                beta=beta,
-                benchmark_returns=benchmark_returns,
-                income_tax_expense=self._income_statement.loc[
-                    :, "Income Tax Expense", :
-                ],
-                income_before_tax=self._income_statement.loc[:, "Income Before Tax", :],
+        if trailing:
+            self._weighted_average_cost_of_capital = (
+                wacc_model.get_weighted_average_cost_of_capital(
+                    share_price=share_prices,
+                    total_shares_outstanding=average_shares.T.rolling(trailing)
+                    .mean()
+                    .T,
+                    interest_expense=self._income_statement.loc[
+                        :, "Interest Expense", :
+                    ]
+                    .T.rolling(trailing)
+                    .sum()
+                    .T,
+                    total_debt=self._balance_sheet_statement.loc[:, "Total Debt", :]
+                    .T.rolling(trailing)
+                    .mean()
+                    .T,
+                    risk_free_rate=risk_free_rate,
+                    beta=beta,
+                    benchmark_returns=benchmark_returns,
+                    income_tax_expense=self._income_statement.loc[
+                        :, "Income Tax Expense", :
+                    ]
+                    .T.rolling(trailing)
+                    .sum()
+                    .T,
+                    income_before_tax=self._income_statement.loc[
+                        :, "Income Before Tax", :
+                    ]
+                    .T.rolling(trailing)
+                    .sum()
+                    .T,
+                )
             )
-        )
+        else:
+            self._weighted_average_cost_of_capital = (
+                wacc_model.get_weighted_average_cost_of_capital(
+                    share_price=share_prices,
+                    total_shares_outstanding=average_shares,
+                    interest_expense=self._income_statement.loc[
+                        :, "Interest Expense", :
+                    ],
+                    total_debt=self._balance_sheet_statement.loc[:, "Total Debt", :],
+                    risk_free_rate=risk_free_rate,
+                    beta=beta,
+                    benchmark_returns=benchmark_returns,
+                    income_tax_expense=self._income_statement.loc[
+                        :, "Income Tax Expense", :
+                    ],
+                    income_before_tax=self._income_statement.loc[
+                        :, "Income Before Tax", :
+                    ],
+                )
+            )
 
         if growth:
             self._weighted_average_cost_of_capital_growth = calculate_growth(
@@ -654,6 +695,7 @@ class Models:
         weighted_average_cost_of_capital: float | list | dict[str, float],
         periods: int = 5,
         cash_flow_type: str = "Free Cash Flow",
+        trailing: int | None = None,
         rounding: int | None = None,
     ) -> pd.DataFrame:
         """
@@ -694,6 +736,8 @@ class Models:
             cash_flow_type (str, optional): The type of cash flow to use for the cash flow projections.
             Defaults to "Free Cash Flow". Other options are "Operating Cash Flow", "Change in Working Capital",
             and "Capital Expenditure".
+            trailing (int | None, optional): The number of trailing periods to sum for the base cash flow.
+            When set, uses the sum of the last N periods instead of only the most recent period. Defaults to None.
             rounding (int, optional): The number of decimals to round the results to. Defaults to 4.
 
         Returns:
@@ -786,10 +830,16 @@ class Models:
             weighted_average_cost_of_capital_float = wacc_dict.get(
                 ticker, weighted_average_cost_of_capital
             )
+            cash_flow_series = self._cash_flow_statement.loc[
+                ticker, cash_flow_type
+            ].dropna()
+
             intrinsic_values_dict[ticker] = intrinsic_model.get_intrinsic_value(
-                cash_flow=self._cash_flow_statement.loc[ticker, cash_flow_type]
-                .dropna()
-                .iloc[-1],
+                cash_flow=(
+                    cash_flow_series.iloc[-trailing:].sum()
+                    if trailing
+                    else cash_flow_series.iloc[-1]
+                ),
                 growth_rate=growth_rate_float,
                 perpetual_growth_rate=perpetual_growth_rate_float,
                 weighted_average_cost_of_capital=weighted_average_cost_of_capital_float,
@@ -929,6 +979,7 @@ class Models:
         rounding: int | None = None,
         growth: bool = False,
         lag: int | list[int] = 1,
+        trailing: int | None = None,
         show_columns: list[str] | None = None,
     ) -> pd.DataFrame:
         """
@@ -960,6 +1011,7 @@ class Models:
             rounding (int, optional): The number of decimals to round the results to. Defaults to None.
             growth (bool, optional): Whether to calculate the growth of the values. Defaults to False.
             lag (int | list[int], optional): The lag to use for the growth calculation. Defaults to 1.
+            trailing (int | None, optional): The trailing period to use for the calculation. Defaults to None.
 
         Returns:
             pd.DataFrame: DataFrame containing the Altman Z-Score and its components.
@@ -986,35 +1038,96 @@ class Models:
         """
         altman_z_score = {}
 
+        current_assets = (
+            self._balance_sheet_statement.loc[:, "Total Current Assets", :]
+            .T.rolling(trailing)
+            .mean()
+            .T
+            if trailing
+            else self._balance_sheet_statement.loc[:, "Total Current Assets", :]
+        )
+        current_liabilities = (
+            self._balance_sheet_statement.loc[:, "Total Current Liabilities", :]
+            .T.rolling(trailing)
+            .mean()
+            .T
+            if trailing
+            else self._balance_sheet_statement.loc[:, "Total Current Liabilities", :]
+        )
+        total_assets = (
+            self._balance_sheet_statement.loc[:, "Total Assets", :]
+            .T.rolling(trailing)
+            .mean()
+            .T
+            if trailing
+            else self._balance_sheet_statement.loc[:, "Total Assets", :]
+        )
+        retained_earnings = (
+            self._balance_sheet_statement.loc[:, "Retained Earnings", :]
+            .T.rolling(trailing)
+            .mean()
+            .T
+            if trailing
+            else self._balance_sheet_statement.loc[:, "Retained Earnings", :]
+        )
+        total_liabilities = (
+            self._balance_sheet_statement.loc[:, "Total Liabilities", :]
+            .T.rolling(trailing)
+            .mean()
+            .T
+            if trailing
+            else self._balance_sheet_statement.loc[:, "Total Liabilities", :]
+        )
+        net_income = (
+            self._income_statement.loc[:, "Net Income", :].T.rolling(trailing).sum().T
+            if trailing
+            else self._income_statement.loc[:, "Net Income", :]
+        )
+        income_tax_expense = (
+            self._income_statement.loc[:, "Income Tax Expense", :]
+            .T.rolling(trailing)
+            .sum()
+            .T
+            if trailing
+            else self._income_statement.loc[:, "Income Tax Expense", :]
+        )
+        interest_expense = (
+            self._income_statement.loc[:, "Interest Expense", :]
+            .T.rolling(trailing)
+            .sum()
+            .T
+            if trailing
+            else self._income_statement.loc[:, "Interest Expense", :]
+        )
+        revenue = (
+            self._income_statement.loc[:, "Revenue", :].T.rolling(trailing).sum().T
+            if trailing
+            else self._income_statement.loc[:, "Revenue", :]
+        )
+
         working_capital = liquidity_model.get_working_capital(
-            self._balance_sheet_statement.loc[:, "Total Current Assets", :],
-            self._balance_sheet_statement.loc[:, "Total Current Liabilities", :],
+            current_assets,
+            current_liabilities,
         )
 
         altman_z_score["Working Capital to Total Assets"] = (
             altman_model.get_working_capital_to_total_assets_ratio(
                 working_capital=working_capital,
-                total_assets=self._balance_sheet_statement.loc[:, "Total Assets", :],
+                total_assets=total_assets,
             )
         )
 
         altman_z_score["Retained Earnings to Total Assets"] = (
             altman_model.get_retained_earnings_to_total_assets_ratio(
-                retained_earnings=self._balance_sheet_statement.loc[
-                    :, "Retained Earnings", :
-                ],
-                total_assets=self._balance_sheet_statement.loc[:, "Total Assets", :],
+                retained_earnings=retained_earnings,
+                total_assets=total_assets,
             )
         )
 
         altman_z_score["EBIT to Total Assets"] = (
             altman_model.get_earnings_before_interest_and_taxes_to_total_assets_ratio(
-                ebit=(
-                    self._income_statement.loc[:, "Net Income", :]
-                    + self._income_statement.loc[:, "Income Tax Expense", :]
-                    + self._income_statement.loc[:, "Interest Expense", :]
-                ),
-                total_assets=self._balance_sheet_statement.loc[:, "Total Assets", :],
+                ebit=(net_income + income_tax_expense + interest_expense),
+                total_assets=total_assets,
             )
         )
 
@@ -1034,22 +1147,25 @@ class Models:
         )
 
         market_cap = valuation_model.get_market_cap(
-            share_price=share_prices, total_shares_outstanding=average_shares
+            share_price=share_prices,
+            total_shares_outstanding=(
+                average_shares.T.rolling(trailing).mean().T
+                if trailing
+                else average_shares
+            ),
         )
 
         altman_z_score["Market Value to Total Liabilities"] = (
             altman_model.get_market_value_of_equity_to_book_value_of_total_liabilities_ratio(
                 market_value_of_equity=market_cap,
-                total_liabilities=self._balance_sheet_statement.loc[
-                    :, "Total Liabilities", :
-                ],
+                total_liabilities=total_liabilities,
             )
         )
 
         altman_z_score["Sales to Total Assets"] = (
             altman_model.get_sales_to_total_assets_ratio(
-                sales=self._income_statement.loc[:, "Revenue", :],
-                total_assets=self._balance_sheet_statement.loc[:, "Total Assets", :],
+                sales=revenue,
+                total_assets=total_assets,
             )
         )
 
@@ -1087,7 +1203,9 @@ class Models:
 
     @handle_errors
     def get_piotroski_score(
-        self, show_columns: list[str] | None = None
+        self,
+        trailing: int | None = None,
+        show_columns: list[str] | None = None,
     ) -> pd.DataFrame:
         """
         Calculate the Piotroski Score, a comprehensive financial assessment tool that helps investors and analysts
@@ -1128,6 +1246,11 @@ class Models:
 
         Also known as: Piotroski F-score, financial strength, quality score.
 
+        Args:
+            trailing (int | None, optional): The trailing period to use for the calculation. Defaults to None.
+            show_columns (list[str] | None, optional): List of columns to show in the results. If None, all columns
+                will be shown. Defaults to None.
+
         Returns:
             pd.DataFrame: DataFrame containing the Piotroski F-Score and its components.
 
@@ -1143,94 +1266,133 @@ class Models:
         """
         piotroski_score = {}
 
+        total_assets = (
+            self._balance_sheet_statement.loc[:, "Total Assets", :]
+            .T.rolling(trailing)
+            .mean()
+            .T
+            if trailing
+            else self._balance_sheet_statement.loc[:, "Total Assets", :]
+        )
+        net_income = (
+            self._income_statement.loc[:, "Net Income", :].T.rolling(trailing).sum().T
+            if trailing
+            else self._income_statement.loc[:, "Net Income", :]
+        )
+        operating_cashflow = (
+            self._cash_flow_statement.loc[:, "Operating Cash Flow", :]
+            .T.rolling(trailing)
+            .sum()
+            .T
+            if trailing
+            else self._cash_flow_statement.loc[:, "Operating Cash Flow", :]
+        )
+        revenue = (
+            self._income_statement.loc[:, "Revenue", :].T.rolling(trailing).sum().T
+            if trailing
+            else self._income_statement.loc[:, "Revenue", :]
+        )
+        cost_of_goods_sold = (
+            self._income_statement.loc[:, "Cost of Goods Sold", :]
+            .T.rolling(trailing)
+            .sum()
+            .T
+            if trailing
+            else self._income_statement.loc[:, "Cost of Goods Sold", :]
+        )
+        common_stock_issued = (
+            self._cash_flow_statement.loc[:, "Common Stock Issued", :]
+            .T.rolling(trailing)
+            .sum()
+            .T
+            if trailing
+            else self._cash_flow_statement.loc[:, "Common Stock Issued", :]
+        )
+        total_debt = (
+            self._balance_sheet_statement.loc[:, "Total Debt", :]
+            .T.rolling(trailing)
+            .mean()
+            .T
+            if trailing
+            else self._balance_sheet_statement.loc[:, "Total Debt", :]
+        )
+        current_assets = (
+            self._balance_sheet_statement.loc[:, "Total Current Assets", :]
+            .T.rolling(trailing)
+            .mean()
+            .T
+            if trailing
+            else self._balance_sheet_statement.loc[:, "Total Current Assets", :]
+        )
+        current_liabilities = (
+            self._balance_sheet_statement.loc[:, "Total Current Liabilities", :]
+            .T.rolling(trailing)
+            .mean()
+            .T
+            if trailing
+            else self._balance_sheet_statement.loc[:, "Total Current Liabilities", :]
+        )
+
+        average_total_assets = total_assets.T.rolling(2).mean().T
+
         piotroski_score["Return on Assets Criteria"] = (
             piotroski_model.get_return_on_assets_criteria(
-                net_income=self._income_statement.loc[:, "Net Income", :],
-                average_total_assets=self._balance_sheet_statement.loc[
-                    :, "Total Assets", :
-                ]
-                .T.rolling(2)
-                .mean()
-                .T,
+                net_income=net_income,
+                average_total_assets=average_total_assets,
             )
         )
 
         piotroski_score["Operating Cashflow Criteria"] = (
             piotroski_model.get_operating_cashflow_criteria(
-                operating_cashflow=self._cash_flow_statement.loc[
-                    :, "Operating Cash Flow", :
-                ],
+                operating_cashflow=operating_cashflow,
             )
         )
 
         piotroski_score["Change in Return on Assets Criteria"] = (
             piotroski_model.get_change_in_return_on_asset_criteria(
-                net_income=self._income_statement.loc[:, "Net Income", :],
-                average_total_assets=self._balance_sheet_statement.loc[
-                    :, "Total Assets", :
-                ]
-                .T.rolling(2)
-                .mean()
-                .T,
+                net_income=net_income,
+                average_total_assets=average_total_assets,
             )
         )
 
         piotroski_score["Accruals Criteria"] = piotroski_model.get_accruals_criteria(
-            net_income=self._income_statement.loc[:, "Net Income", :],
-            average_total_assets=self._balance_sheet_statement.loc[:, "Total Assets", :]
-            .T.rolling(2)
-            .mean()
-            .T,
-            operating_cashflow=self._cash_flow_statement.loc[
-                :, "Operating Cash Flow", :
-            ],
-            total_assets=self._balance_sheet_statement.loc[:, "Total Assets", :],
+            net_income=net_income,
+            average_total_assets=average_total_assets,
+            operating_cashflow=operating_cashflow,
+            total_assets=total_assets,
         )
 
         piotroski_score["Change in Leverage Criteria"] = (
             piotroski_model.get_change_in_leverage_criteria(
-                total_debt=self._balance_sheet_statement.loc[:, "Total Debt", :],
-                total_assets=self._balance_sheet_statement.loc[:, "Total Assets", :],
+                total_debt=total_debt,
+                total_assets=total_assets,
             )
         )
 
         piotroski_score["Change in Current Ratio Criteria"] = (
             piotroski_model.get_change_in_current_ratio_criteria(
-                current_assets=self._balance_sheet_statement.loc[
-                    :, "Total Current Assets", :
-                ],
-                current_liabilities=self._balance_sheet_statement.loc[
-                    :, "Total Current Liabilities", :
-                ],
+                current_assets=current_assets,
+                current_liabilities=current_liabilities,
             )
         )
 
         piotroski_score["Number of Shares Criteria"] = (
             piotroski_model.get_number_of_shares_criteria(
-                common_stock_issued=self._cash_flow_statement.loc[
-                    :, "Common Stock Issued", :
-                ],
+                common_stock_issued=common_stock_issued,
             )
         )
 
         piotroski_score["Gross Margin Criteria"] = (
             piotroski_model.get_gross_margin_criteria(
-                revenue=self._income_statement.loc[:, "Revenue", :],
-                cost_of_goods_sold=self._income_statement.loc[
-                    :, "Cost of Goods Sold", :
-                ],
+                revenue=revenue,
+                cost_of_goods_sold=cost_of_goods_sold,
             )
         )
 
         piotroski_score["Asset Turnover Criteria"] = (
             piotroski_model.get_asset_turnover_ratio_criteria(
-                sales=self._income_statement.loc[:, "Revenue", :],
-                average_total_assets=self._balance_sheet_statement.loc[
-                    :, "Total Assets", :
-                ]
-                .T.rolling(2)
-                .mean()
-                .T,
+                sales=revenue,
+                average_total_assets=average_total_assets,
             )
         )
 
@@ -1269,6 +1431,7 @@ class Models:
         calculate_daily: bool = False,
         diluted: bool = True,
         include_dividends: bool = False,
+        trailing: int | None = None,
         rounding: int | None = None,
         growth: bool = False,
         lag: int | list[int] = 1,
@@ -1290,6 +1453,7 @@ class Models:
             diluted (bool, optional): Whether to use diluted shares in the calculation. Defaults to True.
             include_dividends (bool, optional): Whether to include dividends in the calculation.
             Defaults to False.
+            trailing (int | None, optional): The trailing period to use for the calculation. Defaults to None.
             rounding (int, optional): The number of decimals to round the results to. Defaults to 4.
             growth (bool, optional): Whether to calculate the growth of the values. Defaults to False.
             lag (int | list[int], optional): The lag to use for the growth calculation. Defaults to 1.
@@ -1307,7 +1471,9 @@ class Models:
         toolkit.models.get_present_value_of_growth_opportunities()
         ```
         """
-        wacc = self.get_weighted_average_cost_of_capital(show_full_results=False)
+        wacc = self.get_weighted_average_cost_of_capital(
+            show_full_results=False, trailing=trailing
+        )
 
         average_shares = (
             self._income_statement.loc[:, "Weighted Average Shares Diluted", :]
@@ -1321,10 +1487,24 @@ class Models:
             else 0
         )
 
+        net_income = (
+            self._income_statement.loc[:, "Net Income", :].T.rolling(trailing).sum().T
+            if trailing
+            else self._income_statement.loc[:, "Net Income", :]
+        )
+        preferred_dividends = (
+            dividends.T.rolling(trailing).sum().T
+            if trailing and include_dividends
+            else dividends
+        )
+        avg_shares = (
+            average_shares.T.rolling(trailing).mean().T if trailing else average_shares
+        )
+
         earnings_per_share = valuation_model.get_earnings_per_share(
-            net_income=self._income_statement.loc[:, "Net Income", :],
-            preferred_dividends=dividends,
-            average_outstanding_shares=average_shares,
+            net_income=net_income,
+            preferred_dividends=preferred_dividends,
+            average_outstanding_shares=avg_shares,
         )
 
         historical_prices = (
