@@ -26,6 +26,9 @@ debugging.py
 .claude/
 *.sh
 
+# Claude
+CLAUDE.md
+
 # Specific files for the MCP Bundle
 !financetoolkit/mcp_server/mcpb/build-mcpb.sh
 
