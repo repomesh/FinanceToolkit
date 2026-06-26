@@ -705,7 +705,6 @@ class ToolRegistry:
                 annotations=ToolAnnotations(
                     title=spec.display_name,
                     readOnlyHint=True,
-                    destructiveHint=False,
                     idempotentHint=True,
                     openWorldHint=True,
                 ),

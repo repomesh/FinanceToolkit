@@ -62,96 +62,96 @@
   },
   "tools": [
     {
-      "name": "get_valuation_ratios",
-      "description": "Pre-computed valuation ratios (P/E, EPS, EV/EBITDA, P/B, P/S, PEG, dividend yield, FCF yield, market cap). Requires tickers."
+      "name": "valuation",
+      "description": "Pre-computed valuation ratios (P/E, EPS, EV/EBITDA, EV/EBIT, P/B, P/S, PEG, dividend yield, FCF yield, market cap). Requires tickers."
     },
     {
-      "name": "get_profitability_ratios",
+      "name": "profitability",
       "description": "Pre-computed profitability ratios (gross margin, operating margin, net margin, ROE, ROA, ROIC, ROCE). Requires tickers."
     },
     {
-      "name": "get_liquidity_ratios",
+      "name": "liquidity",
       "description": "Pre-computed liquidity ratios (current ratio, quick ratio, cash ratio, working capital). Requires tickers."
     },
     {
-      "name": "get_solvency_ratios",
+      "name": "solvency",
       "description": "Pre-computed solvency ratios (debt-to-equity, interest coverage, debt-to-assets, net debt to EBITDA). Requires tickers."
     },
     {
-      "name": "get_efficiency_ratios",
-      "description": "Pre-computed efficiency ratios (asset turnover, inventory turnover, days sales outstanding, cash conversion cycle). Requires tickers."
+      "name": "efficiency",
+      "description": "Pre-computed efficiency ratios (asset turnover, inventory turnover, days sales outstanding, days payable outstanding, cash conversion cycle). Requires tickers."
     },
     {
-      "name": "get_momentum_indicators",
+      "name": "momentum",
       "description": "Momentum technical indicators (RSI, MACD, Stochastic Oscillator, Williams %R, Aroon). Applied to price data automatically. Requires tickers."
     },
     {
-      "name": "get_overlap_indicators",
+      "name": "overlap",
       "description": "Overlap technical indicators (SMA, EMA, Bollinger Bands, Keltner Channels). Applied to price data automatically. Requires tickers."
     },
     {
-      "name": "get_volatility_indicators",
+      "name": "volatility",
       "description": "Volatility technical indicators (ATR, True Range). Applied to price data automatically. Requires tickers."
     },
     {
-      "name": "get_breadth_indicators",
-      "description": "Market breadth technical indicators (McClellan Oscillator, OBV, Advance/Decline Line, Chaikin). Requires tickers."
+      "name": "breadth",
+      "description": "Market breadth technical indicators (McClellan Oscillator, OBV, Advance/Decline Line, Chaikin). Applied to price data automatically. Requires tickers."
     },
     {
-      "name": "get_models",
+      "name": "models",
       "description": "Pre-computed financial models (WACC, DuPont analysis, Altman Z-Score, Piotroski F-Score, intrinsic value/DCF). Requires tickers."
     },
     {
-      "name": "get_performance",
+      "name": "performance",
       "description": "Pre-computed risk-adjusted performance metrics (Sharpe ratio, Sortino ratio, Alpha, Beta, CAPM, Fama-French factors). Requires tickers."
     },
     {
-      "name": "get_risk",
+      "name": "risk",
       "description": "Pre-computed risk metrics (VaR, CVaR, GARCH volatility, max drawdown, skewness, kurtosis). Requires tickers."
     },
     {
-      "name": "get_options",
-      "description": "Option pricing and Greeks (Black-Scholes, binomial tree, delta, gamma, theta, vega, rho, implied volatility). Requires tickers."
+      "name": "options",
+      "description": "Option pricing and Greeks (Black-Scholes model, binomial tree, delta, gamma, theta, vega, rho, implied volatility). Requires tickers."
     },
     {
-      "name": "get_fixed_income_valuations",
+      "name": "fixed_income",
       "description": "Bond and derivative valuation calculations (bond duration, present value, yield-to-maturity, derivative pricing). No tickers needed."
     },
     {
-      "name": "get_interest_rates",
-      "description": "Interest rate data (central bank rates, short/long-term rates, government bond yields, ICE BofA series, EURIBOR, ECB, Fed rates). Requires countries."
+      "name": "rates",
+      "description": "Interest rate data (central bank policy rates, short/long-term rates, government bond yields, ICE BofA series, EURIBOR, ECB, Fed rates). Requires countries."
     },
     {
-      "name": "get_general_economy",
-      "description": "Macroeconomic indicators by country (GDP, CPI, inflation, trade balance, investment, consumption, confidence indices, house/rent prices). Requires countries."
+      "name": "macroeconomics",
+      "description": "Macroeconomic indicators by country (GDP, CPI, inflation rate, trade balance, investment, consumption, confidence indices, house/rent prices). Requires countries."
     },
     {
-      "name": "get_government_economy",
+      "name": "government",
       "description": "Government fiscal metrics by country (debt, deficit, expenditure, revenue, tax revenue, trust in government). Requires countries."
     },
     {
-      "name": "get_jobs_and_society",
+      "name": "jobs",
       "description": "Labour and social metrics by country (unemployment rate, labour productivity, population statistics, poverty rate, income inequality). Requires countries."
     },
     {
-      "name": "get_environment",
+      "name": "environment",
       "description": "Environmental and ESG data. ESG scores use tickers; carbon footprint and renewable energy use countries. Accepts both."
     },
     {
-      "name": "get_toolkit_data",
-      "description": "Raw financial data (historical prices, income statement, balance sheet, cash flow, company profile, quotes, analyst estimates). Requires tickers."
+      "name": "market_data",
+      "description": "Raw financial data (historical prices, income statement, balance sheet, cash flow statement, company profile, quotes, analyst estimates). Requires tickers."
     },
     {
-      "name": "get_discovery",
+      "name": "discovery",
       "description": "Market discovery tools (lists of stocks/ETFs/cryptocurrencies, stock screener, gainers, losers, sector performance). No tickers needed."
     },
     {
-      "name": "list_categories",
-      "description": "List all registered tool categories with metric counts and descriptions."
+      "name": "search_categories",
+      "description": "List all available metric categories with tool counts and descriptions."
     },
     {
-      "name": "list_metrics_by_category",
-      "description": "List all metrics within a specific category."
+      "name": "search_by_category",
+      "description": "List all metrics within a specific category by name."
     },
     {
       "name": "search_metrics",
@@ -159,7 +159,7 @@
     },
     {
       "name": "search_instruments",
-      "description": "Look up ticker symbols by company name, ISIN, CIK, or keyword."
+      "description": "Look up ticker symbols by company name, ISIN, CIK, CUSIP, or keyword."
     }
   ],
   "compatibility": {

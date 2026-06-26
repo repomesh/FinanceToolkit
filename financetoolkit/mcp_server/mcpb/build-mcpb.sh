@@ -28,7 +28,10 @@ p.write_text(json.dumps(m, indent=2) + '\n')
 python3 -c "
 import re, pathlib
 p = pathlib.Path('$BUNDLE_DIR/pyproject.toml')
-p.write_text(re.sub(r'(?m)^version = \".*\"', 'version = \"$VERSION\"', p.read_text()))
+content = p.read_text()
+content = re.sub(r'(?m)^version = \".*\"', 'version = \"$VERSION\"', content)
+content = re.sub(r'\"financetoolkit\[mcp\]==.*\"', '\"financetoolkit[mcp]==$VERSION\"', content)
+p.write_text(content)
 "
 
 mkdir -p "$OUTPUT_DIR"

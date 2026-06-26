@@ -97,7 +97,6 @@ class UtilityToolRegistry:
         """
         _utility_annotations = ToolAnnotations(
             readOnlyHint=True,
-            destructiveHint=False,
             idempotentHint=True,
             openWorldHint=False,
         )
