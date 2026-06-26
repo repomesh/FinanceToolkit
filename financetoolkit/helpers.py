@@ -315,7 +315,7 @@ def enrich_historical_data(
     historical_data["Cumulative Return"] = pd.Series(np.nan).astype(float)
 
     historical_data.loc[start:end, "Cumulative Return"] = (
-        1.0 + adjusted_return
+        1.0 + adjusted_return.fillna(0)
     ).cumprod()
 
     return historical_data
