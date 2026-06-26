@@ -4,6 +4,12 @@
 import pytest
 
 
+def test_collect_all_metrics(recorder, performance_module):
+    recorder.capture(performance_module.collect_all_metrics())
+    recorder.capture(performance_module.collect_all_metrics(growth=True))
+    recorder.capture(performance_module.collect_all_metrics(growth=True, lag=[1, 2, 3]))
+
+
 def test_get_beta(recorder, performance_module):
     recorder.capture(performance_module.get_beta())
     recorder.capture(performance_module.get_beta(growth=True))
@@ -168,6 +174,6 @@ def test_get_information_ratio(recorder, performance_module):
     )
 
 
-def test_compount_growth_rate(recorder, performance_module):
+def test_get_compound_growth_rate(recorder, performance_module):
     recorder.capture(performance_module.get_compound_growth_rate())
     recorder.capture(performance_module.get_compound_growth_rate(rounding=10))

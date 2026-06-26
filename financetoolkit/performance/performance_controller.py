@@ -515,7 +515,7 @@ class Performance:
         factor_order = factor_asset_correlations.index
 
         factor_asset_correlations = (
-            factor_asset_correlations.stack(level=1)
+            factor_asset_correlations.stack(level=1, future_stack=True)
             .unstack(level=0)
             .reindex(factor_order, level=1, axis=1)
             .reindex(self._tickers_without_portfolio, level=0, axis=1)

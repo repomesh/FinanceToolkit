@@ -10,6 +10,26 @@ def test_collect_all_ratios(recorder, ratios_module):
     recorder.capture(ratios_module.collect_all_ratios(growth=True, trailing=2))
 
 
+def test_collect_custom_ratios(recorder, ratios_module):
+    recorder.capture(
+        ratios_module.collect_custom_ratios(
+            custom_ratios_dict={
+                "WC / Net Income as %": "(Working Capital / Net Income) * 100",
+                "Quick Assets": "Cash and Short Term Investments + Accounts Receivable",
+            }
+        )
+    )
+    recorder.capture(
+        ratios_module.collect_custom_ratios(
+            custom_ratios_dict={
+                "WC / Net Income as %": "(Working Capital / Net Income) * 100",
+                "Quick Assets": "Cash and Short Term Investments + Accounts Receivable",
+            },
+            growth=True,
+        )
+    )
+
+
 def test_collect_efficiency_ratios(recorder, ratios_module):
     recorder.capture(ratios_module.collect_efficiency_ratios())
     recorder.capture(ratios_module.collect_efficiency_ratios(growth=True))
@@ -94,6 +114,10 @@ def test_get_cash_conversion_cycle(recorder, ratios_module):
     recorder.capture(ratios_module.get_cash_conversion_cycle())
 
 
+def test_get_cash_conversion_efficiency(recorder, ratios_module):
+    recorder.capture(ratios_module.get_cash_conversion_efficiency())
+
+
 def test_get_receivables_turnover(recorder, ratios_module):
     recorder.capture(ratios_module.get_receivables_turnover())
 
@@ -148,6 +172,10 @@ def test_get_net_profit_margin(recorder, ratios_module):
 
 def test_get_income_before_tax_profit_margin(recorder, ratios_module):
     recorder.capture(ratios_module.get_income_before_tax_profit_margin())
+
+
+def test_get_effective_tax_rate(recorder, ratios_module):
+    recorder.capture(ratios_module.get_effective_tax_rate())
 
 
 def test_get_return_on_assets(recorder, ratios_module):
@@ -214,6 +242,10 @@ def test_get_equity_multiplier(recorder, ratios_module):
     recorder.capture(ratios_module.get_equity_multiplier())
 
 
+def test_get_debt_service_coverage_ratio(recorder, ratios_module):
+    recorder.capture(ratios_module.get_debt_service_coverage_ratio())
+
+
 def test_get_free_cash_flow_yield(recorder, ratios_module):
     recorder.capture(ratios_module.get_free_cash_flow_yield())
 
@@ -276,6 +308,11 @@ def test_get_dividend_yield(recorder, ratios_module):
     recorder.capture(ratios_module.get_dividend_yield(show_daily=True))
 
 
+def test_get_weighted_dividend_yield(recorder, ratios_module):
+    recorder.capture(ratios_module.get_weighted_dividend_yield())
+    recorder.capture(ratios_module.get_weighted_dividend_yield(show_daily=True))
+
+
 def test_get_price_to_cash_flow_ratio(recorder, ratios_module):
     recorder.capture(ratios_module.get_price_to_cash_flow_ratio())
     recorder.capture(ratios_module.get_price_to_cash_flow_ratio(show_daily=True))
@@ -320,9 +357,18 @@ def test_get_dividend_payout_ratio(recorder, ratios_module):
     recorder.capture(ratios_module.get_dividend_payout_ratio())
 
 
+def test_get_reinvestment_rate(recorder, ratios_module):
+    recorder.capture(ratios_module.get_reinvestment_rate())
+
+
 def test_get_tangible_asset_value(recorder, ratios_module):
     recorder.capture(ratios_module.get_tangible_asset_value())
 
 
 def test_get_net_current_asset_value(recorder, ratios_module):
     recorder.capture(ratios_module.get_net_current_asset_value())
+
+
+def test_get_ev_to_ebit(recorder, ratios_module):
+    recorder.capture(ratios_module.get_ev_to_ebit())
+    recorder.capture(ratios_module.get_ev_to_ebit(show_daily=True))

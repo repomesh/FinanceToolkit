@@ -2,6 +2,12 @@
 # pylint: disable=missing-function-docstring
 
 
+def test_collect_all_metrics(recorder, risk_module):
+    recorder.capture(risk_module.collect_all_metrics())
+    recorder.capture(risk_module.collect_all_metrics(growth=True))
+    recorder.capture(risk_module.collect_all_metrics(growth=True, lag=[1, 2, 3]))
+
+
 def test_get_value_at_risk(recorder, risk_module):
     recorder.capture(risk_module.get_value_at_risk())
     recorder.capture(risk_module.get_value_at_risk(within_period=False))

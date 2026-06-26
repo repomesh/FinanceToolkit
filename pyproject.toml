@@ -81,6 +81,7 @@ dev = [
     "types-pyyaml>=6.0",
     "types-requests>=2.32",
     "ruff>=0.13.2",
+    "httpx2>=0.28",
 ]
 
 [tool.uv]

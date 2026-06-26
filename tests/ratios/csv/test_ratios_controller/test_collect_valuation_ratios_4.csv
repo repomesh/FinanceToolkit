@@ -12,17 +12,17 @@ AAPL,Dividend Payout Ratio,,-0.9953,-0.1971,0.0073
 AAPL,Dividend Yield,,-0.0149,-0.3065,10.0
 AAPL,Weighted Dividend Yield,,-0.5198,0.4433,9.8429
 AAPL,Price-to-Cash-Flow,,787.8317,-0.4182,-0.9836
-AAPL,Price-to-Free-Cash-Flow,,875.0693,-0.4203,-0.9852
-AAPL,Market Cap,,0.2955,-0.2876,-1.0
-AAPL,Enterprise Value,,0.3364,-0.2747,-1.0
-AAPL,EV-to-Sales,,-1.0,-0.389,-0.9476
-AAPL,EV-to-EBIT,,-1.0,-0.4362,-0.9839
-AAPL,EV-to-EBITDA,,-1.0,-0.4286,-0.9827
-AAPL,EV-to-Operating-Cash-Flow,,-1.0,-0.4077,-0.9844
-AAPL,Tangible Asset Value,,-0.9717,-0.1142,-0.0083
-AAPL,Net Current Asset Value,,-0.9895,-1.1934,1.2033
-MSFT,Earnings per Share,,-1.0,0.2811,0.0926
-MSFT,Revenue per Share,,-1.0,0.1882,0.1298
+AAPL,Price-to-Free-Cash-Flow,,762.3465,-0.2153,-0.9875
+AAPL,Market Cap,,126958609293810.89,-0.0357,-1.0
+AAPL,Enterprise Value,,131558708303711.88,-0.0298,-1.0
+AAPL,EV-to-Sales,,204.4554,-0.1827,-0.9552
+AAPL,EV-to-EBIT,,722.5792,-0.2458,-0.9862
+AAPL,EV-to-EBITDA,,664.8614,-0.2356,-0.9852
+AAPL,EV-to-Operating-Cash-Flow,,711.2376,-0.2077,-0.9867
+AAPL,Tangible Asset Value,,3178935643563.3564,-0.1142,-0.0083
+AAPL,Net Current Asset Value,,1180099009899.9902,-1.1934,1.2033
+MSFT,Earnings per Share,,685.8218,0.2811,0.0926
+MSFT,Revenue per Share,,2023.3366,0.1882,0.1298
 MSFT,Price-to-Earnings,,0.0912,-0.3991,1.2489
 MSFT,Price-to-Earnings-Growth,,0.0912,-0.3991,1.2489
 MSFT,Book Value per Share,,-0.5427,0.1965,0.2191
@@ -34,12 +34,12 @@ MSFT,Dividend Payout Ratio,,-0.9919,-0.1377,0.0108
 MSFT,Dividend Yield,,0.3814,0.5373,11.6893
 MSFT,Weighted Dividend Yield,,0.3093,0.5354,12.4051
 MSFT,Price-to-Cash-Flow,,1866.3505,-0.4087,-0.9756
-MSFT,Price-to-Free-Cash-Flow,,2530.7835,-0.4038,-0.9821
-MSFT,Market Cap,,0.5099,-0.2867,-1.0
-MSFT,Enterprise Value,,0.5436,-0.2824,-1.0
-MSFT,EV-to-Sales,,-1.0,-0.3906,-0.9476
-MSFT,EV-to-EBIT,,-1.0,-0.4183,-0.9772
-MSFT,EV-to-EBITDA,,-1.0,-0.4107,-0.9743
-MSFT,EV-to-Operating-Cash-Flow,,-1.0,-0.4052,-0.9763
-MSFT,Tangible Asset Value,,-0.9493,0.1439,0.2408
-MSFT,Net Current Asset Value,,-0.9377,-0.1705,-0.0918
+MSFT,Price-to-Free-Cash-Flow,,2095.0928,-0.1397,-0.9851
+MSFT,Market Cap,,212443595876287.66,0.0293,-1.0
+MSFT,Enterprise Value,,218163853608246.4,0.0262,-1.0
+MSFT,EV-to-Sales,,700.2577,-0.1286,-0.9559
+MSFT,EV-to-EBIT,,1689.2062,-0.1681,-0.9808
+MSFT,EV-to-EBITDA,,1479.5155,-0.1573,-0.9784
+MSFT,EV-to-Operating-Cash-Flow,,1586.6289,-0.1494,-0.98
+MSFT,Tangible Asset Value,,8620103092782.506,0.1439,0.2408
+MSFT,Net Current Asset Value,,10585257731957.762,-0.1705,-0.0918
