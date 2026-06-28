@@ -82,10 +82,14 @@ dev = [
     "types-requests>=2.32",
     "ruff>=0.13.2",
     "httpx2>=0.28",
+    "financetoolkit[mcp]",
 ]
 
 [tool.uv]
 default-groups = ["dev"]
+
+[tool.uv.sources]
+financetoolkit = { workspace = true }
 
 [build-system]
 requires = ["hatchling"]

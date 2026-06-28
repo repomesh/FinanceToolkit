@@ -796,7 +796,7 @@ server = [
 
 [[package]]
 name = "financetoolkit"
-version = "2.1.2"
+version = "2.1.3"
 source = { editable = "." }
 dependencies = [
     { name = "openpyxl" },
@@ -820,6 +820,7 @@ mcp = [
 dev = [
     { name = "black", extra = ["jupyter"] },
     { name = "codespell" },
+    { name = "financetoolkit", extra = ["mcp"] },
     { name = "httpx2" },
     { name = "ipykernel" },
     { name = "pytest" },
@@ -852,6 +853,7 @@ provides-extras = ["mcp"]
 dev = [
     { name = "black", extras = ["jupyter"], specifier = ">=26.3.1" },
     { name = "codespell", specifier = ">=2.4" },
+    { name = "financetoolkit", extras = ["mcp"], editable = "." },
     { name = "httpx2", specifier = ">=0.28" },
     { name = "ipykernel", specifier = ">=6.29" },
     { name = "pytest", specifier = ">=8.3" },
